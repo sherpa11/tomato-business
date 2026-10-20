@@ -4,6 +4,7 @@
   "description": "Tomato Wholesale Billing & Tally Management System",
   "type": "module",
   "scripts": {
+    "postinstall": "npm --prefix frontend install --include=dev",
     "build": "npm --prefix frontend run build",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
