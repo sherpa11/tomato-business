@@ -10,6 +10,7 @@ import { config } from './config/env.js';
 import { connectDB } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { securityHeaders } from './middleware/security.js';
+import { createCorsDelegate } from './middleware/corsConfig.js';
 
 import Settings from './models/Settings.js';
 import User from './models/User.js';
@@ -34,29 +35,9 @@ const PORT = config.PORT || 5000;
 app.disable('x-powered-by');
 app.use(securityHeaders);
 
-// CORS configuration
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow non-browser requests (e.g. mobile apps, curl, server-to-server) or same-origin
-    if (!origin) return callback(null, true);
-
-    if (config.NODE_ENV === 'production' && config.CORS_ORIGIN) {
-      const allowedOrigins = config.CORS_ORIGIN.split(',').map((o) => o.trim());
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error(`Origin '${origin}' is not permitted by CORS policy.`));
-    }
-
-    // In development or if CORS_ORIGIN is not set, allow
-    return callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-};
-
-app.use(cors(corsOptions));
+// Strict CORS configuration
+const corsDelegate = createCorsDelegate(config);
+app.use(cors(corsDelegate));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 

@@ -1,7 +1,9 @@
 export const errorHandler = (err, req, res, next) => {
-  console.error(`[Error] ${req.method} ${req.originalUrl}:`, err);
+  console.error(`[Error] ${req.method} ${req.originalUrl}:`, err.message || err);
 
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  const isCorsError = Boolean(err.message && err.message.includes('CORS policy'));
+  const statusCode = isCorsError ? 403 : (res.statusCode === 200 ? 500 : res.statusCode);
+
   res.status(statusCode).json({
     success: false,
     message: err.message || 'Server Error',
