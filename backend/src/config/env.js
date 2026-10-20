@@ -62,9 +62,9 @@ export const validateEnv = (options = { shouldExit: true }) => {
     }
   }
 
-  // Report errors and exit safely (or throw if shouldExit is false for testing)
+  // Report errors and exit safely (or throw if shouldExit is false or in serverless)
   if (errors.length > 0) {
-    if (options.shouldExit !== false) {
+    if (options.shouldExit !== false && !isVercel) {
       console.error('\n=============================================================');
       console.error('❌ [FATAL] Environment Configuration Validation Failed:');
       errors.forEach((err, idx) => console.error(`   ${idx + 1}. ${err}`));

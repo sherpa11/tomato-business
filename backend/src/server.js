@@ -41,13 +41,19 @@ app.use(cors(corsDelegate));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// In serverless environments (e.g. Vercel), ensure DB is connected before handling requests
+// In serverless environments (e.g. Vercel), ensure DB is connected and initialized before handling requests
+let isInitialized = false;
+
 app.use(async (req, res, next) => {
   if (process.env.VERCEL) {
     try {
       await connectDB();
+      if (!isInitialized) {
+        await initializeDatabase();
+        isInitialized = true;
+      }
     } catch (err) {
-      return res.status(500).json({ success: false, message: 'Database connection failure.' });
+      return res.status(500).json({ success: false, message: 'Database connection failure: ' + err.message });
     }
   }
   next();
@@ -136,9 +142,22 @@ const initializeDatabase = async () => {
     // 2. Check if an admin user exists
     const adminCount = await User.countDocuments();
     if (adminCount === 0) {
-      console.warn('\n⚠️ [SECURITY NOTICE] No user accounts found in the database.');
-      console.warn('   Run the admin provisioning command to create the initial admin:');
-      console.warn('   npm run admin:create\n');
+      const adminUsername = (process.env.ADMIN_USERNAME || 'bootto').toLowerCase().trim();
+      const adminPassword = process.env.ADMIN_PASSWORD;
+
+      if (adminPassword) {
+        await User.create({
+          username: adminUsername,
+          password: adminPassword,
+          name: process.env.ADMIN_NAME || 'Market Admin',
+          role: 'admin'
+        });
+        console.log(`[Init] Initial admin account '${adminUsername}' provisioned automatically.`);
+      } else {
+        console.warn('\n⚠️ [SECURITY NOTICE] No user accounts found in the database.');
+        console.warn('   To auto-create an admin, configure ADMIN_PASSWORD in environment variables');
+        console.warn('   or run: npm run admin:create\n');
+      }
     }
   } catch (err) {
     console.error('[Init Error] Error during initial database verification:', err.message);
