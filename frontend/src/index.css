@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Ensure numbers in tables, bills, and balances align in strict columns */
+  .font-mono, td, th {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom sleek scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Tamil Typography & Strict Tabular Numbers */
+.font-tamil {
+  font-family: 'Mukta Malar', 'Noto Sans Tamil', 'Latha', 'Vijaya', 'Tunga', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Print Styles */
+@media print {
+  /* When PrintModal is active, hide the entire main application (#root) */
+  body.print-modal-active #root {
+    display: none !important;
+  }
+
+  /* Hide all dashboard UI, navbars, action buttons, modals chrome */
+  .no-print,
+  nav,
+  header,
+  aside,
+  button,
+  .btn,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Clean portal styling in print so the bill is the only rendered element */
+  body.print-modal-active {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+  }
+
+  .print-modal-portal,
+  .print-modal-container,
+  .print-modal-scroll-area,
+  .print-bill-scaler,
+  .print-bill-outer {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    max-width: none !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: hidden !important;
+    transform: none !important;
+    animation: none !important;
+    border-radius: 0 !important;
+  }
+
+  .buyer-bill-page {
+    width: 89mm !important;
+    height: 89mm !important;
+    max-width: 89mm !important;
+    max-height: 89mm !important;
+    padding: 5.5mm !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+    display: block !important;
+    box-shadow: none !important;
+  }
+
+  .supplier-bill-page {
+    width: 105mm !important;
+    height: 148mm !important;
+    max-width: 105mm !important;
+    max-height: 148mm !important;
+    padding: 4.0mm 4.5mm 6.0mm 4.5mm !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+    display: block !important;
+    box-shadow: none !important;
+  }
+
+  .print-container {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .a4-bill {
+    width: 100% !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
+    padding: 10mm !important;
+    font-size: 14px !important;
+  }
+}

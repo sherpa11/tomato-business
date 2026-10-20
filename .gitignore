@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment and secrets
+.env
+.env.*
+*.env
+!.env.example
+!*/.env.example
+
+# Build outputs
+dist/
+*/dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test and temporary artifacts
+*.pdf
+test_*.html
+*.png
+!frontend/src/assets/*.png
+!frontend/public/*.png
+*.tmp
+
+# Operating system files
+.DS_Store
+Thumbs.db

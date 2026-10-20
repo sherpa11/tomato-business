@@ -1,0 +1,13 @@
+{
+  "name": "tomato-wholesale-billing-system",
+  "version": "1.0.0",
+  "description": "Tomato Wholesale Billing & Tally Management System",
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "admin:create": "cd backend && npm run admin:create",
+    "seed": "cd backend && npm run seed",
+    "test": "cd backend && npm test"
+  }
+}
