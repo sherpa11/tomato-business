@@ -187,7 +187,7 @@ test('Production CORS Security & Origin Validation Suite', async (t) => {
     });
   });
 
-  await t.test('10. Vercel environment: Unified Vercel deployment with VERCEL_URL is permitted', (t, done) => {
+  await t.test('10. Vercel environment: Exact VERCEL_URL deployment origin is permitted', (t, done) => {
     const corsDelegate = createCorsDelegate({
       NODE_ENV: 'production',
       VERCEL: '1',
@@ -208,17 +208,17 @@ test('Production CORS Security & Origin Validation Suite', async (t) => {
     });
   });
 
-  await t.test('11. Vercel environment: Vercel preview deployment origin is permitted during preview', (t, done) => {
+  await t.test('11. Vercel environment: Exact VERCEL_PROJECT_PRODUCTION_URL origin is permitted', (t, done) => {
     const corsDelegate = createCorsDelegate({
       NODE_ENV: 'production',
       VERCEL: '1',
-      VERCEL_ENV: 'preview',
+      VERCEL_PROJECT_PRODUCTION_URL: 'tomato-business.vercel.app',
       CORS_ORIGIN: ''
     });
 
     const mockReq = {
       headers: {
-        origin: 'https://tomato-business-git-feature-branch-sherpa11.vercel.app'
+        origin: 'https://tomato-business.vercel.app'
       }
     };
 
@@ -229,30 +229,51 @@ test('Production CORS Security & Origin Validation Suite', async (t) => {
     });
   });
 
-  await t.test('12. Vercel environment: Unauthorized origin is still blocked even on Vercel', (t, done) => {
+  await t.test('12. Vercel environment: Unrelated attacker-project.vercel.app origin is strictly rejected', (t, done) => {
     const corsDelegate = createCorsDelegate({
       NODE_ENV: 'production',
       VERCEL: '1',
       VERCEL_ENV: 'preview',
-      CORS_ORIGIN: ''
+      VERCEL_URL: 'tomato-business-preview-1.vercel.app',
+      CORS_ORIGIN: 'https://trusted-mandi.vercel.app'
     });
 
     const mockReq = {
       headers: {
-        origin: 'https://hacker-site.org'
+        origin: 'https://attacker-project.vercel.app'
       }
     };
 
     corsDelegate(mockReq, (err, options) => {
-      assert.ok(err);
+      assert.ok(err, 'Must reject arbitrary/unrelated vercel.app projects');
       assert.match(err.message, /not permitted by CORS policy/);
       done();
     });
   });
 
-  await t.test('13. HTTP Integration: Express app rejects forbidden cross-origin with 403 Forbidden', async () => {
+  await t.test('13. Vercel environment: Explicitly trusted preview origin in CORS_ORIGIN is permitted', (t, done) => {
+    const corsDelegate = createCorsDelegate({
+      NODE_ENV: 'production',
+      VERCEL: '1',
+      CORS_ORIGIN: 'https://trusted-preview-sherpa11.vercel.app'
+    });
+
+    const mockReq = {
+      headers: {
+        origin: 'https://trusted-preview-sherpa11.vercel.app'
+      }
+    };
+
+    corsDelegate(mockReq, (err, options) => {
+      assert.equal(err, null);
+      assert.equal(options.origin, true);
+      done();
+    });
+  });
+
+  await t.test('14. HTTP Integration: Express app rejects forbidden cross-origin with 403 Forbidden', async () => {
     const res = await fetch('http://localhost:5000/api/health', {
-      headers: { Origin: 'https://unauthorized-domain.com' }
+      headers: { Origin: 'https://attacker-project.vercel.app' }
     });
     assert.equal(res.status, 403, 'Should respond with 403 status');
     const data = await res.json();

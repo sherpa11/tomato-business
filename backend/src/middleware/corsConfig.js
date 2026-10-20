@@ -44,16 +44,12 @@ export const createCorsDelegate = (customConfig = {}) => {
       }
     }
 
-    // 3. Vercel environment automatic deployment & preview domain resolution
+    // 3. Vercel environment exact deployment URL resolution
     if (isVercel) {
       if (vercelUrl && cleanOrigin === `https://${vercelUrl.replace(/\/+$/, '')}`) {
         return callback(null, { ...corsOptions, origin: true });
       }
       if (vercelProdUrl && cleanOrigin === `https://${vercelProdUrl.replace(/\/+$/, '')}`) {
-        return callback(null, { ...corsOptions, origin: true });
-      }
-      // In Vercel preview environments, allow vercel preview URLs (*.vercel.app)
-      if (vercelEnv === 'preview' && /^https:\/\/[a-zA-Z0-9_.-]+\.vercel\.app$/.test(cleanOrigin)) {
         return callback(null, { ...corsOptions, origin: true });
       }
     }
