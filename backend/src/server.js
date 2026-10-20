@@ -60,6 +60,18 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+// In serverless environments (e.g. Vercel), ensure DB is connected before handling requests
+app.use(async (req, res, next) => {
+  if (process.env.VERCEL) {
+    try {
+      await connectDB();
+    } catch (err) {
+      return res.status(500).json({ success: false, message: 'Database connection failure.' });
+    }
+  }
+  next();
+});
+
 // Health check endpoint (safe for monitoring, probes, load balancers)
 app.get('/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;
@@ -194,6 +206,9 @@ const gracefulShutdown = async (signal) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
 
+export default app;
 export { app };
