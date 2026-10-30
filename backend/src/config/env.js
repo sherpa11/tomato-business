@@ -11,25 +11,31 @@ export const validateEnv = (options = { shouldExit: true }) => {
   const errors = [];
 
   // 1. MongoDB URI (strictly required in production; defaults to local in dev/test)
-  const mongoUri = process.env.MONGODB_URI?.trim() || (isProduction ? '' : 'mongodb://127.0.0.1:27017/tomato_billing');
+  const rawMongoUri = (process.env.MONGODB_URI?.trim() || '').replace(/^["']|["']$/g, '');
+  const mongoUri = rawMongoUri || (isProduction ? '' : 'mongodb://127.0.0.1:27017/tomato_billing');
   if (!mongoUri) {
     errors.push('MONGODB_URI is required.');
   } else if (isProduction && !/^(mongodb|mongodb\+srv):\/\//i.test(mongoUri)) {
     errors.push('MONGODB_URI must start with "mongodb://" or "mongodb+srv://".');
   }
 
-  // 1b. Admin Username (optional env var; if provided, must be a valid username and never a connection string)
-  const adminUsername = process.env.ADMIN_USERNAME?.trim();
-  if (adminUsername) {
-    if (/^(mongodb|mongodb\+srv):\/\//i.test(adminUsername) || adminUsername.includes('://') || adminUsername.includes('@')) {
-      errors.push('ADMIN_USERNAME must not be a MongoDB connection string or URI.');
-    } else if (!/^[a-zA-Z0-9._-]{3,50}$/.test(adminUsername)) {
-      errors.push('ADMIN_USERNAME must be 3-50 alphanumeric characters (dots, underscores, hyphens allowed).');
+  // 1b. Admin Username (sanitized safely: if accidentally set to a URI or invalid format, safely default to 'bootto' without crashing production)
+  let safeAdminUsername = 'bootto';
+  const rawAdminUsername = (process.env.ADMIN_USERNAME?.trim() || '').replace(/^["']|["']$/g, '');
+  if (rawAdminUsername) {
+    const isUriLike = /^(mongodb|mongodb\+srv):\/\//i.test(rawAdminUsername) || rawAdminUsername.includes('://') || rawAdminUsername.includes('@');
+    const isValid = /^[a-zA-Z0-9._-]{3,50}$/.test(rawAdminUsername);
+    if (!isUriLike && isValid) {
+      safeAdminUsername = rawAdminUsername.toLowerCase();
+    } else {
+      console.warn('[Config Warning] ADMIN_USERNAME contains invalid characters or a URI format. Safely falling back to default "bootto".');
+      safeAdminUsername = 'bootto';
     }
   }
 
   // 2. JWT Secret (strictly required & >=32 chars in production)
-  const jwtSecret = process.env.JWT_SECRET?.trim() || (isProduction ? '' : 'dev_jwt_secret_32_characters_long_local_only');
+  const rawJwtSecret = (process.env.JWT_SECRET?.trim() || '').replace(/^["']|["']$/g, '');
+  const jwtSecret = rawJwtSecret || (isProduction ? '' : 'dev_jwt_secret_32_characters_long_local_only');
   const KNOWN_INSECURE_SECRETS = [
     'super_secret_tomato_wholesale_jwt_key_2026',
     'your_production_jwt_secret_min_32_characters_long',
@@ -50,7 +56,8 @@ export const validateEnv = (options = { shouldExit: true }) => {
   }
 
   // 3. CORS Configuration Validation in Production
-  const corsOrigin = process.env.CORS_ORIGIN?.trim();
+  const rawCorsOrigin = (process.env.CORS_ORIGIN?.trim() || '').replace(/^["']|["']$/g, '');
+  const corsOrigin = rawCorsOrigin;
   const isVercel = Boolean(process.env.VERCEL);
 
   if (isProduction) {
@@ -95,7 +102,7 @@ export const validateEnv = (options = { shouldExit: true }) => {
     PORT: parseInt(process.env.PORT, 10) || 5000,
     MONGODB_URI: mongoUri,
     MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'tomato_billing',
-    ADMIN_USERNAME: adminUsername || 'bootto',
+    ADMIN_USERNAME: safeAdminUsername,
     JWT_SECRET: jwtSecret,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
     CORS_ORIGIN: corsOrigin || '',

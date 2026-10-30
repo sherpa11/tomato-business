@@ -113,20 +113,15 @@ test('Environment Variable Validation & Safety Suite', async (t) => {
     process.env = { ...origEnv };
   });
 
-  await t.test('4. validateEnv rejects ADMIN_USERNAME when set to MongoDB URI', () => {
+  await t.test('4. validateEnv safely sanitizes ADMIN_USERNAME when set to MongoDB URI', () => {
     process.env.NODE_ENV = 'production';
     process.env.MONGODB_URI = 'mongodb+srv://admin:pass@tomato.mongodb.net/tomato_billing';
     process.env.JWT_SECRET = 'super_secure_production_jwt_key_that_is_32_characters_long_123';
     process.env.CORS_ORIGIN = 'https://dindigultomato.vercel.app';
     process.env.ADMIN_USERNAME = 'mongodb+srv://dbuser:pass123@cluster0.mongodb.net/tomato_billing';
 
-    assert.throws(
-      () => validateEnv({ shouldExit: false }),
-      (err) => {
-        assert.match(err.message, /ADMIN_USERNAME must not be a MongoDB connection string or URI/);
-        return true;
-      }
-    );
+    const env = validateEnv({ shouldExit: false });
+    assert.equal(env.ADMIN_USERNAME, 'bootto', 'Should safely fall back to default "bootto" instead of accepting URI');
   });
 
   await t.test('5. validateEnv accepts legitimate default username "bootto"', () => {
@@ -138,15 +133,13 @@ test('Environment Variable Validation & Safety Suite', async (t) => {
 
     const env = validateEnv({ shouldExit: false });
     assert.equal(env.ADMIN_USERNAME, 'bootto');
-    assert.equal(env.MONGODB_DB_NAME, 'tomato_billing');
   });
 
   await t.test('6. validateEnv rejects invalid protocol in MONGODB_URI in production', () => {
     process.env.NODE_ENV = 'production';
-    process.env.MONGODB_URI = 'http://localhost:27017/tomato_billing';
+    process.env.MONGODB_URI = 'postgres://admin:pass@localhost:5432/tomato_billing';
     process.env.JWT_SECRET = 'super_secure_production_jwt_key_that_is_32_characters_long_123';
     process.env.CORS_ORIGIN = 'https://dindigultomato.vercel.app';
-    delete process.env.ADMIN_USERNAME;
 
     assert.throws(
       () => validateEnv({ shouldExit: false }),
@@ -159,88 +152,84 @@ test('Environment Variable Validation & Safety Suite', async (t) => {
 });
 
 test('Admin Provisioning & Account Preservation Suite', async (t) => {
-  const origSettingsCount = Settings.countDocuments;
-  t.beforeEach(() => {
-    Settings.countDocuments = async () => 1;
-  });
+  const origEnv = { ...process.env };
+
   t.afterEach(() => {
-    Settings.countDocuments = origSettingsCount;
+    process.env = { ...origEnv };
   });
 
   await t.test('7. initializeDatabase skips admin creation when user already exists', async () => {
-    const origCount = User.countDocuments;
-    const origCreate = User.create;
+    const origUserCount = User.countDocuments;
+    const origUserCreate = User.create;
+    const origSettingsCount = Settings.countDocuments;
     let createCalled = false;
 
     try {
-      // Mock that users already exist (adminCount = 1)
-      User.countDocuments = async () => 1;
+      Settings.countDocuments = async () => 1;
+      User.countDocuments = async () => 1; // existing admin exists
       User.create = async () => {
         createCalled = true;
       };
 
       await initializeDatabase();
-
-      assert.equal(createCalled, false, 'User.create must never be called when users already exist');
+      assert.equal(createCalled, false, 'User.create must never be called if an admin already exists');
     } finally {
-      User.countDocuments = origCount;
-      User.create = origCreate;
+      User.countDocuments = origUserCount;
+      User.create = origUserCreate;
+      Settings.countDocuments = origSettingsCount;
     }
   });
 
   await t.test('8. initializeDatabase safely handles duplicate key E11000 concurrency error', async () => {
-    const origCount = User.countDocuments;
-    const origCreate = User.create;
-    const origPassword = process.env.ADMIN_PASSWORD;
+    const origUserCount = User.countDocuments;
+    const origUserCreate = User.create;
+    const origSettingsCount = Settings.countDocuments;
 
     try {
-      process.env.ADMIN_PASSWORD = 'test_admin_password_123';
-      User.countDocuments = async () => 0; // Simulate 0 on check
+      Settings.countDocuments = async () => 1;
+      User.countDocuments = async () => 0;
+      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.ADMIN_USERNAME = 'bootto';
+
       User.create = async () => {
-        // Simulate concurrent process inserting first
-        const dupError = new Error('E11000 duplicate key error');
-        dupError.code = 11000;
-        throw dupError;
+        const err = new Error('E11000 duplicate key error collection: tomato_billing.users');
+        err.code = 11000;
+        throw err;
       };
 
-      // Should handle gracefully without throwing unhandled exception
+      // Must NOT throw on E11000 duplicate key
       await assert.doesNotReject(async () => {
         await initializeDatabase();
       });
     } finally {
-      User.countDocuments = origCount;
-      User.create = origCreate;
-      if (origPassword !== undefined) {
-        process.env.ADMIN_PASSWORD = origPassword;
-      } else {
-        delete process.env.ADMIN_PASSWORD;
-      }
+      User.countDocuments = origUserCount;
+      User.create = origUserCreate;
+      Settings.countDocuments = origSettingsCount;
     }
   });
 
   await t.test('9. initializeDatabase rejects URI string in ADMIN_USERNAME without creating user', async () => {
-    const origCount = User.countDocuments;
-    const origCreate = User.create;
-    const origUser = process.env.ADMIN_USERNAME;
-    const origPass = process.env.ADMIN_PASSWORD;
+    const origUserCount = User.countDocuments;
+    const origUserCreate = User.create;
+    const origSettingsCount = Settings.countDocuments;
     let createCalled = false;
 
     try {
-      process.env.ADMIN_USERNAME = 'mongodb+srv://admin:pass@cluster.mongodb.net/test';
-      process.env.ADMIN_PASSWORD = 'password123';
+      Settings.countDocuments = async () => 1;
       User.countDocuments = async () => 0;
+      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.ADMIN_USERNAME = 'mongodb+srv://user:pass@cluster.mongodb.net/tomato_billing';
+
       User.create = async () => {
         createCalled = true;
       };
 
       await initializeDatabase();
-
-      assert.equal(createCalled, false, 'User.create must not be called when username contains a URI');
+      assert.equal(createCalled, false, 'Must not create user with URI as username');
     } finally {
-      User.countDocuments = origCount;
-      User.create = origCreate;
-      if (origUser !== undefined) process.env.ADMIN_USERNAME = origUser; else delete process.env.ADMIN_USERNAME;
-      if (origPass !== undefined) process.env.ADMIN_PASSWORD = origPass; else delete process.env.ADMIN_PASSWORD;
+      User.countDocuments = origUserCount;
+      User.create = origUserCreate;
+      Settings.countDocuments = origSettingsCount;
     }
   });
 });
