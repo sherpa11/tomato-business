@@ -16,7 +16,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
 
   const address = settings?.address && !settings.address.toLowerCase().includes('mandi') && !settings.address.toLowerCase().includes('wholesale')
     ? settings.address
-    : '25 A, காந்தி மார்க்கெட், திண்டுக்கல்-1';
+    : 'shop no : 25, Gandhi Market, Dindigul, 624001';
 
   // Normalize items array for consolidated bill (or single transaction fallback)
   let items = [];
@@ -180,7 +180,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
           {/* Business Header with Lakshmi Logo */}
           <div style={{ display: 'flex', alignItems: 'center', marginTop: '-1.5px' }}>
             {/* Logo */}
-            <div style={{ width: '14mm', height: '16mm', flexShrink: 0, display: 'flex', alignItems: 'center', justifySelf: 'center' }}>
+            <div style={{ width: '12mm', height: '15mm', flexShrink: 0, display: 'flex', alignItems: 'center', justifySelf: 'center' }}>
               <img
                 src="/lakshmi-green.png"
                 alt="Lakshmi Logo"
@@ -189,10 +189,10 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             </div>
 
             {/* Business Titles */}
-            <div style={{ flex: 1, textAlign: 'center', paddingLeft: '1mm', paddingRight: '1mm' }}>
+            <div style={{ flex: 1, minWidth: 0, textAlign: 'center', paddingLeft: '0.5mm', paddingRight: '0.5mm' }}>
               <div
                 style={{
-                  fontSize: '13.5pt',
+                  fontSize: '16.5pt',
                   fontWeight: 900,
                   letterSpacing: '0.5px',
                   lineHeight: 1
@@ -200,20 +200,20 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               >
                 மகாலட்சுமி
               </div>
-              <div style={{ fontSize: '5.6pt', fontWeight: 800, marginTop: '1px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '6.4pt', fontWeight: 800, marginTop: '1px', whiteSpace: 'nowrap' }}>
                 தக்காளி &amp; காய், கனி கமிஷன் மண்டி
               </div>
-              <div style={{ fontSize: '5pt', fontWeight: 700, marginTop: '0.8px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '5.4pt', fontWeight: 700, marginTop: '0.8px', whiteSpace: 'nowrap' }}>
                 {address}
               </div>
-              <div style={{ fontSize: '6.8pt', fontWeight: 900, marginTop: '0.8px' }}>
+              <div style={{ fontSize: '8pt', fontWeight: 900, marginTop: '0.8px' }}>
                 Prop : {owner}
               </div>
             </div>
 
             {/* Date block on right */}
-            <div style={{ width: '22mm', flexShrink: 0, textAlign: 'right', alignSelf: 'flex-end', marginBottom: '1px', paddingRight: '1mm', whiteSpace: 'nowrap' }}>
-              <div style={{ fontSize: '6.2pt', fontWeight: 800 }}>
+            <div style={{ width: '19mm', flexShrink: 0, textAlign: 'right', alignSelf: 'flex-end', marginBottom: '1px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '5.6pt', fontWeight: 800 }}>
                 தேதி :{' '}
                 <span style={{ borderBottom: '1px dotted #034d28', paddingBottom: '0.5px', fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800 }}>
                   {formatDate(transaction.transactionDate)}
@@ -309,7 +309,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '11pt',
+                      fontSize: '11.5pt',
                       padding: '2px 1px',
                       display: 'flex',
                       alignItems: 'center',
@@ -331,7 +331,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '11.5pt',
+                      fontSize: '12pt',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -348,7 +348,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '11.5pt',
+                      fontSize: '12pt',
                       padding: '2px 2px',
                       display: 'flex',
                       alignItems: 'center',
@@ -365,7 +365,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 800,
-                      fontSize: '9.5pt',
+                      fontSize: '10pt',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -405,7 +405,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     boxSizing: 'border-box'
                   }}
                 >
-                  மொத்த பில் :
+                  மொத்தம் :
                 </div>
                 <div
                   style={{
@@ -414,7 +414,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '11pt',
+                    fontSize: '11.5pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -431,7 +431,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '11.5pt',
+                    fontSize: '12pt',
                     padding: '2px 2px',
                     display: 'flex',
                     alignItems: 'center',
@@ -448,7 +448,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
-                    fontSize: '9.5pt',
+                    fontSize: '10pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -471,7 +471,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 boxSizing: 'border-box'
               }}
             >
-              {/* Row 1: பற்று / Old Balance */}
+              {/* Row 1: பற்று removed from Col 1, : (முந்தைய பாக்கி) preserved in Col 2 */}
               <div
                 style={{
                   display: 'grid',
@@ -482,6 +482,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                   boxSizing: 'border-box'
                 }}
               >
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
                 <div
                   style={{
                     borderRight: '1px solid #034d28',
@@ -490,24 +491,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     alignItems: 'center',
                     padding: '0 2px',
                     fontSize: '6.8pt',
-                    fontWeight: 900,
-                    color: '#991b1b',
-                    boxSizing: 'border-box',
-                    minWidth: 0,
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  பற்று
-                </div>
-                <div
-                  style={{
-                    borderRight: '1px solid #034d28',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 2px',
-                    fontSize: '6.5pt',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     boxSizing: 'border-box',
                     minWidth: 0,
                     whiteSpace: 'nowrap',
@@ -520,6 +504,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 <div
                   style={{
                     borderRight: '1px solid #034d28',
+                    borderBottom: '0.75pt solid #034d28',
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
@@ -539,6 +524,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 </div>
                 <div
                   style={{
+                    borderBottom: '0.75pt solid #034d28',
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
@@ -555,7 +541,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 </div>
               </div>
 
-              {/* Row 2: மொத்தம் / Total Due */}
+              {/* Row 2: மொத்தம் and : (பற்று + பில்) removed */}
               <div
                 style={{
                   display: 'grid',
@@ -566,40 +552,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                   boxSizing: 'border-box'
                 }}
               >
-                <div
-                  style={{
-                    borderRight: '1px solid #034d28',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 2px',
-                    fontSize: '6.8pt',
-                    fontWeight: 900,
-                    color: '#991b1b',
-                    boxSizing: 'border-box',
-                    minWidth: 0,
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  மொத்தம்
-                </div>
-                <div
-                  style={{
-                    borderRight: '1px solid #034d28',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 2px',
-                    fontSize: '6.5pt',
-                    fontWeight: 700,
-                    boxSizing: 'border-box',
-                    minWidth: 0,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden'
-                  }}
-                >
-                  : (பற்று + பில்)
-                </div>
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
                 <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
                 <div
                   style={{
@@ -639,7 +593,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 </div>
               </div>
 
-              {/* Row 3: செலுத்தியது / Amount Paid */}
+              {/* Row 3: செலுத்தியது removed from Col 1, : (வரவு) preserved in Col 2 */}
               <div
                 style={{
                   display: 'grid',
@@ -650,24 +604,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                   boxSizing: 'border-box'
                 }}
               >
-                <div
-                  style={{
-                    borderRight: '1px solid #034d28',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 1px',
-                    fontSize: '6.2pt',
-                    letterSpacing: '-0.2px',
-                    fontWeight: 900,
-                    color: '#991b1b',
-                    boxSizing: 'border-box',
-                    minWidth: 0,
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  செலுத்தியது
-                </div>
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
                 <div
                   style={{
                     borderRight: '1px solid #034d28',
@@ -675,8 +612,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     padding: '0 2px',
-                    fontSize: '6.5pt',
-                    fontWeight: 700,
+                    fontSize: '6.8pt',
+                    fontWeight: 800,
                     boxSizing: 'border-box',
                     minWidth: 0,
                     whiteSpace: 'nowrap',
@@ -689,6 +626,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 <div
                   style={{
                     borderRight: '1px solid #034d28',
+                    borderBottom: '0.75pt solid #034d28',
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
@@ -708,6 +646,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 </div>
                 <div
                   style={{
+                    borderBottom: '0.75pt solid #034d28',
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
@@ -724,7 +663,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 </div>
               </div>
 
-              {/* Row 4: பாக்கி / Balance */}
+              {/* Row 4: பாக்கி preserved in Col 1, : (மீதி பாக்கி) removed from Col 2 */}
               <div
                 style={{
                   display: 'grid',
@@ -742,7 +681,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     padding: '0 2px',
-                    fontSize: '6.8pt',
+                    fontSize: '7.2pt',
                     fontWeight: 900,
                     color: '#991b1b',
                     boxSizing: 'border-box',
@@ -752,23 +691,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 >
                   {isAdvance ? 'முன்பணம்' : 'பாக்கி'}
                 </div>
-                <div
-                  style={{
-                    borderRight: '1px solid #034d28',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 2px',
-                    fontSize: '6.5pt',
-                    fontWeight: 700,
-                    boxSizing: 'border-box',
-                    minWidth: 0,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden'
-                  }}
-                >
-                  : {isAdvance ? '(முன்பணம்)' : '(மீதி பாக்கி)'}
-                </div>
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
                 <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
                 <div
                   style={{

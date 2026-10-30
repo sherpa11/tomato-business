@@ -87,9 +87,9 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
   const owner = settings.ownerName && settings.ownerName !== 'Bootto' && settings.ownerName !== 'Proprietor'
     ? settings.ownerName
     : 'R. பூட்டோ';
-  const address = settings.address && !settings.address.toLowerCase().includes('mandi')
+  const address = settings.address && !settings.address.toLowerCase().includes('mandi') && !settings.address.toLowerCase().includes('wholesale')
     ? settings.address
-    : '25 A, காந்தி மார்க்கெட், திண்டுக்கல்-1';
+    : 'shop no : 25, Gandhi Market, Dindigul, 624001';
 
   // Normalize items array for consolidated bill (or single transaction fallback)
   let items = [];
@@ -288,17 +288,17 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
 
       <!-- Business Header with Lakshmi Logo -->
       <div style="display: flex; align-items: center; margin-top: -1.5px;">
-        <div style="width: 14mm; height: 16mm; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 12mm; height: 15mm; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
           ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="max-height: 100%; max-width: 100%; object-fit: contain;" />` : ''}
         </div>
-        <div style="flex: 1; text-align: center; padding-left: 1mm; padding-right: 1mm;">
-          <div style="font-size: 13.5pt; font-weight: 900; letter-spacing: 0.5px; line-height: 1;">மகாலட்சுமி</div>
-          <div style="font-size: 5.6pt; font-weight: 800; margin-top: 1px; white-space: nowrap;">தக்காளி &amp; காய், கனி கமிஷன் மண்டி</div>
-          <div style="font-size: 5pt; font-weight: 700; margin-top: 0.8px; white-space: nowrap;">${address}</div>
-          <div style="font-size: 6.8pt; font-weight: 900; margin-top: 0.8px;">Prop : ${owner}</div>
+        <div style="flex: 1; min-width: 0; text-align: center; padding-left: 0.5mm; padding-right: 0.5mm;">
+          <div style="font-size: 16.5pt; font-weight: 900; letter-spacing: 0.5px; line-height: 1;">மகாலட்சுமி</div>
+          <div style="font-size: 6.4pt; font-weight: 800; margin-top: 1px; white-space: nowrap;">தக்காளி &amp; காய், கனி கமிஷன் மண்டி</div>
+          <div style="font-size: 5.4pt; font-weight: 700; margin-top: 0.8px; white-space: nowrap;">${address}</div>
+          <div style="font-size: 8pt; font-weight: 900; margin-top: 0.8px;">Prop : ${owner}</div>
         </div>
-        <div style="width: 22mm; flex-shrink: 0; text-align: right; align-self: flex-end; margin-bottom: 1px; padding-right: 1mm; white-space: nowrap;">
-          <div style="font-size: 6.2pt; font-weight: 800;">
+        <div style="width: 19mm; flex-shrink: 0; text-align: right; align-self: flex-end; margin-bottom: 1px; white-space: nowrap;">
+          <div style="font-size: 5.6pt; font-weight: 800;">
             தேதி : <span style="border-bottom: 1px dotted #034d28; padding-bottom: 0.5px; font-family: monospace; font-style: italic; font-weight: 800;">${dateStr}</span>
           </div>
         </div>
@@ -329,30 +329,37 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
 
         <!-- Lower Accounting Summary Area (Row-by-row aligned grid) -->
         <div style="display: flex; flex-direction: column; flex: 1; min-height: 0; box-sizing: border-box;">
+          <!-- Row 1: பற்று removed from Col 1, : (முந்தைய பாக்கி) preserved in Col 2 -->
           <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">பற்று</div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.5pt; font-weight: 700; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">: (முந்தைய பாக்கி)</div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.8pt; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${oldBalNum.toLocaleString('en-IN')}</div>
-            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 800; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">: (முந்தைய பாக்கி)</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
+            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.8pt; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${oldBalNum.toLocaleString('en-IN')}</div>
+            <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
           </div>
+
+          <!-- Row 2: மொத்தம் and : (பற்று + பில்) removed -->
           <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">மொத்தம்</div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.5pt; font-weight: 700; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">: (பற்று + பில்)</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 7.8pt; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${totalDueNum.toLocaleString('en-IN')}</div>
             <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
           </div>
+
+          <!-- Row 3: செலுத்தியது removed from Col 1, : (வரவு) preserved in Col 2 -->
           <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 1px; font-size: 6.2pt; letter-spacing: -0.2px; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">செலுத்தியது</div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.5pt; font-weight: 700; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">: (வரவு)</div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.8pt; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${paidNum.toLocaleString('en-IN')}</div>
-            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 800; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">: (வரவு)</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
+            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.8pt; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${paidNum.toLocaleString('en-IN')}</div>
+            <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
           </div>
+
+          <!-- Row 4: பாக்கி preserved in Col 1, : (மீதி பாக்கி) removed from Col 2 -->
           <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.5pt; font-weight: 700; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">: ${isAdvance ? '(முன்பணம்)' : '(மீதி பாக்கி)'}</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 7.2pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 8.2pt; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${Math.abs(newBalNum).toLocaleString('en-IN')}</div>
             <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
@@ -379,9 +386,9 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   const owner = settings.ownerName && settings.ownerName !== 'Bootto' && settings.ownerName !== 'Proprietor'
     ? settings.ownerName
     : 'R. பூட்டோ';
-  const address = settings.address && !settings.address.toLowerCase().includes('mandi')
+  const address = settings.address && !settings.address.toLowerCase().includes('mandi') && !settings.address.toLowerCase().includes('wholesale')
     ? settings.address
-    : '25 A, காந்தி மார்க்கெட், திண்டுக்கல்-1';
+    : 'shop no : 25, Gandhi Market, Dindigul, 624001';
 
   // Normalize items array for consolidated bill (or single purchase fallback)
   let items = [];
