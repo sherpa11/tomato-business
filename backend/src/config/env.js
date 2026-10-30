@@ -14,6 +14,18 @@ export const validateEnv = (options = { shouldExit: true }) => {
   const mongoUri = process.env.MONGODB_URI?.trim() || (isProduction ? '' : 'mongodb://127.0.0.1:27017/tomato_billing');
   if (!mongoUri) {
     errors.push('MONGODB_URI is required.');
+  } else if (isProduction && !/^(mongodb|mongodb\+srv):\/\//i.test(mongoUri)) {
+    errors.push('MONGODB_URI must start with "mongodb://" or "mongodb+srv://".');
+  }
+
+  // 1b. Admin Username (optional env var; if provided, must be a valid username and never a connection string)
+  const adminUsername = process.env.ADMIN_USERNAME?.trim();
+  if (adminUsername) {
+    if (/^(mongodb|mongodb\+srv):\/\//i.test(adminUsername) || adminUsername.includes('://') || adminUsername.includes('@')) {
+      errors.push('ADMIN_USERNAME must not be a MongoDB connection string or URI.');
+    } else if (!/^[a-zA-Z0-9._-]{3,50}$/.test(adminUsername)) {
+      errors.push('ADMIN_USERNAME must be 3-50 alphanumeric characters (dots, underscores, hyphens allowed).');
+    }
   }
 
   // 2. JWT Secret (strictly required & >=32 chars in production)
@@ -82,6 +94,8 @@ export const validateEnv = (options = { shouldExit: true }) => {
     NODE_ENV: process.env.NODE_ENV || 'development',
     PORT: parseInt(process.env.PORT, 10) || 5000,
     MONGODB_URI: mongoUri,
+    MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'tomato_billing',
+    ADMIN_USERNAME: adminUsername || 'bootto',
     JWT_SECRET: jwtSecret,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
     CORS_ORIGIN: corsOrigin || '',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   PlusCircle,
   Receipt,
@@ -7,7 +7,9 @@ import {
   AlertCircle,
   RefreshCw,
   Printer,
-  Ban
+  Ban,
+  Search,
+  X
 } from 'lucide-react';
 import { dashboardAPI, transactionsAPI, purchasesAPI } from '../api/client';
 import { useDate } from '../context/DateContext';
@@ -50,6 +52,18 @@ export default function Dashboard() {
   const [voidItem, setVoidItem] = useState(null);
   const [voidType, setVoidType] = useState('TRANSACTION'); // 'TRANSACTION' or 'PURCHASE'
   const [voidReason, setVoidReason] = useState('');
+
+  // Customer search state for Today's Tally table
+  const [customerSearch, setCustomerSearch] = useState('');
+
+  const filteredTodayTally = useMemo(() => {
+    const list = data?.todayTally || [];
+    const q = customerSearch.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((row) =>
+      (row.buyerName || '').toLowerCase().includes(q)
+    );
+  }, [data?.todayTally, customerSearch]);
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
@@ -197,14 +211,36 @@ export default function Dashboard() {
 
       {/* SECTION 1: TODAY'S TALLY TABLE (Highest Priority) */}
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[200px]">
             <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
               Customer Daily Tally Table
             </h2>
             <span className="text-xs font-extrabold bg-red-50 text-red-700 border border-red-200/70 px-2.5 py-0.5 rounded-full shrink-0">
               {data?.todayTally?.length || 0} Transactions
             </span>
+
+            {/* Customer Search Box */}
+            <div className="relative w-full sm:w-56 sm:ml-2">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search customer name..."
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+                className="w-full h-8 pl-8 pr-7 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-2xs transition-all"
+              />
+              {customerSearch && (
+                <button
+                  type="button"
+                  onClick={() => setCustomerSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           </div>
           <button
             onClick={() => setSaleModalOpen(true)}
@@ -216,7 +252,9 @@ export default function Dashboard() {
         </div>
 
         <TodayTallyTable
-          tally={data?.todayTally || []}
+          tally={filteredTodayTally}
+          isFiltered={Boolean(customerSearch.trim())}
+          searchTerm={customerSearch.trim()}
           onPrint={handlePrintBuyerBill}
           onVoid={promptVoidTransaction}
           onEditCustomer={(bId) => {

@@ -117,7 +117,7 @@
     height: 148mm !important;
     max-width: 105mm !important;
     max-height: 148mm !important;
-    padding: 4.0mm 4.5mm 6.0mm 4.5mm !important;
+    padding: 5.2mm 4.5mm 4.8mm 4.5mm !important;
     margin: 0 auto !important;
     box-sizing: border-box !important;
     page-break-after: avoid !important;
@@ -126,6 +126,12 @@
     overflow: hidden !important;
     display: block !important;
     box-shadow: none !important;
+  }
+
+  .supplier-bill-page .outer-border {
+    border: 1.5px solid #034d28 !important;
+    border-top: 1.5px solid #034d28 !important;
+    box-sizing: border-box !important;
   }
 
   .print-container {

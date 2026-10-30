@@ -35,6 +35,26 @@ api.interceptors.response.use(
   }
 );
 
+// In-memory cache & request deduplication for active dropdown reference lists
+let activeBuyersCache = null;
+let activeBuyersCacheTime = 0;
+let activeBuyersInFlight = null;
+
+let activeSuppliersCache = null;
+let activeSuppliersCacheTime = 0;
+let activeSuppliersInFlight = null;
+
+const CACHE_TTL_MS = 60000; // 60 seconds TTL
+
+export const invalidateDropdownCache = () => {
+  activeBuyersCache = null;
+  activeBuyersCacheTime = 0;
+  activeBuyersInFlight = null;
+  activeSuppliersCache = null;
+  activeSuppliersCacheTime = 0;
+  activeSuppliersInFlight = null;
+};
+
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   getMe: () => api.get('/auth/me')
@@ -46,40 +66,150 @@ export const settingsAPI = {
 };
 
 export const buyersAPI = {
-  getBuyers: (params) => api.get('/buyers', { params }),
+  getBuyers: (params = {}) => {
+    // Only cache pure active buyer list without search
+    const isActiveOnly = params && params.active === true && !params.search;
+    const now = Date.now();
+
+    if (isActiveOnly) {
+      if (activeBuyersCache && now - activeBuyersCacheTime < CACHE_TTL_MS) {
+        return Promise.resolve(activeBuyersCache);
+      }
+      if (activeBuyersInFlight) {
+        return activeBuyersInFlight;
+      }
+
+      activeBuyersInFlight = api
+        .get('/buyers', { params })
+        .then((data) => {
+          activeBuyersCache = data;
+          activeBuyersCacheTime = Date.now();
+          activeBuyersInFlight = null;
+          return data;
+        })
+        .catch((err) => {
+          activeBuyersInFlight = null;
+          throw err;
+        });
+
+      return activeBuyersInFlight;
+    }
+
+    return api.get('/buyers', { params });
+  },
   getBuyerById: (id) => api.get(`/buyers/${id}`),
-  createBuyer: (data) => api.post('/buyers', data),
-  updateBuyer: (id, data) => api.put(`/buyers/${id}`, data),
-  deleteBuyer: (id) => api.delete(`/buyers/${id}`),
+  createBuyer: async (data) => {
+    const res = await api.post('/buyers', data);
+    invalidateDropdownCache();
+    return res;
+  },
+  updateBuyer: async (id, data) => {
+    const res = await api.put(`/buyers/${id}`, data);
+    invalidateDropdownCache();
+    return res;
+  },
+  deleteBuyer: async (id) => {
+    const res = await api.delete(`/buyers/${id}`);
+    invalidateDropdownCache();
+    return res;
+  },
   getBuyerLedger: (id) => api.get(`/buyers/${id}/ledger`),
-  recalculateBuyer: (id) => api.post(`/buyers/${id}/recalculate`)
+  recalculateBuyer: async (id) => {
+    const res = await api.post(`/buyers/${id}/recalculate`);
+    invalidateDropdownCache();
+    return res;
+  }
 };
 
 export const suppliersAPI = {
-  getSuppliers: (params) => api.get('/suppliers', { params }),
+  getSuppliers: (params = {}) => {
+    const isActiveOnly = params && params.active === true && !params.search;
+    const now = Date.now();
+
+    if (isActiveOnly) {
+      if (activeSuppliersCache && now - activeSuppliersCacheTime < CACHE_TTL_MS) {
+        return Promise.resolve(activeSuppliersCache);
+      }
+      if (activeSuppliersInFlight) {
+        return activeSuppliersInFlight;
+      }
+
+      activeSuppliersInFlight = api
+        .get('/suppliers', { params })
+        .then((data) => {
+          activeSuppliersCache = data;
+          activeSuppliersCacheTime = Date.now();
+          activeSuppliersInFlight = null;
+          return data;
+        })
+        .catch((err) => {
+          activeSuppliersInFlight = null;
+          throw err;
+        });
+
+      return activeSuppliersInFlight;
+    }
+
+    return api.get('/suppliers', { params });
+  },
   getSupplierById: (id) => api.get(`/suppliers/${id}`),
-  createSupplier: (data) => api.post('/suppliers', data),
-  updateSupplier: (id, data) => api.put(`/suppliers/${id}`, data),
-  deleteSupplier: (id) => api.delete(`/suppliers/${id}`),
+  createSupplier: async (data) => {
+    const res = await api.post('/suppliers', data);
+    invalidateDropdownCache();
+    return res;
+  },
+  updateSupplier: async (id, data) => {
+    const res = await api.put(`/suppliers/${id}`, data);
+    invalidateDropdownCache();
+    return res;
+  },
+  deleteSupplier: async (id) => {
+    const res = await api.delete(`/suppliers/${id}`);
+    invalidateDropdownCache();
+    return res;
+  },
   getSupplierPurchases: (id) => api.get(`/suppliers/${id}/purchases`)
 };
-
 
 export const purchasesAPI = {
   getPurchases: (params) => api.get('/purchases', { params }),
   getPurchaseById: (id) => api.get(`/purchases/${id}`),
-  createPurchase: (data) => api.post('/purchases', data),
-  voidPurchase: (id, data) => api.post(`/purchases/${id}/void`, data),
+  createPurchase: async (data) => {
+    const res = await api.post('/purchases', data);
+    invalidateDropdownCache();
+    return res;
+  },
+  voidPurchase: async (id, data) => {
+    const res = await api.post(`/purchases/${id}/void`, data);
+    invalidateDropdownCache();
+    return res;
+  },
   getConsolidated: (params) => api.get('/purchases/consolidated', { params }),
-  saveDeductions: (data) => api.put('/purchases/consolidated/deductions', data)
+  saveDeductions: async (data) => {
+    const res = await api.put('/purchases/consolidated/deductions', data);
+    invalidateDropdownCache();
+    return res;
+  }
 };
 
 export const transactionsAPI = {
   getTransactions: (params) => api.get('/transactions', { params }),
   getTransactionById: (id) => api.get(`/transactions/${id}`),
-  createSale: (data) => api.post('/transactions/sale', data),
-  createPayment: (data) => api.post('/transactions/payment', data),
-  voidTransaction: (id, data) => api.post(`/transactions/${id}/void`, data),
+  createSale: async (data) => {
+    const res = await api.post('/transactions/sale', data);
+    invalidateDropdownCache();
+    return res;
+  },
+  createPayment: async (data) => {
+    const res = await api.post('/transactions/payment', data);
+    invalidateDropdownCache();
+    return res;
+  },
+  voidTransaction: async (id, data) => {
+    const res = await api.post(`/transactions/${id}/void`, data);
+    invalidateDropdownCache();
+    return res;
+  },
   getConsolidated: (params) => api.get('/transactions/consolidated', { params })
 };
 

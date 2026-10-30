@@ -3,8 +3,18 @@ import { Link } from 'react-router-dom';
 import { Printer, Eye, Ban, Edit2 } from 'lucide-react';
 import { formatCurrency, formatBalance } from '../utils/formatters';
 
-export default function TodayTallyTable({ tally, onPrint, onVoid, onEditCustomer }) {
+export default function TodayTallyTable({ tally, onPrint, onVoid, onEditCustomer, isFiltered = false, searchTerm = '' }) {
   if (!tally || tally.length === 0) {
+    if (isFiltered) {
+      return (
+        <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center">
+          <p className="text-sm font-bold text-slate-700">No customers found</p>
+          <p className="mt-1 text-xs text-slate-500">
+            No customer rows match "{searchTerm}". Try a different name or clear the search.
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center">
         <img src="/tomato.png" alt="Tomato" className="w-12 h-12 object-contain mx-auto drop-shadow-xs opacity-90" />

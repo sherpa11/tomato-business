@@ -42,18 +42,34 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // In serverless environments (e.g. Vercel), ensure DB is connected and initialized before handling requests
-let isInitialized = false;
+let initPromise = null;
+
+const ensureServerlessInit = async () => {
+  if (!initPromise) {
+    initPromise = (async () => {
+      try {
+        await connectDB();
+        await initializeDatabase();
+      } catch (err) {
+        // Reset so subsequent requests can retry rather than caching failure
+        initPromise = null;
+        throw err;
+      }
+    })();
+  }
+  return initPromise;
+};
 
 app.use(async (req, res, next) => {
   if (process.env.VERCEL) {
     try {
-      await connectDB();
-      if (!isInitialized) {
-        await initializeDatabase();
-        isInitialized = true;
-      }
+      await ensureServerlessInit();
     } catch (err) {
-      return res.status(500).json({ success: false, message: 'Database connection failure: ' + err.message });
+      console.error('[Serverless Init Error]', err.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Database connection failure. Please try again later.'
+      });
     }
   }
   next();
@@ -97,7 +113,7 @@ const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
 app.use(express.static(frontendDistPath));
 
 // API 404 Handler (for unmatched /api/* requests)
-app.all('/api/*', (req, res) => {
+app.all(/^\/api\/.*/, (req, res) => {
   res.status(404).json({
     success: false,
     message: `API endpoint '${req.originalUrl}' not found.`
@@ -105,7 +121,7 @@ app.all('/api/*', (req, res) => {
 });
 
 // SPA fallback for frontend client-side routing
-app.get('*', (req, res, next) => {
+app.get(/.*/, (req, res, next) => {
   res.sendFile(path.join(frontendDistPath, 'index.html'), (err) => {
     if (err) {
       // If frontend build is not served locally, return a standard message
@@ -126,33 +142,57 @@ const initializeDatabase = async () => {
     // 1. Ensure default settings record exists if collection is empty
     const settingsCount = await Settings.countDocuments();
     if (settingsCount === 0) {
-      await Settings.create({
-        businessName: 'Tomato Wholesale Market',
-        ownerName: 'Proprietor',
-        phone: '',
-        address: 'Wholesale Vegetable Market',
-        defaultSellingRate: 1100,
-        defaultPurchaseRate: 1000,
-        currencySymbol: '₹',
-        thermalPrintWidth: '80mm'
-      });
-      console.log('[Init] Default business settings initialized.');
+      try {
+        await Settings.create({
+          businessName: 'Tomato Wholesale Market',
+          ownerName: 'Proprietor',
+          phone: '',
+          address: 'Wholesale Vegetable Market',
+          defaultSellingRate: 1100,
+          defaultPurchaseRate: 1000,
+          currencySymbol: '₹',
+          thermalPrintWidth: '80mm'
+        });
+        console.log('[Init] Default business settings initialized.');
+      } catch (settingsErr) {
+        if (settingsErr.code !== 11000) {
+          throw settingsErr;
+        }
+      }
     }
 
     // 2. Check if an admin user exists
     const adminCount = await User.countDocuments();
     if (adminCount === 0) {
-      const adminUsername = (process.env.ADMIN_USERNAME || 'bootto').toLowerCase().trim();
+      const rawUsername = process.env.ADMIN_USERNAME?.trim() || 'bootto';
+      const adminUsername = rawUsername.toLowerCase().trim();
       const adminPassword = process.env.ADMIN_PASSWORD;
 
+      // Strict validation: Reject URIs, connection strings, or invalid characters
+      const isUriLike = /^(mongodb|mongodb\+srv):\/\//i.test(adminUsername) || adminUsername.includes('://') || adminUsername.includes('@');
+      const isValidUsername = /^[a-zA-Z0-9._-]{3,50}$/.test(adminUsername);
+
+      if (isUriLike || !isValidUsername) {
+        console.error('[Init Error] ADMIN_USERNAME contains invalid characters or a URI format. Initial admin provisioning skipped.');
+        return;
+      }
+
       if (adminPassword) {
-        await User.create({
-          username: adminUsername,
-          password: adminPassword,
-          name: process.env.ADMIN_NAME || 'Market Admin',
-          role: 'admin'
-        });
-        console.log(`[Init] Initial admin account '${adminUsername}' provisioned automatically.`);
+        try {
+          await User.create({
+            username: adminUsername,
+            password: adminPassword,
+            name: process.env.ADMIN_NAME || 'Market Admin',
+            role: 'admin'
+          });
+          console.log('[Init] Initial admin account provisioned successfully.');
+        } catch (createErr) {
+          if (createErr.code === 11000) {
+            console.log('[Init] Admin account already provisioned by a concurrent process.');
+          } else {
+            throw createErr;
+          }
+        }
       } else {
         console.warn('\n⚠️ [SECURITY NOTICE] No user accounts found in the database.');
         console.warn('   To auto-create an admin, configure ADMIN_PASSWORD in environment variables');
@@ -206,9 +246,11 @@ const gracefulShutdown = async (signal) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-if (!process.env.VERCEL) {
+const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+
+if (!process.env.VERCEL && isMainModule) {
   startServer();
 }
 
 export default app;
-export { app };
+export { app, initializeDatabase };

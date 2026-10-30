@@ -15,51 +15,57 @@ export const getSuppliers = async (req, res, next) => {
       query.name = { $regex: search, $options: 'i' };
     }
 
-    const suppliers = await Supplier.find(query).sort({ name: 1 });
+    const suppliers = await Supplier.find(query).sort({ name: 1 }).lean();
 
-    const enrichedSuppliers = await Promise.all(
-      suppliers.map(async (supplier) => {
-        const stats = await Purchase.aggregate([
-          { $match: { supplierId: supplier._id, isVoid: false } },
-          {
-            $group: {
-              _id: null,
-              totalAmount: { $sum: '$totalAmount' },
-              totalBigBoxes: { $sum: '$bigBoxes' },
-              totalSmallBoxes: { $sum: '$smallBoxes' },
-              totalBigEquivalent: { $sum: '$bigEquivalent' },
-              lastDate: { $max: '$transactionDate' },
-              count: { $sum: 1 }
-            }
-          }
-        ]);
+    // Single aggregation pass across all non-void purchases grouped by supplierId (avoids N+1 queries)
+    const purchaseStats = await Purchase.aggregate([
+      { $match: { isVoid: false } },
+      {
+        $group: {
+          _id: '$supplierId',
+          totalAmount: { $sum: '$totalAmount' },
+          totalBigBoxes: { $sum: '$bigBoxes' },
+          totalSmallBoxes: { $sum: '$smallBoxes' },
+          totalBigEquivalent: { $sum: '$bigEquivalent' },
+          lastDate: { $max: '$transactionDate' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
-        const s = stats[0] || {
-          totalAmount: 0,
-          totalBigBoxes: 0,
-          totalSmallBoxes: 0,
-          totalBigEquivalent: 0,
-          lastDate: null,
-          count: 0
-        };
+    const statsMap = new Map();
+    purchaseStats.forEach((s) => {
+      if (s._id) {
+        statsMap.set(String(s._id), s);
+      }
+    });
 
-        return {
-          _id: supplier._id,
-          name: supplier.name,
-          phone: supplier.phone,
-          address: supplier.address,
-          notes: supplier.notes,
-          active: supplier.active,
-          totalPurchaseAmount: roundMoney(s.totalAmount),
-          totalBigBoxes: s.totalBigBoxes,
-          totalSmallBoxes: s.totalSmallBoxes,
-          totalBigEquivalent: roundBoxes(s.totalBigEquivalent),
-          transactionCount: s.count,
-          lastPurchaseDate: s.lastDate,
-          createdAt: supplier.createdAt
-        };
-      })
-    );
+    const enrichedSuppliers = suppliers.map((supplier) => {
+      const s = statsMap.get(String(supplier._id)) || {
+        totalAmount: 0,
+        totalBigBoxes: 0,
+        totalSmallBoxes: 0,
+        totalBigEquivalent: 0,
+        lastDate: null,
+        count: 0
+      };
+
+      return {
+        _id: supplier._id,
+        name: supplier.name,
+        phone: supplier.phone,
+        address: supplier.address,
+        notes: supplier.notes,
+        active: supplier.active,
+        totalPurchaseAmount: roundMoney(s.totalAmount),
+        totalBigBoxes: s.totalBigBoxes,
+        totalSmallBoxes: s.totalSmallBoxes,
+        totalBigEquivalent: roundBoxes(s.totalBigEquivalent),
+        transactionCount: s.count,
+        lastPurchaseDate: s.lastDate,
+        createdAt: supplier.createdAt
+      };
+    });
 
     res.json({ success: true, count: enrichedSuppliers.length, suppliers: enrichedSuppliers });
   } catch (error) {

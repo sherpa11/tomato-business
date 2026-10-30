@@ -107,6 +107,14 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             overflow: hidden !important;
             background: #ffffff !important;
           }
+          .supplier-bill-page {
+            padding: 5.2mm 4.5mm 4.8mm 4.5mm !important;
+          }
+          .outer-border {
+            border: 1.5px solid #034d28 !important;
+            border-top: 1.5px solid #034d28 !important;
+            box-sizing: border-box !important;
+          }
         }
       `}</style>
 
@@ -117,7 +125,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
           height: '148mm',
           maxWidth: '105mm',
           maxHeight: '148mm',
-          padding: '4.0mm 4.5mm 6.0mm 4.5mm',
+          padding: '5.2mm 4.5mm 4.8mm 4.5mm',
           boxSizing: 'border-box',
           overflow: 'hidden',
           lineHeight: 1.2,
@@ -127,8 +135,10 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
       >
         {/* Outer Green Border */}
         <div
+          className="outer-border"
           style={{
             border: '1.5px solid #034d28',
+            borderTop: '1.5px solid #034d28',
             width: '100%',
             height: '100%',
             boxSizing: 'border-box',
@@ -200,7 +210,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
           {/* Meta Row: எண் (Lot No) & தேதி (Date) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '2px' }}>
             <div style={{ fontSize: '8pt', fontWeight: 900, color: '#dc2626' }}>
-              எண் : <span style={{ fontFamily: 'monospace' }}>{lotNum}</span>
+              எண் : <span style={{ fontFamily: 'monospace' }}>{purchase.billNo || purchase.billNumber || purchase.lotNumber || '25'}</span>
             </div>
             <div style={{ fontSize: '7.5pt', fontWeight: 800, color: '#034d28' }}>
               தேதி :{' '}

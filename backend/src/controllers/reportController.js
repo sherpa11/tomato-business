@@ -20,8 +20,22 @@ export const getReports = async (req, res, next) => {
       txQuery.transactionDate = dateFilter;
     }
 
-    // Purchases in range
-    const purchases = await Purchase.find(purchaseQuery).sort({ transactionDate: 1, createdAt: 1 });
+    // Concurrently fetch purchases, transactions, and buyers with projections and lean documents
+    const [purchases, transactions, buyers] = await Promise.all([
+      Purchase.find(purchaseQuery)
+        .select('totalAmount bigBoxes smallBoxes bigEquivalent transactionDate')
+        .sort({ transactionDate: 1, createdAt: 1 })
+        .lean(),
+      Transaction.find(txQuery)
+        .select('type billAmount amountPaid bigBoxes smallBoxes bigEquivalent transactionDate')
+        .sort({ transactionDate: 1, createdAt: 1 })
+        .lean(),
+      Buyer.find({ active: true })
+        .select('name phone currentBalance')
+        .sort({ currentBalance: -1 })
+        .lean()
+    ]);
+
     let totalPurchases = 0;
     let totalPurchasedBigBoxes = 0;
     let totalPurchasedSmallBoxes = 0;
@@ -34,8 +48,6 @@ export const getReports = async (req, res, next) => {
       totalPurchasedBigEq += p.bigEquivalent;
     });
 
-    // Transactions in range
-    const transactions = await Transaction.find(txQuery).sort({ transactionDate: 1, createdAt: 1 });
     let totalSales = 0;
     let totalReceived = 0;
     let totalSoldBigBoxes = 0;
@@ -88,8 +100,7 @@ export const getReports = async (req, res, next) => {
 
     const dailyBreakdown = Object.values(dailyBreakdownMap).sort((a, b) => a.date.localeCompare(b.date));
 
-    // Buyer Outstanding Summary
-    const buyers = await Buyer.find({ active: true }).sort({ currentBalance: -1 });
+    // Buyer Outstanding Summary (computed from parallel-fetched buyers)
     let totalCustomerOutstanding = 0;
     let totalCustomerCredit = 0;
 

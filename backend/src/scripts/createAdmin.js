@@ -38,6 +38,10 @@ export const provisionAdmin = async (cliArgs = {}) => {
       console.error('❌ Error: Username must be at least 3 characters long.');
       process.exit(1);
     }
+    if (/^(mongodb|mongodb\+srv):\/\//i.test(username) || username.includes('://') || username.includes('@')) {
+      console.error('❌ Error: Username must not be a MongoDB connection string or URI.');
+      process.exit(1);
+    }
 
     if (!password) {
       password = await askQuestion('Enter Admin Password (min 6 chars): ');

@@ -272,12 +272,21 @@ test('Production CORS Security & Origin Validation Suite', async (t) => {
   });
 
   await t.test('14. HTTP Integration: Express app rejects forbidden cross-origin with 403 Forbidden', async () => {
-    const res = await fetch('http://localhost:5000/api/health', {
-      headers: { Origin: 'https://attacker-project.vercel.app' }
+    const { app } = await import('../src/server.js');
+    const server = await new Promise((resolve) => {
+      const s = app.listen(0, () => resolve(s));
     });
-    assert.equal(res.status, 403, 'Should respond with 403 status');
-    const data = await res.json();
-    assert.equal(data.success, false);
-    assert.match(data.message, /not permitted by CORS policy/);
+    const port = server.address().port;
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/api/health`, {
+        headers: { Origin: 'https://attacker-project.vercel.app' }
+      });
+      assert.equal(res.status, 403, 'Should respond with 403 status');
+      const data = await res.json();
+      assert.equal(data.success, false);
+      assert.match(data.message, /not permitted by CORS policy/);
+    } finally {
+      server.close();
+    }
   });
 });

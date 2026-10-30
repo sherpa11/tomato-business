@@ -225,7 +225,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
           {/* Customer Name Line */}
           <div
             style={{
-              fontSize: '7.2pt',
+              fontSize: '9pt',
               fontWeight: 800,
               display: 'flex',
               alignItems: 'baseline',
@@ -239,7 +239,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 flex: 1,
                 fontStyle: 'italic',
                 fontWeight: 900,
-                fontSize: '7.8pt',
+                fontSize: '11pt',
                 color: '#02381e',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -265,9 +265,9 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '17% minmax(0, 40%) 13% 19% 11%',
+                gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
                 textAlign: 'center',
-                fontSize: '6.2pt',
+                fontSize: '7.2pt',
                 fontWeight: 900,
                 backgroundColor: '#ffffff',
                 boxSizing: 'border-box'
@@ -296,8 +296,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                   key={item._id || idx}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '17% minmax(0, 40%) 13% 19% 11%',
-                    fontSize: '8.8pt',
+                    gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
+                    fontSize: '9.5pt',
                     lineHeight: 1.15,
                     boxSizing: 'border-box'
                   }}
@@ -308,8 +308,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       textAlign: 'center',
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
-                      fontWeight: 800,
-                      fontSize: '8.8pt',
+                      fontWeight: 900,
+                      fontSize: '11pt',
                       padding: '2px 1px',
                       display: 'flex',
                       alignItems: 'center',
@@ -321,8 +321,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     {rateVal}
                   </div>
                   <div style={{ borderRight: '1px solid #034d28', padding: '2px 2px', minWidth: 0, boxSizing: 'border-box' }}>
-                    <div style={{ fontWeight: 800, fontSize: '8.2pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.1 }}>{desc1}</div>
-                    <div style={{ fontStyle: 'italic', fontSize: '7pt', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.1 }}>{desc2}</div>
+                    <div style={{ fontWeight: 900, fontSize: '8.6pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{desc1}</div>
+                    <div style={{ fontStyle: 'italic', fontSize: '7pt', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{desc2}</div>
                   </div>
                   <div
                     style={{
@@ -330,8 +330,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       textAlign: 'center',
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
-                      fontWeight: 800,
-                      fontSize: '8.8pt',
+                      fontWeight: 900,
+                      fontSize: '11.5pt',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -348,7 +348,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '9.5pt',
+                      fontSize: '11.5pt',
                       padding: '2px 2px',
                       display: 'flex',
                       alignItems: 'center',
@@ -365,7 +365,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 800,
-                      fontSize: '8.5pt',
+                      fontSize: '9.5pt',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -384,8 +384,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '17% minmax(0, 40%) 13% 19% 11%',
-                  fontSize: '8.5pt',
+                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
+                  fontSize: '9.5pt',
                   lineHeight: 1.15,
                   boxSizing: 'border-box'
                 }}
@@ -397,7 +397,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     textAlign: 'right',
                     paddingRight: '3px',
                     fontWeight: 900,
-                    fontSize: '7.2pt',
+                    fontSize: '8pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
@@ -413,8 +413,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     textAlign: 'center',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
-                    fontWeight: 800,
-                    fontSize: '8.8pt',
+                    fontWeight: 900,
+                    fontSize: '11pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -431,7 +431,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '9.5pt',
+                    fontSize: '11.5pt',
                     padding: '2px 2px',
                     display: 'flex',
                     alignItems: 'center',
@@ -448,7 +448,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
-                    fontSize: '8.5pt',
+                    fontSize: '9.5pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -461,93 +461,353 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               </div>
             )}
 
-            {/* Lower Accounting Summary Area (Area 2: Clean 4 Accounting Rows, Unwanted rows removed) */}
+            {/* Lower Accounting Summary Area (Row-by-row aligned grid) */}
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: '17% minmax(0, 40%) 13% 19% 11%',
+                display: 'flex',
+                flexDirection: 'column',
                 flex: 1,
                 minHeight: 0,
                 boxSizing: 'border-box'
               }}
             >
-              {/* Col 1: Red Tamil Labels */}
+              {/* Row 1: பற்று / Old Balance */}
               <div
                 style={{
-                  borderRight: '1px solid #034d28',
-                  fontSize: '5pt',
-                  fontWeight: 800,
-                  color: '#991b1b',
-                  padding: '2px 1px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-around',
-                  lineHeight: 1.15,
-                  minWidth: 0,
+                  display: 'grid',
+                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
+                  flex: 1,
+                  alignItems: 'center',
+                  minHeight: 0,
                   boxSizing: 'border-box'
                 }}
               >
-                <div>பற்று</div>
-                <div>மொத்தம்</div>
-                <div style={{ letterSpacing: '-0.3px' }}>செலுத்தியது</div>
-                <div>{isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 2px',
+                    fontSize: '6.8pt',
+                    fontWeight: 900,
+                    color: '#991b1b',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  பற்று
+                </div>
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 2px',
+                    fontSize: '6.5pt',
+                    fontWeight: 700,
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                  }}
+                >
+                  : (முந்தைய பாக்கி)
+                </div>
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    padding: '0 2px',
+                    fontFamily: 'monospace',
+                    fontStyle: 'italic',
+                    fontWeight: 800,
+                    fontSize: '7.8pt',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {oldBalNum.toLocaleString('en-IN')}
+                </div>
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'monospace',
+                    fontStyle: 'italic',
+                    fontWeight: 700,
+                    fontSize: '7.5pt',
+                    boxSizing: 'border-box',
+                    minWidth: 0
+                  }}
+                >
+                  00
+                </div>
               </div>
 
-              {/* Col 2: Separator ':' & Values */}
+              {/* Row 2: மொத்தம் / Total Due */}
               <div
                 style={{
-                  borderRight: '1px solid #034d28',
-                  fontSize: '5.8pt',
-                  fontWeight: 700,
-                  padding: '2px 2px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-around',
-                  lineHeight: 1.15,
-                  minWidth: 0,
+                  display: 'grid',
+                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
+                  flex: 1,
+                  alignItems: 'center',
+                  minHeight: 0,
                   boxSizing: 'border-box'
                 }}
               >
-                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  : &nbsp;
-                  <span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '7.8pt' }}>
-                    {oldBalNum.toLocaleString('en-IN')}
-                  </span>
-                  &nbsp; <span style={{ fontSize: '5.5pt' }}>(முந்தைய பாக்கி)</span>
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 2px',
+                    fontSize: '6.8pt',
+                    fontWeight: 900,
+                    color: '#991b1b',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  மொத்தம்
                 </div>
-                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  : &nbsp;
-                  <span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 900, fontSize: '7.8pt' }}>
-                    {totalDueNum.toLocaleString('en-IN')}
-                  </span>
-                  &nbsp; <span style={{ fontSize: '5.5pt' }}>(பற்று + பில்)</span>
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 2px',
+                    fontSize: '6.5pt',
+                    fontWeight: 700,
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                  }}
+                >
+                  : (பற்று + பில்)
                 </div>
-                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  : &nbsp;
-                  <span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '7.8pt' }}>
-                    {paidNum.toLocaleString('en-IN')}
-                  </span>
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    padding: '0 2px',
+                    fontFamily: 'monospace',
+                    fontStyle: 'italic',
+                    fontWeight: 900,
+                    fontSize: '7.8pt',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {totalDueNum.toLocaleString('en-IN')}
                 </div>
-                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  : &nbsp;
-                  <span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 900, fontSize: '7.8pt' }}>
-                    {Math.abs(newBalNum).toLocaleString('en-IN')}
-                  </span>
-                  &nbsp;{' '}
-                  <span style={{ fontSize: '5.5pt' }}>
-                    {isAdvance ? '(முன்பணம்)' : ''}
-                  </span>
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'monospace',
+                    fontStyle: 'italic',
+                    fontWeight: 700,
+                    fontSize: '7.5pt',
+                    boxSizing: 'border-box',
+                    minWidth: 0
+                  }}
+                >
+                  00
                 </div>
               </div>
 
-              {/* Col 3: Blank ruled vertical line */}
-              <div style={{ borderRight: '1px solid #034d28', minWidth: 0 }} />
+              {/* Row 3: செலுத்தியது / Amount Paid */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
+                  flex: 1,
+                  alignItems: 'center',
+                  minHeight: 0,
+                  boxSizing: 'border-box'
+                }}
+              >
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 1px',
+                    fontSize: '6.2pt',
+                    letterSpacing: '-0.2px',
+                    fontWeight: 900,
+                    color: '#991b1b',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  செலுத்தியது
+                </div>
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 2px',
+                    fontSize: '6.5pt',
+                    fontWeight: 700,
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                  }}
+                >
+                  : (வரவு)
+                </div>
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    padding: '0 2px',
+                    fontFamily: 'monospace',
+                    fontStyle: 'italic',
+                    fontWeight: 800,
+                    fontSize: '7.8pt',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {paidNum.toLocaleString('en-IN')}
+                </div>
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'monospace',
+                    fontStyle: 'italic',
+                    fontWeight: 700,
+                    fontSize: '7.5pt',
+                    boxSizing: 'border-box',
+                    minWidth: 0
+                  }}
+                >
+                  00
+                </div>
+              </div>
 
-              {/* Col 4: Blank ruled vertical line */}
-              <div style={{ borderRight: '1px solid #034d28', minWidth: 0 }} />
-
-              {/* Col 5: Blank ruled vertical line */}
-              <div style={{ minWidth: 0 }} />
+              {/* Row 4: பாக்கி / Balance */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
+                  flex: 1,
+                  alignItems: 'center',
+                  minHeight: 0,
+                  boxSizing: 'border-box'
+                }}
+              >
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 2px',
+                    fontSize: '6.8pt',
+                    fontWeight: 900,
+                    color: '#991b1b',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {isAdvance ? 'முன்பணம்' : 'பாக்கி'}
+                </div>
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 2px',
+                    fontSize: '6.5pt',
+                    fontWeight: 700,
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                  }}
+                >
+                  : {isAdvance ? '(முன்பணம்)' : '(மீதி பாக்கி)'}
+                </div>
+                <div style={{ borderRight: '1px solid #034d28', height: '100%', minWidth: 0, boxSizing: 'border-box' }} />
+                <div
+                  style={{
+                    borderRight: '1px solid #034d28',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    padding: '0 2px',
+                    fontFamily: 'monospace',
+                    fontStyle: 'italic',
+                    fontWeight: 900,
+                    fontSize: '8.2pt',
+                    color: '#991b1b',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {Math.abs(newBalNum).toLocaleString('en-IN')}
+                </div>
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'monospace',
+                    fontStyle: 'italic',
+                    fontWeight: 700,
+                    fontSize: '7.5pt',
+                    boxSizing: 'border-box',
+                    minWidth: 0
+                  }}
+                >
+                  00
+                </div>
+              </div>
             </div>
           </div>
 

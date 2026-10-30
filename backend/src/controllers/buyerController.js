@@ -18,48 +18,53 @@ export const getBuyers = async (req, res, next) => {
       ];
     }
 
-    const buyers = await Buyer.find(query).sort({ name: 1 });
+    const buyers = await Buyer.find(query).sort({ name: 1 }).lean();
 
-    // Enrich with transaction statistics
-    const enrichedBuyers = await Promise.all(
-      buyers.map(async (buyer) => {
-        const txStats = await Transaction.aggregate([
-          { $match: { buyerId: buyer._id, isVoid: false } },
-          {
-            $group: {
-              _id: null,
-              totalPurchases: { $sum: '$billAmount' },
-              totalPayments: { $sum: '$amountPaid' },
-              lastTxDate: { $max: '$transactionDate' },
-              count: { $sum: 1 }
-            }
-          }
-        ]);
+    // Single aggregation pass across all non-void transactions grouped by buyerId (avoids N+1 queries)
+    const txStats = await Transaction.aggregate([
+      { $match: { isVoid: false } },
+      {
+        $group: {
+          _id: '$buyerId',
+          totalPurchases: { $sum: '$billAmount' },
+          totalPayments: { $sum: '$amountPaid' },
+          lastTxDate: { $max: '$transactionDate' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
-        const stats = txStats[0] || {
-          totalPurchases: 0,
-          totalPayments: 0,
-          lastTxDate: null,
-          count: 0
-        };
+    const statsMap = new Map();
+    txStats.forEach((s) => {
+      if (s._id) {
+        statsMap.set(String(s._id), s);
+      }
+    });
 
-        return {
-          _id: buyer._id,
-          name: buyer.name,
-          phone: buyer.phone,
-          address: buyer.address,
-          notes: buyer.notes || '',
-          initialBalance: roundMoney(buyer.initialBalance),
-          currentBalance: roundMoney(buyer.currentBalance),
-          active: buyer.active,
-          totalPurchases: roundMoney(stats.totalPurchases),
-          totalPayments: roundMoney(stats.totalPayments),
-          lastTransactionDate: stats.lastTxDate,
-          transactionCount: stats.count,
-          createdAt: buyer.createdAt
-        };
-      })
-    );
+    const enrichedBuyers = buyers.map((buyer) => {
+      const stats = statsMap.get(String(buyer._id)) || {
+        totalPurchases: 0,
+        totalPayments: 0,
+        lastTxDate: null,
+        count: 0
+      };
+
+      return {
+        _id: buyer._id,
+        name: buyer.name,
+        phone: buyer.phone,
+        address: buyer.address,
+        notes: buyer.notes || '',
+        initialBalance: roundMoney(buyer.initialBalance),
+        currentBalance: roundMoney(buyer.currentBalance),
+        active: buyer.active,
+        totalPurchases: roundMoney(stats.totalPurchases),
+        totalPayments: roundMoney(stats.totalPayments),
+        lastTransactionDate: stats.lastTxDate,
+        transactionCount: stats.count,
+        createdAt: buyer.createdAt
+      };
+    });
 
     res.json({ success: true, count: enrichedBuyers.length, buyers: enrichedBuyers });
   } catch (error) {
