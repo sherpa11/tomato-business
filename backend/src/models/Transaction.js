@@ -88,5 +88,6 @@ const transactionSchema = new mongoose.Schema(
 // Indexes for fast chronological ledger lookup and date queries
 transactionSchema.index({ buyerId: 1, transactionDate: 1, createdAt: 1 });
 transactionSchema.index({ transactionDate: 1, isVoid: 1 });
+transactionSchema.index({ isVoid: 1, buyerId: 1 });
 
 export default mongoose.model('Transaction', transactionSchema);

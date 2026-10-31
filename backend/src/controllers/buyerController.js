@@ -4,7 +4,7 @@ import { recalculateBuyerLedger, roundMoney } from '../services/ledgerService.js
 
 export const getBuyers = async (req, res, next) => {
   try {
-    const { search, active } = req.query;
+    const { search, active, dropdown } = req.query;
     let query = {};
 
     if (active !== undefined) {
@@ -19,6 +19,21 @@ export const getBuyers = async (req, res, next) => {
     }
 
     const buyers = await Buyer.find(query).sort({ name: 1 }).lean();
+
+    // Fast path for modal dropdowns: returns buyer name & current balance instantly without heavy collection-wide aggregation
+    if (dropdown === 'true') {
+      const dropdownBuyers = buyers.map((b) => ({
+        _id: b._id,
+        name: b.name,
+        phone: b.phone,
+        address: b.address,
+        notes: b.notes || '',
+        initialBalance: roundMoney(b.initialBalance),
+        currentBalance: roundMoney(b.currentBalance),
+        active: b.active
+      }));
+      return res.json({ success: true, count: dropdownBuyers.length, buyers: dropdownBuyers });
+    }
 
     // Single aggregation pass across all non-void transactions grouped by buyerId (avoids N+1 queries)
     const txStats = await Transaction.aggregate([

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Printer, Eye, Ban, Edit2 } from 'lucide-react';
 import { formatCurrency, formatBalance } from '../utils/formatters';
 
-export default function TodayTallyTable({ tally, onPrint, onVoid, onEditCustomer, isFiltered = false, searchTerm = '' }) {
+const TodayTallyTable = React.memo(function TodayTallyTable({ tally, onPrint, onVoid, onEditCustomer, isFiltered = false, searchTerm = '' }) {
   if (!tally || tally.length === 0) {
     if (isFiltered) {
       return (
@@ -278,4 +278,6 @@ export default function TodayTallyTable({ tally, onPrint, onVoid, onEditCustomer
       </div>
     </div>
   );
-}
+});
+
+export default TodayTallyTable;

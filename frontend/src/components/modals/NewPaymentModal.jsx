@@ -50,6 +50,12 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
       if (selectedBuyer && selectedBuyer._id === buyerId) {
         return;
       }
+      const existing = buyers.find((b) => b._id === buyerId);
+      if (existing) {
+        setSelectedBuyer(existing);
+        setOldBalanceInput(existing.currentBalance !== undefined ? String(existing.currentBalance) : '0');
+        return;
+      }
       setFetchingBuyer(true);
       buyersAPI.getBuyerById(buyerId)
         .then((res) => {
@@ -64,7 +70,7 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
       setSelectedBuyer(null);
       setOldBalanceInput('0');
     }
-  }, [buyerId, selectedBuyer]);
+  }, [buyerId, buyers, selectedBuyer]);
 
   if (!isOpen) return null;
 

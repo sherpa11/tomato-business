@@ -62,5 +62,6 @@ const purchaseSchema = new mongoose.Schema(
 
 purchaseSchema.index({ transactionDate: 1, isVoid: 1 });
 purchaseSchema.index({ supplierId: 1, transactionDate: 1 });
+purchaseSchema.index({ isVoid: 1, supplierId: 1 });
 
 export default mongoose.model('Purchase', purchaseSchema);

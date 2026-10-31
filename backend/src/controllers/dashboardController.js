@@ -9,9 +9,20 @@ export const getDashboardSummary = async (req, res, next) => {
     const today = new Date().toISOString().split('T')[0];
     const date = req.query.date || today;
 
-    // 1. Today's Purchases
-    const purchases = await Purchase.find({ transactionDate: date, isVoid: false })
-      .sort({ createdAt: -1 });
+    // Concurrently fetch today purchases, transactions, active buyer balances and counts in parallel
+    const [purchases, transactions, buyers, buyerCount, supplierCount] = await Promise.all([
+      Purchase.find({ transactionDate: date, isVoid: false })
+        .sort({ createdAt: -1 })
+        .lean(),
+      Transaction.find({ transactionDate: date, isVoid: false })
+        .sort({ createdAt: 1, _id: 1 })
+        .lean(),
+      Buyer.find({ active: true })
+        .select('currentBalance')
+        .lean(),
+      Buyer.countDocuments({ active: true }),
+      Supplier.countDocuments({ active: true })
+    ]);
 
     let totalPurchaseAmount = 0;
     let totalPurchasedBigBoxes = 0;
@@ -24,10 +35,6 @@ export const getDashboardSummary = async (req, res, next) => {
       totalPurchasedSmallBoxes += p.smallBoxes;
       totalPurchasedBigEquivalent += p.bigEquivalent;
     });
-
-    // 2. Today's Sales & Payments
-    const transactions = await Transaction.find({ transactionDate: date, isVoid: false })
-      .sort({ createdAt: 1, _id: 1 });
 
     let totalSalesAmount = 0;
     let totalAmountReceived = 0;
@@ -73,8 +80,6 @@ export const getDashboardSummary = async (req, res, next) => {
       };
     });
 
-    // 3. Customer Total Outstanding across all active buyers
-    const buyers = await Buyer.find({ active: true });
     let totalOutstanding = 0;
     let totalAdvanceCredit = 0;
 
@@ -85,10 +90,6 @@ export const getDashboardSummary = async (req, res, next) => {
         totalAdvanceCredit += Math.abs(b.currentBalance);
       }
     });
-
-    // 4. Counts
-    const buyerCount = await Buyer.countDocuments({ active: true });
-    const supplierCount = await Supplier.countDocuments({ active: true });
 
     res.json({
       success: true,

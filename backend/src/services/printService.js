@@ -358,11 +358,11 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
 
           <!-- Row 4: பாக்கி preserved in Col 1, : (மீதி பாக்கி) removed from Col 2 -->
           <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 7.2pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 11pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 8.2pt; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${Math.abs(newBalNum).toLocaleString('en-IN')}</div>
-            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 12pt; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${Math.abs(newBalNum).toLocaleString('en-IN')}</div>
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt; box-sizing: border-box; min-width: 0;">00</div>
           </div>
         </div>
       </div>
@@ -386,9 +386,10 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   const owner = settings.ownerName && settings.ownerName !== 'Bootto' && settings.ownerName !== 'Proprietor'
     ? settings.ownerName
     : 'R. பூட்டோ';
-  const address = settings.address && !settings.address.toLowerCase().includes('mandi') && !settings.address.toLowerCase().includes('wholesale')
+  const rawAddress = settings.address && !settings.address.toLowerCase().includes('mandi') && !settings.address.toLowerCase().includes('wholesale')
     ? settings.address
-    : 'shop no : 25, Gandhi Market, Dindigul, 624001';
+    : '25, காந்தி மார்க்கெட், திண்டுக்கல்-1';
+  const address = rawAddress.replace(/\b25\s*[A-Za-z]\b/g, '25').replace(/^25\s*[A-Za-z],/, '25,');
 
   // Normalize items array for consolidated bill (or single purchase fallback)
   let items = [];
@@ -576,7 +577,7 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
       <!-- Meta Row -->
       <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px;">
         <div style="font-size: 8pt; font-weight: 900; color: #dc2626;">
-          எண் : <span style="font-family: monospace;">${purchaseData.billNo || purchaseData.billNumber || purchaseData.lotNumber || '25'}</span>
+          எண் : <span style="font-family: monospace;">25</span>
         </div>
         <div style="font-size: 7.5pt; font-weight: 800; color: #034d28;">
           தேதி : <span style="border-bottom: 1px dotted #034d28; padding-bottom: 0.5px; font-family: monospace; font-style: italic; font-weight: 800; color: #034d28;">${dateStr}</span>

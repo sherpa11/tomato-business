@@ -4,7 +4,7 @@ import { roundMoney, roundBoxes } from '../services/ledgerService.js';
 
 export const getSuppliers = async (req, res, next) => {
   try {
-    const { search, active } = req.query;
+    const { search, active, dropdown } = req.query;
     let query = {};
 
     if (active !== undefined) {
@@ -16,6 +16,19 @@ export const getSuppliers = async (req, res, next) => {
     }
 
     const suppliers = await Supplier.find(query).sort({ name: 1 }).lean();
+
+    // Fast path for modal dropdowns: returns supplier name & contact info instantly without heavy collection-wide aggregation
+    if (dropdown === 'true') {
+      const dropdownSuppliers = suppliers.map((s) => ({
+        _id: s._id,
+        name: s.name,
+        phone: s.phone,
+        address: s.address,
+        notes: s.notes,
+        active: s.active
+      }));
+      return res.json({ success: true, count: dropdownSuppliers.length, suppliers: dropdownSuppliers });
+    }
 
     // Single aggregation pass across all non-void purchases grouped by supplierId (avoids N+1 queries)
     const purchaseStats = await Purchase.aggregate([

@@ -80,7 +80,7 @@ export const buyersAPI = {
       }
 
       activeBuyersInFlight = api
-        .get('/buyers', { params })
+        .get('/buyers', { params: { dropdown: 'true', ...params } })
         .then((data) => {
           activeBuyersCache = data;
           activeBuyersCacheTime = Date.now();
@@ -135,7 +135,7 @@ export const suppliersAPI = {
       }
 
       activeSuppliersInFlight = api
-        .get('/suppliers', { params })
+        .get('/suppliers', { params: { dropdown: 'true', ...params } })
         .then((data) => {
           activeSuppliersCache = data;
           activeSuppliersCacheTime = Date.now();

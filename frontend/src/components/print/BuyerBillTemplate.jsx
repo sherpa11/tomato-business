@@ -681,7 +681,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     padding: '0 2px',
-                    fontSize: '7.2pt',
+                    fontSize: '11pt',
                     fontWeight: 900,
                     color: '#991b1b',
                     boxSizing: 'border-box',
@@ -704,7 +704,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '8.2pt',
+                    fontSize: '12pt',
                     color: '#991b1b',
                     boxSizing: 'border-box',
                     minWidth: 0,
@@ -722,8 +722,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     justifyContent: 'center',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
-                    fontWeight: 700,
-                    fontSize: '7.5pt',
+                    fontWeight: 800,
+                    fontSize: '10pt',
                     boxSizing: 'border-box',
                     minWidth: 0
                   }}

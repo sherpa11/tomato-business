@@ -14,9 +14,12 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
     ? settings.ownerName
     : 'R. பூட்டோ';
 
-  const address = settings?.address && !settings.address.toLowerCase().includes('mandi') && !settings.address.toLowerCase().includes('wholesale')
+  const rawAddress = settings?.address && !settings.address.toLowerCase().includes('mandi') && !settings.address.toLowerCase().includes('wholesale')
     ? settings.address
-    : '25 A, காந்தி மார்க்கெட், திண்டுக்கல்-1';
+    : '25, காந்தி மார்க்கெட், திண்டுக்கல்-1';
+
+  // Ensure shop number permanently displays as '25' without unwanted suffix like 'A'
+  const address = rawAddress.replace(/\b25\s*[A-Za-z]\b/g, '25').replace(/^25\s*[A-Za-z],/, '25,');
 
   // Normalize items array for consolidated bill (or single purchase fallback)
   let items = [];
@@ -207,10 +210,10 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             </div>
           </div>
 
-          {/* Meta Row: எண் (Lot No) & தேதி (Date) */}
+          {/* Meta Row: எண் (Shop No: 25) & தேதி (Date) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '2px' }}>
             <div style={{ fontSize: '8pt', fontWeight: 900, color: '#dc2626' }}>
-              எண் : <span style={{ fontFamily: 'monospace' }}>{purchase.billNo || purchase.billNumber || purchase.lotNumber || '25'}</span>
+              எண் : <span style={{ fontFamily: 'monospace' }}>25</span>
             </div>
             <div style={{ fontSize: '7.5pt', fontWeight: 800, color: '#034d28' }}>
               தேதி :{' '}

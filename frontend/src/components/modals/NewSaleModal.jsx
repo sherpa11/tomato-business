@@ -58,10 +58,16 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
     }
   }, [isOpen, operationalDate, settings, initialBuyerId]);
 
-  // Fetch full buyer info & live ledger balance when buyerId changes (skip if already loaded)
+  // Fetch full buyer info & live ledger balance when buyerId changes (reuse loaded buyer if available)
   useEffect(() => {
     if (buyerId) {
       if (selectedBuyer && selectedBuyer._id === buyerId) {
+        return;
+      }
+      const existing = buyers.find((b) => b._id === buyerId);
+      if (existing) {
+        setSelectedBuyer(existing);
+        setOldBalanceInput(existing.currentBalance !== undefined ? String(existing.currentBalance) : '0');
         return;
       }
       setFetchingBuyer(true);
@@ -78,7 +84,7 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
       setSelectedBuyer(null);
       setOldBalanceInput('0');
     }
-  }, [buyerId, selectedBuyer]);
+  }, [buyerId, buyers, selectedBuyer]);
 
   if (!isOpen) return null;
 
