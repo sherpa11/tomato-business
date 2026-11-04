@@ -124,6 +124,10 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             background: #ffffff !important;
           }
           .buyer-bill-page {
+            width: 105mm !important;
+            height: 148mm !important;
+            max-width: 105mm !important;
+            max-height: 148mm !important;
             padding: 5.2mm 4.5mm 4.8mm 4.5mm !important;
           }
           .outer-border {

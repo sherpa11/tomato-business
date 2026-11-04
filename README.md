@@ -25,7 +25,7 @@ A production-ready, high-speed wholesale billing, tally, and financial ledger ma
 - **Backend**: Node.js, Express (ES Modules), Mongoose ODM, JWT authentication, sliding-window rate limiting, security headers.
 - **Database**: MongoDB (v6+ / v7+ / MongoDB Atlas).
 - **Print Engine**: Chrome Headless PDF rendering pipeline with exact millimeter layout geometry:
-  - **Buyer Bill**: 89 × 89 mm custom paper format (Tamil typography, Lakshmi logo, accounting ledger reconciliation).
+  - **Buyer Bill**: A6 (105 × 148 mm) portrait paper format (Tamil typography, Lakshmi logo, accounting ledger reconciliation).
   - **Supplier Voucher**: 105 × 148 mm (A6) purchase lot receipt.
 
 ---
@@ -218,14 +218,14 @@ In this setup, the Express backend serves both the API endpoints and the compile
 The application supports dual printing modes designed for vegetable wholesale market workflows:
 
 ### 1. Print Geometry & Formats
-- **Buyer Bill**: `89mm × 89mm` square format, 1-page strict rendering, green Lakshmi logo, Tamil typography, item row, totals, and bottom accounting balances (Old Balance, Bill Amount, Paid, Net Due).
+- **Buyer Bill**: `105mm × 148mm` (A6) portrait format, 1-page strict rendering, green Lakshmi logo, Tamil typography, item row, totals, and bottom accounting balances (Old Balance, Bill Amount, Paid, Net Due).
 - **Supplier Voucher**: `105mm × 148mm` (A6) portrait format, 1-page strict rendering, supplier details, purchase lot breakdown, and financial totals.
 
 ### 2. Deployment Topology Notice: Remote Cloud vs. Local Windows Mandi Terminal
 
 - **Remote Cloud Backend (AWS / Render / DigitalOcean / Vercel)**:
   - A cloud server **cannot** communicate directly over USB with a physical Canon G3030 printer connected to a computer in your local mandi.
-  - In remote cloud deployments, the `/api/print/pdf` streaming endpoint generates the exact 89×89mm / A6 PDF and delivers it to the browser.
+  - In remote cloud deployments, the `/api/print/pdf` streaming endpoint generates the exact A6 PDF and delivers it to the browser.
   - The cashier prints via the browser's native print dialogue or saves the PDF instantly.
 
 - **Local Windows Terminal (Cashier PC)**:

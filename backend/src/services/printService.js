@@ -78,7 +78,7 @@ const getLogoBase64 = (color = 'green') => {
   return '';
 };
 
-// Generate Buyer Bill HTML (89mm x 89mm)
+// Generate Buyer Bill HTML (105mm x 148mm - A6)
 export const renderBuyerBillHtml = (transaction, settings = {}) => {
   const rawPhone = settings.phone || '';
   const phones = rawPhone.split(/[,/|]+/).map((p) => p.trim()).filter(Boolean);
@@ -811,7 +811,7 @@ export const executeDirectPrint = async ({ type, transaction, purchase, settings
     return {
       success: true,
       printer: targetPrinter,
-      format: isBuyer ? '89x89mm (Square)' : '105x148mm (A6)',
+      format: '105x148mm (A6)',
       pageCount,
       message: openDialog
         ? 'Opened Windows Print Dialog'

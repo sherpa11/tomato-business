@@ -97,11 +97,11 @@
   }
 
   .buyer-bill-page {
-    width: 89mm !important;
-    height: 89mm !important;
-    max-width: 89mm !important;
-    max-height: 89mm !important;
-    padding: 5.5mm !important;
+    width: 105mm !important;
+    height: 148mm !important;
+    max-width: 105mm !important;
+    max-height: 148mm !important;
+    padding: 5.2mm 4.5mm 4.8mm 4.5mm !important;
     margin: 0 auto !important;
     box-sizing: border-box !important;
     page-break-after: avoid !important;
@@ -128,6 +128,7 @@
     box-shadow: none !important;
   }
 
+  .buyer-bill-page .outer-border,
   .supplier-bill-page .outer-border {
     border: 1.5px solid #034d28 !important;
     border-top: 1.5px solid #034d28 !important;
