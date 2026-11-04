@@ -1,9 +1,59 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Printer, Eye, Ban, Edit2 } from 'lucide-react';
-import { formatCurrency, formatBalance } from '../utils/formatters';
+import { formatCurrency, formatBalance, roundMoney } from '../utils/formatters';
 
-const TodayTallyTable = React.memo(function TodayTallyTable({ tally, onPrint, onVoid, onEditCustomer, isFiltered = false, searchTerm = '' }) {
+const TodayTallyTable = React.memo(function TodayTallyTable({
+  tally,
+  allTally,
+  summary,
+  onPrint,
+  onVoid,
+  onEditCustomer,
+  isFiltered = false,
+  searchTerm = ''
+}) {
+  // Compute daily totals for the entire operational date
+  const dailyTotals = useMemo(() => {
+    const sourceList = (allTally && allTally.length > 0) ? allTally : (tally || []);
+    let totalBig = 0;
+    let totalSmall = 0;
+    let totalBill = 0;
+    let totalPaid = 0;
+
+    sourceList.forEach((row) => {
+      // Exclude voided transactions
+      if (row.isVoid) return;
+
+      if (row.type === 'SALE') {
+        totalBig += Number(row.bigBoxes) || 0;
+        totalSmall += Number(row.smallBoxes) || 0;
+        totalBill += Number(row.todayBill ?? row.billAmount) || 0;
+      }
+      totalPaid += Number(row.paid ?? row.amountPaid) || 0;
+    });
+
+    const bigEquivalent = Math.round((totalBig + totalSmall / 2 + Number.EPSILON) * 10) / 10;
+
+    let boxesText = '0 Boxes';
+    if (totalBig > 0 && totalSmall > 0) {
+      boxesText = `${totalBig} Big + ${totalSmall} Small (${bigEquivalent} Big Eqv)`;
+    } else if (totalBig > 0) {
+      boxesText = `${totalBig} Big ${totalBig === 1 ? 'Box' : 'Boxes'}`;
+    } else if (totalSmall > 0) {
+      boxesText = `${totalSmall} Small (${bigEquivalent} Big Eqv)`;
+    }
+
+    return {
+      totalBig,
+      totalSmall,
+      bigEquivalent,
+      boxesText,
+      totalBill: roundMoney(totalBill),
+      totalPaid: roundMoney(totalPaid)
+    };
+  }, [allTally, tally]);
+
   if (!tally || tally.length === 0) {
     if (isFiltered) {
       return (
@@ -142,6 +192,41 @@ const TodayTallyTable = React.memo(function TodayTallyTable({ tally, onPrint, on
             </div>
           );
         })}
+
+        {/* MOBILE DAILY TOTAL SUMMARY CARD */}
+        <div className="bg-slate-50/95 rounded-2xl border-2 border-slate-300 p-4 shadow-xs space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+            <div className="flex items-center gap-1.5">
+              <span className="font-black text-slate-900 text-sm uppercase tracking-wide">
+                TOTAL
+              </span>
+              {isFiltered && (
+                <span className="text-[10px] font-bold text-slate-500 lowercase">
+                  (day total)
+                </span>
+              )}
+            </div>
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-100/90 text-red-800 text-xs font-black border border-red-200 font-mono">
+              <span>{dailyTotals.boxesText}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+              <span className="text-slate-500 font-semibold block text-[11px]">Today's Bill</span>
+              <span className="font-mono font-black text-slate-900 text-base block mt-0.5">
+                {formatCurrency(dailyTotals.totalBill)}
+              </span>
+            </div>
+
+            <div className="bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200/90 shadow-2xs">
+              <span className="text-emerald-800 font-semibold block text-[11px]">Paid Today</span>
+              <span className="font-mono font-black text-emerald-700 text-base block mt-0.5">
+                {formatCurrency(dailyTotals.totalPaid)}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* TABLE VIEW (Tablet & Desktop >= 640px) */}
@@ -273,6 +358,60 @@ const TodayTallyTable = React.memo(function TodayTallyTable({ tally, onPrint, on
                 );
               })}
             </tbody>
+            <tfoot className="border-t-2 border-slate-300 bg-slate-50/90 text-sm">
+              <tr className="border-b border-slate-200">
+                {/* Customer Column: Bold TOTAL */}
+                <td className="py-3.5 px-4 text-left sticky left-0 bg-slate-100/95 z-10 shadow-2xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-black text-slate-900 text-sm tracking-wide">
+                      TOTAL
+                    </span>
+                    {isFiltered && (
+                      <span className="text-[10px] font-bold text-slate-500 lowercase">
+                        (day total)
+                      </span>
+                    )}
+                  </div>
+                </td>
+
+                {/* Old Balance Column */}
+                <td className="py-3.5 px-4 text-right text-slate-400 font-mono font-medium">
+                  —
+                </td>
+
+                {/* Today's Boxes Column: Total boxes sold */}
+                <td className="py-3.5 px-4 text-center">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100/90 text-red-800 text-xs sm:text-sm font-black border border-red-200 font-mono shadow-2xs">
+                    <span>{dailyTotals.boxesText}</span>
+                  </div>
+                </td>
+
+                {/* Today's Bill Column: Total sales bill amount */}
+                <td className="py-3.5 px-4 text-right font-black text-slate-900 font-mono text-base">
+                  {formatCurrency(dailyTotals.totalBill)}
+                </td>
+
+                {/* Total Due Column */}
+                <td className="py-3.5 px-4 text-right text-slate-400 font-mono font-medium">
+                  —
+                </td>
+
+                {/* Paid Column: Total amount actually received */}
+                <td className="py-3.5 px-4 text-right font-black text-emerald-700 font-mono text-base">
+                  {formatCurrency(dailyTotals.totalPaid)}
+                </td>
+
+                {/* New Balance Column */}
+                <td className="py-3.5 px-4 text-right text-slate-400 font-mono font-medium">
+                  —
+                </td>
+
+                {/* Actions Column */}
+                <td className="no-print py-3.5 px-4 text-center text-slate-400 font-mono">
+                  —
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>

@@ -106,22 +106,30 @@ export default function BuyerBillTemplate({ transaction, settings }) {
 
   return (
     <>
-      {/* Scoped Dynamic Print Page Style for strict 89mm x 89mm */}
+      {/* Scoped Dynamic Print Page Style for strict 105mm x 148mm (A6) */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;700;800;900&display=swap');
         @media print {
           @page {
-            size: 89mm 89mm;
+            size: 105mm 148mm;
             margin: 0mm;
           }
           html, body {
             margin: 0 !important;
             padding: 0 !important;
-            width: 89mm !important;
-            height: 89mm !important;
-            max-height: 89mm !important;
+            width: 105mm !important;
+            height: 148mm !important;
+            max-height: 148mm !important;
             overflow: hidden !important;
             background: #ffffff !important;
+          }
+          .buyer-bill-page {
+            padding: 5.2mm 4.5mm 4.8mm 4.5mm !important;
+          }
+          .outer-border {
+            border: 1.5px solid #034d28 !important;
+            border-top: 1.5px solid #034d28 !important;
+            box-sizing: border-box !important;
           }
         }
       `}</style>
@@ -129,39 +137,41 @@ export default function BuyerBillTemplate({ transaction, settings }) {
       <div
         className="buyer-bill-page bg-white font-tamil text-black select-none"
         style={{
-          width: '89mm',
-          height: '89mm',
-          maxWidth: '89mm',
-          maxHeight: '89mm',
-          padding: '5.5mm',
+          width: '105mm',
+          height: '148mm',
+          maxWidth: '105mm',
+          maxHeight: '148mm',
+          padding: '5.2mm 4.5mm 4.8mm 4.5mm',
           boxSizing: 'border-box',
           overflow: 'hidden',
           color: '#034d28',
-          lineHeight: 1.15,
+          lineHeight: 1.2,
           fontFamily: "'Mukta Malar', 'Noto Sans Tamil', sans-serif"
         }}
       >
         {/* Outer Green Border */}
         <div
+          className="outer-border"
           style={{
             border: '1.5px solid #034d28',
+            borderTop: '1.5px solid #034d28',
             width: '100%',
             height: '100%',
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '0.8mm 1.2mm 0.8mm 1.2mm',
+            padding: '1.5mm 2mm 1.5mm 2mm',
             overflow: 'hidden'
           }}
         >
           {/* Top Row: Auspicious symbol 'உ' & Phone numbers */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
-            <div style={{ width: '30px' }} />
+            <div style={{ width: '40px' }} />
             <div style={{ textAlign: 'center', position: 'absolute', left: 0, right: 0, margin: '0 auto', top: '-1px' }}>
               <span
                 style={{
-                  fontSize: '8.5pt',
+                  fontSize: '10pt',
                   fontWeight: 900,
                   borderBottom: '1.5px double #034d28',
                   paddingBottom: '0.5px',
@@ -171,16 +181,16 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 உ
               </span>
             </div>
-            <div style={{ textAlign: 'right', fontSize: '6.2pt', fontWeight: 800, fontFamily: 'monospace', lineHeight: 1.15 }}>
+            <div style={{ textAlign: 'right', fontSize: '7.5pt', fontWeight: 800, fontFamily: 'monospace', lineHeight: 1.2 }}>
               <div>செல் : {phone1}</div>
               <div style={{ paddingLeft: '18px' }}>{phone2}</div>
             </div>
           </div>
 
           {/* Business Header with Lakshmi Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: '-1.5px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: '-1px' }}>
             {/* Logo */}
-            <div style={{ width: '12mm', height: '15mm', flexShrink: 0, display: 'flex', alignItems: 'center', justifySelf: 'center' }}>
+            <div style={{ width: '18mm', height: '22mm', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img
                 src="/lakshmi-green.png"
                 alt="Lakshmi Logo"
@@ -189,10 +199,10 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             </div>
 
             {/* Business Titles */}
-            <div style={{ flex: 1, minWidth: 0, textAlign: 'center', paddingLeft: '0.5mm', paddingRight: '0.5mm' }}>
+            <div style={{ flex: 1, minWidth: 0, textAlign: 'center', paddingLeft: '1mm', paddingRight: '1mm' }}>
               <div
                 style={{
-                  fontSize: '16.5pt',
+                  fontSize: '19pt',
                   fontWeight: 900,
                   letterSpacing: '0.5px',
                   lineHeight: 1
@@ -200,20 +210,20 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               >
                 மகாலட்சுமி
               </div>
-              <div style={{ fontSize: '6.4pt', fontWeight: 800, marginTop: '1px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '8pt', fontWeight: 800, marginTop: '2px', whiteSpace: 'nowrap' }}>
                 தக்காளி &amp; காய், கனி கமிஷன் மண்டி
               </div>
-              <div style={{ fontSize: '5.4pt', fontWeight: 700, marginTop: '0.8px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '7.2pt', fontWeight: 700, marginTop: '1.5px', whiteSpace: 'nowrap' }}>
                 {address}
               </div>
-              <div style={{ fontSize: '8pt', fontWeight: 900, marginTop: '0.8px' }}>
+              <div style={{ fontSize: '9.5pt', fontWeight: 900, marginTop: '1.5px' }}>
                 Prop : {owner}
               </div>
             </div>
 
             {/* Date block on right */}
-            <div style={{ width: '19mm', flexShrink: 0, textAlign: 'right', alignSelf: 'flex-end', marginBottom: '1px', whiteSpace: 'nowrap' }}>
-              <div style={{ fontSize: '5.6pt', fontWeight: 800 }}>
+            <div style={{ width: '22mm', flexShrink: 0, textAlign: 'right', alignSelf: 'flex-end', marginBottom: '1px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '7.5pt', fontWeight: 800 }}>
                 தேதி :{' '}
                 <span style={{ borderBottom: '1px dotted #034d28', paddingBottom: '0.5px', fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800 }}>
                   {formatDate(transaction.transactionDate)}
@@ -225,12 +235,12 @@ export default function BuyerBillTemplate({ transaction, settings }) {
           {/* Customer Name Line */}
           <div
             style={{
-              fontSize: '9pt',
+              fontSize: '10.5pt',
               fontWeight: 800,
               display: 'flex',
               alignItems: 'baseline',
-              marginTop: '0.8px',
-              marginBottom: '1px'
+              marginTop: '1.5px',
+              marginBottom: '1.5mm'
             }}
           >
             <span style={{ whiteSpace: 'nowrap', marginRight: '4px' }}>திரு :</span>
@@ -239,7 +249,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 flex: 1,
                 fontStyle: 'italic',
                 fontWeight: 900,
-                fontSize: '11pt',
+                fontSize: '13pt',
                 color: '#02381e',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -250,7 +260,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             </span>
           </div>
 
-          {/* 5-Column Table (No internal horizontal divider lines) */}
+          {/* 5-Column Table */}
           <div
             style={{
               border: '1px solid #034d28',
@@ -265,22 +275,23 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
+                gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
                 textAlign: 'center',
-                fontSize: '7.2pt',
+                fontSize: '8.5pt',
                 fontWeight: 900,
                 backgroundColor: '#ffffff',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                borderBottom: '1px solid #034d28'
               }}
             >
-              <div style={{ borderRight: '1px solid #034d28', padding: '1px 0', minWidth: 0, boxSizing: 'border-box' }}>விலை</div>
-              <div style={{ borderRight: '1px solid #034d28', padding: '1px 0', minWidth: 0, boxSizing: 'border-box' }}>விபரம்</div>
-              <div style={{ borderRight: '1px solid #034d28', padding: '1px 0', minWidth: 0, boxSizing: 'border-box' }}>No.</div>
-              <div style={{ borderRight: '1px solid #034d28', padding: '1px 0', minWidth: 0, boxSizing: 'border-box' }}>ரூ.</div>
-              <div style={{ padding: '1px 0', minWidth: 0, boxSizing: 'border-box' }}>பை.</div>
+              <div style={{ borderRight: '1px solid #034d28', padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>விலை</div>
+              <div style={{ borderRight: '1px solid #034d28', padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>விபரம்</div>
+              <div style={{ borderRight: '1px solid #034d28', padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>No.</div>
+              <div style={{ borderRight: '1px solid #034d28', padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>ரூ.</div>
+              <div style={{ padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>பை.</div>
             </div>
 
-            {/* Item Rows (Area 1: Enlarged Item Row Contents, No horizontal divider) */}
+            {/* Item Rows */}
             {items.map((item, idx) => {
               const rateNum = Number(item.ratePerBigBox) || 0;
               const rateVal = rateNum > 0 ? rateNum.toLocaleString('en-IN') : (item.ratePerBigBox ? String(item.ratePerBigBox) : '—');
@@ -296,9 +307,9 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                   key={item._id || idx}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
-                    fontSize: '9.5pt',
-                    lineHeight: 1.15,
+                    gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                    fontSize: '10.5pt',
+                    lineHeight: 1.2,
                     boxSizing: 'border-box'
                   }}
                 >
@@ -309,8 +320,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '11.5pt',
-                      padding: '2px 1px',
+                      fontSize: '12.5pt',
+                      padding: '3px 1px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -320,9 +331,9 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                   >
                     {rateVal}
                   </div>
-                  <div style={{ borderRight: '1px solid #034d28', padding: '2px 2px', minWidth: 0, boxSizing: 'border-box' }}>
-                    <div style={{ fontWeight: 900, fontSize: '8.6pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{desc1}</div>
-                    <div style={{ fontStyle: 'italic', fontSize: '7pt', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{desc2}</div>
+                  <div style={{ borderRight: '1px solid #034d28', padding: '2px 4px', minWidth: 0, boxSizing: 'border-box' }}>
+                    <div style={{ fontWeight: 900, fontSize: '9.8pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{desc1}</div>
+                    <div style={{ fontStyle: 'italic', fontSize: '8.2pt', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{desc2}</div>
                   </div>
                   <div
                     style={{
@@ -331,7 +342,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '12pt',
+                      fontSize: '13pt',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -348,8 +359,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '12pt',
-                      padding: '2px 2px',
+                      fontSize: '13pt',
+                      padding: '2px 4px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'flex-end',
@@ -365,7 +376,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 800,
-                      fontSize: '10pt',
+                      fontSize: '11pt',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -384,9 +395,9 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
+                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
                   fontSize: '9.5pt',
-                  lineHeight: 1.15,
+                  lineHeight: 1.2,
                   boxSizing: 'border-box'
                 }}
               >
@@ -395,9 +406,9 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                   style={{
                     borderRight: '1px solid #034d28',
                     textAlign: 'right',
-                    paddingRight: '3px',
+                    paddingRight: '4px',
                     fontWeight: 900,
-                    fontSize: '8pt',
+                    fontSize: '9.5pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
@@ -414,7 +425,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '11.5pt',
+                    fontSize: '12.5pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -431,8 +442,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '12pt',
-                    padding: '2px 2px',
+                    fontSize: '13pt',
+                    padding: '2px 4px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
@@ -448,7 +459,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
-                    fontSize: '10pt',
+                    fontSize: '11pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -461,24 +472,40 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               </div>
             )}
 
+            {/* Middle Space with vertical dividers only */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                flex: 1,
+                minHeight: '12mm',
+                boxSizing: 'border-box'
+              }}
+            >
+              <div style={{ borderRight: '1px solid #034d28', minWidth: 0 }} />
+              <div style={{ borderRight: '1px solid #034d28', minWidth: 0 }} />
+              <div style={{ borderRight: '1px solid #034d28', minWidth: 0 }} />
+              <div style={{ borderRight: '1px solid #034d28', minWidth: 0 }} />
+              <div style={{ minWidth: 0 }} />
+            </div>
+
             {/* Lower Accounting Summary Area (Row-by-row aligned grid) */}
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                flex: 1,
-                minHeight: 0,
-                boxSizing: 'border-box'
+                width: '100%',
+                boxSizing: 'border-box',
+                borderTop: '1px solid #034d28'
               }}
             >
-              {/* Row 1: பற்று removed from Col 1, : (முந்தைய பாக்கி) preserved in Col 2 */}
+              {/* Row 1: முந்தைய பாக்கி */}
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
-                  flex: 1,
+                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  height: '6.8mm',
                   alignItems: 'center',
-                  minHeight: 0,
                   boxSizing: 'border-box'
                 }}
               >
@@ -489,8 +516,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '0 2px',
-                    fontSize: '6.8pt',
+                    padding: '0 4px',
+                    fontSize: '8.2pt',
                     fontWeight: 800,
                     boxSizing: 'border-box',
                     minWidth: 0,
@@ -509,11 +536,11 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    padding: '0 2px',
+                    padding: '0 4px',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
-                    fontSize: '7.8pt',
+                    fontSize: '9.2pt',
                     boxSizing: 'border-box',
                     minWidth: 0,
                     whiteSpace: 'nowrap',
@@ -531,8 +558,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     justifyContent: 'center',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
-                    fontWeight: 700,
-                    fontSize: '7.5pt',
+                    fontWeight: 800,
+                    fontSize: '8.5pt',
                     boxSizing: 'border-box',
                     minWidth: 0
                   }}
@@ -541,14 +568,13 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 </div>
               </div>
 
-              {/* Row 2: மொத்தம் and : (பற்று + பில்) removed */}
+              {/* Row 2: Total due */}
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
-                  flex: 1,
+                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  height: '6.8mm',
                   alignItems: 'center',
-                  minHeight: 0,
                   boxSizing: 'border-box'
                 }}
               >
@@ -562,11 +588,11 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    padding: '0 2px',
+                    padding: '0 4px',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '7.8pt',
+                    fontSize: '9.2pt',
                     boxSizing: 'border-box',
                     minWidth: 0,
                     whiteSpace: 'nowrap',
@@ -583,8 +609,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     justifyContent: 'center',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
-                    fontWeight: 700,
-                    fontSize: '7.5pt',
+                    fontWeight: 800,
+                    fontSize: '8.5pt',
                     boxSizing: 'border-box',
                     minWidth: 0
                   }}
@@ -593,14 +619,13 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 </div>
               </div>
 
-              {/* Row 3: செலுத்தியது removed from Col 1, : (வரவு) preserved in Col 2 */}
+              {/* Row 3: வரவு */}
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
-                  flex: 1,
+                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  height: '6.8mm',
                   alignItems: 'center',
-                  minHeight: 0,
                   boxSizing: 'border-box'
                 }}
               >
@@ -611,8 +636,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '0 2px',
-                    fontSize: '6.8pt',
+                    padding: '0 4px',
+                    fontSize: '8.2pt',
                     fontWeight: 800,
                     boxSizing: 'border-box',
                     minWidth: 0,
@@ -631,11 +656,11 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    padding: '0 2px',
+                    padding: '0 4px',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
-                    fontSize: '7.8pt',
+                    fontSize: '9.2pt',
                     boxSizing: 'border-box',
                     minWidth: 0,
                     whiteSpace: 'nowrap',
@@ -653,8 +678,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     justifyContent: 'center',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
-                    fontWeight: 700,
-                    fontSize: '7.5pt',
+                    fontWeight: 800,
+                    fontSize: '8.5pt',
                     boxSizing: 'border-box',
                     minWidth: 0
                   }}
@@ -663,14 +688,13 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                 </div>
               </div>
 
-              {/* Row 4: பாக்கி preserved in Col 1, : (மீதி பாக்கி) removed from Col 2 */}
+              {/* Row 4: பாக்கி */}
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '18% minmax(0, 39%) 11% 20% 12%',
-                  flex: 1,
+                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  height: '7.2mm',
                   alignItems: 'center',
-                  minHeight: 0,
                   boxSizing: 'border-box'
                 }}
               >
@@ -680,8 +704,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '0 2px',
-                    fontSize: '11pt',
+                    padding: '0 4px',
+                    fontSize: '12pt',
                     fontWeight: 900,
                     color: '#991b1b',
                     boxSizing: 'border-box',
@@ -700,11 +724,11 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    padding: '0 2px',
+                    padding: '0 4px',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '12pt',
+                    fontSize: '13.5pt',
                     color: '#991b1b',
                     boxSizing: 'border-box',
                     minWidth: 0,
@@ -723,7 +747,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
-                    fontSize: '10pt',
+                    fontSize: '11pt',
                     boxSizing: 'border-box',
                     minWidth: 0
                   }}
@@ -739,9 +763,9 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             style={{
               textAlign: 'center',
               fontWeight: 900,
-              fontSize: '7.5pt',
+              fontSize: '9.5pt',
               letterSpacing: '0.5px',
-              paddingTop: '0.6mm',
+              paddingTop: '1.5mm',
               lineHeight: 1
             }}
           >

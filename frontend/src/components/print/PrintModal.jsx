@@ -21,9 +21,9 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   const isSupplierBill = title.toLowerCase().includes('supplier') || Boolean(children?.props?.purchase);
 
   // Exact unscaled dimensions in screen pixels (at standard 96 DPI: 1 inch = 25.4mm)
-  // 89mm = 336.38px; 105mm = 396.85px; 148mm = 559.37px
-  const baseWidthPx = isBuyerBill ? 336.38 : isSupplierBill ? 396.85 : 302.36;
-  const baseHeightPx = isBuyerBill ? 336.38 : isSupplierBill ? 559.37 : null;
+  // A6 (105mm x 148mm): 105mm = 396.85px; 148mm = 559.37px
+  const baseWidthPx = isBuyerBill || isSupplierBill ? 396.85 : 302.36;
+  const baseHeightPx = isBuyerBill || isSupplierBill ? 559.37 : null;
 
   const scrollAreaRef = React.useRef(null);
   const [previewScale, setPreviewScale] = useState(1);
@@ -380,7 +380,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     }
     setShowOptions(false);
     const origTitle = document.title;
-    document.title = isBuyerBill ? 'Buyer_Bill_89x89mm' : isSupplierBill ? 'Supplier_Bill_A6' : 'Customer_Statement';
+    document.title = isBuyerBill ? 'Buyer_Bill_A6' : isSupplierBill ? 'Supplier_Bill_A6' : 'Customer_Statement';
     window.print();
     setTimeout(() => {
       document.title = origTitle;
@@ -444,7 +444,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', isBuyerBill ? 'Buyer_Bill_89x89mm.pdf' : 'Supplier_Bill_A6.pdf');
+      link.setAttribute('download', isBuyerBill ? 'Buyer_Bill_A6.pdf' : 'Supplier_Bill_A6.pdf');
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -483,7 +483,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500">
                 {isBuyerBill
-                  ? 'Paper size: 89mm × 89mm (Square Mandi Bill)'
+                  ? 'Paper size: 105mm × 148mm (A6 Mandi Bill)'
                   : isSupplierBill
                   ? 'Paper size: 105mm × 148mm (A6 Purchase Voucher)'
                   : 'Customer statement ledger'}
@@ -502,7 +502,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
             {isBuyerBill ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>89 × 89 mm</span>
+                <span>A6 (105 × 148 mm)</span>
               </span>
             ) : isSupplierBill ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-800 border border-red-200 rounded-lg text-xs font-bold">
@@ -812,7 +812,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
         <div className="no-print pt-2 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
           <span>
             {isBuyerBill
-              ? 'Target: Canon G3030 series | Paper: Square 3.5"×3.5" (8.9 × 8.9 cm) | Single Page'
+              ? 'Target: Canon G3030 series | Paper: A6 (105 × 148 mm) | Single Page'
               : isSupplierBill
               ? 'Target: Canon G3030 series | Paper: A6 (105 × 148 mm) | Single Page'
               : 'Standard ledger statement.'}

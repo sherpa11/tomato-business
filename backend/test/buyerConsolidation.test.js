@@ -355,19 +355,19 @@ test('Buyer Bill Consolidation & Ledger Integrity Suite', async (t) => {
 
     const html = renderBuyerBillHtml(bill, { ownerName: 'R. பூட்டோ' });
 
-    assert.ok(html.includes('89mm 89mm'), 'Contains strict 89x89 mm page dimensions');
+    assert.ok(html.includes('105mm 148mm'), 'Contains strict 105x148 mm A6 page dimensions');
     assert.ok(html.includes('900'), 'Includes Row 1 rate 900');
     assert.ok(html.includes('4,500'), 'Includes Row 1 amount 4,500');
     assert.ok(html.includes('500'), 'Includes Row 2 rate 500');
     assert.ok(html.includes('1,000'), 'Includes Row 2 amount 1,000');
-    assert.ok(html.includes('மொத்த பில் :'), 'Includes subtotal row label');
+    assert.ok(html.includes('மொத்தம் :'), 'Includes subtotal row label');
     assert.ok(html.includes('5,500'), 'Includes today bill subtotal 5,500');
     assert.ok(html.includes('10,500'), 'Includes total due 10,500 in accounting summary');
     assert.ok(html.includes('2,500'), 'Includes new balance 2,500 in accounting summary');
     assert.ok(html.includes('8,000'), 'Includes payment 8,000 in accounting summary');
   });
 
-  await t.test('13. Chrome Headless 89x89 mm PDF Generation for Consolidated Buyer Bill', async () => {
+  await t.test('13. Chrome Headless 105x148 mm A6 PDF Generation for Consolidated Buyer Bill', async () => {
     const bill = await getConsolidatedBuyerBill({
       buyerId: buyerMuniyamma._id,
       transactionDate: testDate
@@ -381,7 +381,7 @@ test('Buyer Bill Consolidation & Ledger Integrity Suite', async (t) => {
     assert.ok(pdfResult.pdfPath, 'PDF path returned');
     assert.ok(fs.existsSync(pdfResult.pdfPath), 'PDF file exists on disk');
     assert.equal(pdfResult.pageCount, 1, 'Generates exactly 1 page');
-    assert.ok(pdfResult.mediaBox.includes('252'), 'MediaBox matches 89x89mm (252.28 pt)');
+    assert.ok(pdfResult.mediaBox.includes('298'), 'MediaBox matches 105x148mm A6 (298.08 pt x 420 pt)');
 
     // Clean up test PDF
     try {

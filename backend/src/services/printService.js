@@ -191,15 +191,15 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
       const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');
 
       return `
-        <div class="table-grid" style="font-size: 9.5pt; line-height: 1.15;">
-          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 11pt; padding: 2px 1px; display: flex; align-items: center; justify-content: center; min-width: 0;">${rateVal}</div>
-          <div style="border-right: 1px solid #034d28; padding: 2px 2px; min-width: 0;">
-            <div style="font-weight: 900; font-size: 8.6pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;">${desc1}</div>
-            <div style="font-style: italic; font-size: 7pt; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;">${desc2}</div>
+        <div class="table-grid" style="font-size: 10.5pt; line-height: 1.2;">
+          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 12.5pt; padding: 3px 1px; display: flex; align-items: center; justify-content: center; min-width: 0;">${rateVal}</div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 4px; min-width: 0;">
+            <div style="font-weight: 900; font-size: 9.8pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;">${desc1}</div>
+            <div style="font-style: italic; font-size: 8.2pt; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;">${desc2}</div>
           </div>
-          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 11.5pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${qty}</div>
-          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: 11.5pt; padding: 2px 2px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${lineRupees}</div>
-          <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 9.5pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${linePaise}</div>
+          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 13pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${qty}</div>
+          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: 13pt; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${lineRupees}</div>
+          <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 11pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${linePaise}</div>
         </div>`;
     })
     .join('');
@@ -207,12 +207,12 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
   // Subtotal row for multiple sales
   const subtotalHtml = items.length > 1
     ? `
-      <div class="table-grid" style="font-size: 9.5pt; line-height: 1.15;">
+      <div class="table-grid" style="font-size: 9.5pt; line-height: 1.2;">
         <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
-        <div style="border-right: 1px solid #034d28; text-align: right; padding-right: 3px; font-weight: 900; font-size: 8pt; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">மொத்த பில் :</div>
-        <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 11pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${totalQtyText}</div>
-        <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: 11.5pt; padding: 2px 2px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${rupeesPart}</div>
-        <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 9.5pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${paisePart}</div>
+        <div style="border-right: 1px solid #034d28; text-align: right; padding-right: 4px; font-weight: 900; font-size: 9.5pt; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">மொத்தம் :</div>
+        <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 12.5pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${totalQtyText}</div>
+        <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: 13pt; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${rupeesPart}</div>
+        <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 11pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${paisePart}</div>
       </div>`
     : '';
 
@@ -220,7 +220,7 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
 <html>
 <head>
 <meta charset="utf-8">
-<title>Buyer_Bill_89x89mm</title>
+<title>Buyer_Bill_A6</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;700;800;900&display=swap');
   * {
@@ -231,43 +231,45 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
     print-color-adjust: exact !important;
   }
   @page {
-    size: 89mm 89mm;
+    size: 105mm 148mm;
     margin: 0mm;
   }
   html, body {
-    width: 89mm;
-    height: 89mm;
-    max-height: 89mm;
+    width: 105mm;
+    height: 148mm;
+    max-height: 148mm;
     overflow: hidden;
     background: #ffffff;
     font-family: 'Mukta Malar', 'Noto Sans Tamil', sans-serif;
     color: #034d28;
-    line-height: 1.15;
+    line-height: 1.2;
   }
   .buyer-bill-page {
-    width: 89mm;
-    height: 89mm;
-    max-width: 89mm;
-    max-height: 89mm;
-    padding: 5.5mm;
+    width: 105mm;
+    height: 148mm;
+    max-width: 105mm;
+    max-height: 148mm;
+    padding: 5.2mm 4.5mm 4.8mm 4.5mm;
     overflow: hidden;
     box-sizing: border-box;
   }
   .outer-border {
     border: 1.5px solid #034d28;
+    border-top: 1.5px solid #034d28;
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     justifyContent: space-between;
-    padding: 0.8mm 1.2mm 0.8mm 1.2mm;
+    padding: 1.5mm 2mm 1.5mm 2mm;
     overflow: hidden;
     box-sizing: border-box;
   }
   .table-grid {
     display: grid;
-    grid-template-columns: 18% minmax(0, 39%) 11% 20% 12%;
+    grid-template-columns: 16% minmax(0, 44%) 10% 20% 10%;
     box-sizing: border-box;
+    width: 100%;
   }
 </style>
 </head>
@@ -276,49 +278,49 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
     <div class="outer-border">
       <!-- Top Row: Auspicious symbol 'உ' & Phone numbers -->
       <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative;">
-        <div style="width: 30px;"></div>
+        <div style="width: 40px;"></div>
         <div style="text-align: center; position: absolute; left: 0; right: 0; margin: 0 auto; top: -1px;">
-          <span style="font-size: 8.5pt; font-weight: 900; border-bottom: 1.5px double hsl(150, 93%, 16%); padding-bottom: 0.5px; display: inline-block;">உ</span>
+          <span style="font-size: 10pt; font-weight: 900; border-bottom: 1.5px double #034d28; padding-bottom: 0.5px; display: inline-block;">உ</span>
         </div>
-        <div style="text-align: right; font-size: 6.2pt; font-weight: 800; font-family: monospace; line-height: 1.15;">
+        <div style="text-align: right; font-size: 7.5pt; font-weight: 800; font-family: monospace; line-height: 1.2;">
           <div>செல் : ${phone1}</div>
           <div style="padding-left: 18px;">${phone2}</div>
         </div>
       </div>
 
       <!-- Business Header with Lakshmi Logo -->
-      <div style="display: flex; align-items: center; margin-top: -1.5px;">
-        <div style="width: 12mm; height: 15mm; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+      <div style="display: flex; align-items: center; margin-top: -1px;">
+        <div style="width: 18mm; height: 22mm; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
           ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="max-height: 100%; max-width: 100%; object-fit: contain;" />` : ''}
         </div>
-        <div style="flex: 1; min-width: 0; text-align: center; padding-left: 0.5mm; padding-right: 0.5mm;">
-          <div style="font-size: 16.5pt; font-weight: 900; letter-spacing: 0.5px; line-height: 1;">மகாலட்சுமி</div>
-          <div style="font-size: 6.4pt; font-weight: 800; margin-top: 1px; white-space: nowrap;">தக்காளி &amp; காய், கனி கமிஷன் மண்டி</div>
-          <div style="font-size: 5.4pt; font-weight: 700; margin-top: 0.8px; white-space: nowrap;">${address}</div>
-          <div style="font-size: 8pt; font-weight: 900; margin-top: 0.8px;">Prop : ${owner}</div>
+        <div style="flex: 1; min-width: 0; text-align: center; padding-left: 1mm; padding-right: 1mm;">
+          <div style="font-size: 19pt; font-weight: 900; letter-spacing: 0.5px; line-height: 1; color: #034d28;">மகாலட்சுமி</div>
+          <div style="font-size: 8pt; font-weight: 800; margin-top: 2px; white-space: nowrap;">தக்காளி &amp; காய், கனி கமிஷன் மண்டி</div>
+          <div style="font-size: 7.2pt; font-weight: 700; margin-top: 1.5px; white-space: nowrap;">${address}</div>
+          <div style="font-size: 9.5pt; font-weight: 900; margin-top: 1.5px;">Prop : ${owner}</div>
         </div>
-        <div style="width: 19mm; flex-shrink: 0; text-align: right; align-self: flex-end; margin-bottom: 1px; white-space: nowrap;">
-          <div style="font-size: 5.6pt; font-weight: 800;">
+        <div style="width: 22mm; flex-shrink: 0; text-align: right; align-self: flex-end; margin-bottom: 1px; white-space: nowrap;">
+          <div style="font-size: 7.5pt; font-weight: 800;">
             தேதி : <span style="border-bottom: 1px dotted #034d28; padding-bottom: 0.5px; font-family: monospace; font-style: italic; font-weight: 800;">${dateStr}</span>
           </div>
         </div>
       </div>
 
       <!-- Customer Name Line -->
-      <div style="font-size: 9pt; font-weight: 800; display: flex; align-items: baseline; margin-top: 0.8px; margin-bottom: 1px;">
+      <div style="font-size: 10.5pt; font-weight: 800; display: flex; align-items: baseline; margin-top: 1.5px; margin-bottom: 1.5mm;">
         <span style="white-space: nowrap; margin-right: 4px;">திரு :</span>
-        <span style="flex: 1; font-style: italic; font-weight: 900; font-size: 11pt; color: #02381e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${transaction.buyerName || 'வாடிக்கையாளர்'}</span>
+        <span style="flex: 1; font-style: italic; font-weight: 900; font-size: 13pt; color: #02381e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${transaction.buyerName || 'வாடிக்கையாளர்'}</span>
       </div>
 
       <!-- 5-Column Table -->
       <div style="border: 1px solid #034d28; flex: 1; min-height: 0; display: flex; flex-direction: column; box-sizing: border-box;">
         <!-- Table Header (No internal horizontal divider line, No. instead of எண்ணம்) -->
-        <div class="table-grid" style="text-align: center; font-size: 7.2pt; font-weight: 900; background: #ffffff;">
-          <div style="border-right: 1px solid #034d28; padding: 1px 0; min-width: 0;">விலை</div>
-          <div style="border-right: 1px solid #034d28; padding: 1px 0; min-width: 0;">விபரம்</div>
-          <div style="border-right: 1px solid #034d28; padding: 1px 0; min-width: 0;">No.</div>
-          <div style="border-right: 1px solid #034d28; padding: 1px 0; min-width: 0;">ரூ.</div>
-          <div style="padding: 1px 0; min-width: 0;">பை.</div>
+        <div class="table-grid" style="text-align: center; font-size: 8.5pt; font-weight: 900; background: #ffffff; border-bottom: 1px solid #034d28;">
+          <div style="border-right: 1px solid #034d28; padding: 2px 0; min-width: 0;">விலை</div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 0; min-width: 0;">விபரம்</div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 0; min-width: 0;">No.</div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 0; min-width: 0;">ரூ.</div>
+          <div style="padding: 2px 0; min-width: 0;">பை.</div>
         </div>
 
         <!-- Item Rows (Area 1: Enlarged Item Row Contents, No horizontal divider) -->
@@ -327,48 +329,57 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
         <!-- Optional Subtotal Row for multiple sales entries -->
         ${subtotalHtml}
 
+        <!-- Middle Space with vertical dividers only -->
+        <div class="table-grid" style="flex: 1; min-height: 12mm;">
+          <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+          <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+          <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+          <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+          <div style="min-width: 0;"></div>
+        </div>
+
         <!-- Lower Accounting Summary Area (Row-by-row aligned grid) -->
-        <div style="display: flex; flex-direction: column; flex: 1; min-height: 0; box-sizing: border-box;">
-          <!-- Row 1: பற்று removed from Col 1, : (முந்தைய பாக்கி) preserved in Col 2 -->
-          <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 800; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">: (முந்தைய பாக்கி)</div>
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.8pt; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${oldBalNum.toLocaleString('en-IN')}</div>
-            <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
+        <div style="display: flex; flex-direction: column; width: 100%; box-sizing: border-box; border-top: 1px solid #034d28;">
+          <!-- Row 1: முந்தைய பாக்கி -->
+          <div class="table-grid" style="height: 6.8mm; align-items: center; box-sizing: border-box;">
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 4px; font-size: 8.2pt; font-weight: 800; min-width: 0; white-space: nowrap; overflow: hidden;">: (முந்தைய பாக்கி)</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 4px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 9.2pt; min-width: 0; white-space: nowrap; overflow: hidden;">${oldBalNum.toLocaleString('en-IN')}</div>
+            <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 8.5pt; min-width: 0;">00</div>
           </div>
 
-          <!-- Row 2: மொத்தம் and : (பற்று + பில்) removed -->
-          <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 7.8pt; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${totalDueNum.toLocaleString('en-IN')}</div>
-            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
+          <!-- Row 2: Total due -->
+          <div class="table-grid" style="height: 6.8mm; align-items: center; box-sizing: border-box;">
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 4px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 9.2pt; min-width: 0; white-space: nowrap; overflow: hidden;">${totalDueNum.toLocaleString('en-IN')}</div>
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 8.5pt; min-width: 0;">00</div>
           </div>
 
-          <!-- Row 3: செலுத்தியது removed from Col 1, : (வரவு) preserved in Col 2 -->
-          <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 800; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">: (வரவு)</div>
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.8pt; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${paidNum.toLocaleString('en-IN')}</div>
-            <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; box-sizing: border-box; min-width: 0;">00</div>
+          <!-- Row 3: வரவு -->
+          <div class="table-grid" style="height: 6.8mm; align-items: center; box-sizing: border-box;">
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 4px; font-size: 8.2pt; font-weight: 800; min-width: 0; white-space: nowrap; overflow: hidden;">: (வரவு)</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 4px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 9.2pt; min-width: 0; white-space: nowrap; overflow: hidden;">${paidNum.toLocaleString('en-IN')}</div>
+            <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 8.5pt; min-width: 0;">00</div>
           </div>
 
-          <!-- Row 4: பாக்கி preserved in Col 1, : (மீதி பாக்கி) removed from Col 2 -->
-          <div class="table-grid" style="flex: 1; align-items: center; min-height: 0; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 11pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0; box-sizing: border-box;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 12pt; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${Math.abs(newBalNum).toLocaleString('en-IN')}</div>
-            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt; box-sizing: border-box; min-width: 0;">00</div>
+          <!-- Row 4: பாக்கி -->
+          <div class="table-grid" style="height: 7.2mm; align-items: center; box-sizing: border-box;">
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 4px; font-size: 12pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 4px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 13.5pt; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${Math.abs(newBalNum).toLocaleString('en-IN')}</div>
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 11pt; box-sizing: border-box; min-width: 0;">00</div>
           </div>
         </div>
       </div>
 
       <!-- Centered Footer (Preserved exactly as original) -->
-      <div style="text-align: center; font-weight: 900; font-size: 7.5pt; letter-spacing: 0.5px; padding-top: 0.6mm; line-height: 1;">
+      <div style="text-align: center; font-weight: 900; font-size: 9.5pt; letter-spacing: 0.5px; padding-top: 1.5mm; line-height: 1;">
         நன்றி மீண்டும் வருக !
       </div>
     </div>
@@ -461,15 +472,15 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
       const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');
 
       return `
-        <div class="table-grid" style="font-size: 8pt; line-height: 1.2; border-bottom: 0.5px solid #034d28;">
-          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 800; padding: 3px 1px; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">${rateVal}</div>
+        <div class="table-grid" style="font-size: 10.5pt; line-height: 1.2; border-bottom: 0.5px solid #034d28;">
+          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 12pt; padding: 2.5px 1px; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">${rateVal}</div>
           <div style="border-right: 1px solid #034d28; padding: 2px 4px; min-width: 0; color: #034d28;">
-            <div style="font-weight: 800; font-size: 7.5pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${desc1}</div>
-            <div style="font-style: italic; font-size: 7pt; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${desc2}</div>
+            <div style="font-weight: 800; font-size: 10.5pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${desc1}</div>
+            <div style="font-style: italic; font-size: 9pt; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${desc2}</div>
           </div>
-          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">${qty}</div>
-          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0; color: #034d28;">${lineRupees}</div>
-          <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">${linePaise}</div>
+          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 12pt; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">${qty}</div>
+          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: 12.5pt; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0; color: #034d28;">${lineRupees}</div>
+          <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 10.5pt; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">${linePaise}</div>
         </div>`;
     })
     .join('');
@@ -477,14 +488,14 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   // Gross total subtotal row (only if multiple items)
   const grossSubtotalHtml = items.length > 1
     ? `
-      <div class="table-grid" style="font-size: 7.8pt; font-weight: 900; background: #f0fdf4; border-bottom: 1px solid #034d28; color: #034d28;">
+      <div class="table-grid" style="font-size: 10pt; font-weight: 900; background: #f0fdf4; border-bottom: 1px solid #034d28; color: #034d28;">
         <div style="grid-column: 1 / 4; border-right: 1px solid #034d28; text-align: right; padding-right: 4px; display: flex; align-items: center; justify-content: flex-end;">
           மொத்த பில் (Gross Total)
         </div>
-        <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end;">
+        <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end; font-size: 12pt;">
           ${grossRupeesPart}
         </div>
-        <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; display: flex; align-items: center; justify-content: center;">
+        <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 10.5pt;">
           ${grossPaisePart}
         </div>
       </div>`
@@ -541,7 +552,7 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   }
   .table-grid {
     display: grid;
-    grid-template-columns: 15% minmax(0, 44%) 13% 19% 9%;
+    grid-template-columns: 17% minmax(0, 42%) 13% 19% 9%;
     box-sizing: border-box;
   }
 </style>
@@ -553,9 +564,9 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
       <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative;">
         <div style="width: 40px;"></div>
         <div style="text-align: center; position: absolute; left: 0; right: 0; margin: 0 auto; top: -1px;">
-          <span style="font-size: 9.5pt; font-weight: 900; border-bottom: 1.5px double #034d28; padding-bottom: 0.5px; display: inline-block; color: #034d28;">உ</span>
+          <span style="font-size: 10.5pt; font-weight: 900; border-bottom: 1.5px double #034d28; padding-bottom: 0.5px; display: inline-block; color: #034d28;">உ</span>
         </div>
-        <div style="text-align: right; font-size: 7.5pt; font-weight: 800; font-family: monospace; line-height: 1.2; color: #034d28;">
+        <div style="text-align: right; font-size: 8.5pt; font-weight: 800; font-family: monospace; line-height: 1.2; color: #034d28;">
           <div>📱 ${phone1}</div>
           <div style="padding-left: 18px;">${phone2}</div>
         </div>
@@ -567,37 +578,37 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
           ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="max-height: 100%; max-width: 100%; object-fit: contain;" />` : ''}
         </div>
         <div style="flex: 1; text-align: center; padding-left: 1.5mm; padding-right: 1.5mm;">
-          <div style="font-size: 18pt; font-weight: 900; color: #dc2626; letter-spacing: 0.5px; line-height: 1;">மகாலட்சுமி</div>
-          <div style="font-size: 7.5pt; font-weight: 800; color: #034d28; margin-top: 2px; white-space: nowrap;">தக்காளி &amp; காய், கனி கமிஷன் மண்டி</div>
-          <div style="font-size: 6.8pt; font-weight: 700; color: #034d28; margin-top: 1.5px; white-space: nowrap;">${address}</div>
-          <div style="font-size: 9pt; font-weight: 900; color: #dc2626; margin-top: 1.5px;">Prop : ${owner}</div>
+          <div style="font-size: 20pt; font-weight: 900; color: #dc2626; letter-spacing: 0.5px; line-height: 1;">மகாலட்சுமி</div>
+          <div style="font-size: 9pt; font-weight: 800; color: #034d28; margin-top: 2px; white-space: nowrap;">தக்காளி &amp; காய், கனி கமிஷன் மண்டி</div>
+          <div style="font-size: 8pt; font-weight: 700; color: #034d28; margin-top: 1.5px; white-space: nowrap;">${address}</div>
+          <div style="font-size: 10.5pt; font-weight: 900; color: #dc2626; margin-top: 1.5px;">Prop : ${owner}</div>
         </div>
       </div>
 
       <!-- Meta Row -->
       <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px;">
-        <div style="font-size: 8pt; font-weight: 900; color: #dc2626;">
+        <div style="font-size: 10.5pt; font-weight: 900; color: #dc2626;">
           எண் : <span style="font-family: monospace;">25</span>
         </div>
-        <div style="font-size: 7.5pt; font-weight: 800; color: #034d28;">
+        <div style="font-size: 9.5pt; font-weight: 800; color: #034d28;">
           தேதி : <span style="border-bottom: 1px dotted #034d28; padding-bottom: 0.5px; font-family: monospace; font-style: italic; font-weight: 800; color: #034d28;">${dateStr}</span>
         </div>
       </div>
 
       <!-- Supplier Line -->
-      <div style="font-size: 8.5pt; font-weight: 800; display: flex; align-items: baseline; margin-top: 1.5px; margin-bottom: 2mm; color: #034d28;">
+      <div style="font-size: 11pt; font-weight: 800; display: flex; align-items: baseline; margin-top: 1.5px; margin-bottom: 1.5mm; color: #034d28;">
         <span style="white-space: nowrap; margin-right: 5px;">திரு :</span>
-        <span style="flex: 1; font-style: italic; font-weight: 900; font-size: 9.5pt; color: #034d28;">${purchaseData.supplierName || 'விவசாயி / சப்ளையர்'}</span>
+        <span style="flex: 1; font-style: italic; font-weight: 900; font-size: 13pt; color: #034d28;">${purchaseData.supplierName || 'விவசாயி / சப்ளையர்'}</span>
       </div>
 
       <!-- 5-Column Ruled Table (No internal horizontal divider lines) -->
       <div style="border: 1px solid #034d28; flex: 1; min-height: 0; display: flex; flex-direction: column; box-sizing: border-box;">
-        <div class="table-grid" style="text-align: center; font-size: 7.5pt; font-weight: 900; background: #ffffff; color: #034d28; border-bottom: 1px solid #034d28;">
-          <div style="border-right: 1px solid #034d28; padding: 1.5px 0; min-width: 0;">விலை</div>
-          <div style="border-right: 1px solid #034d28; padding: 1.5px 0; min-width: 0;">விபரம்</div>
-          <div style="border-right: 1px solid #034d28; padding: 1.5px 0; min-width: 0;">No.</div>
-          <div style="border-right: 1px solid #034d28; padding: 1.5px 0; min-width: 0;">ரூ.</div>
-          <div style="padding: 1.5px 0; min-width: 0;">பை.</div>
+        <div class="table-grid" style="text-align: center; font-size: 9.5pt; font-weight: 900; background: #ffffff; color: #034d28; border-bottom: 1px solid #034d28;">
+          <div style="border-right: 1px solid #034d28; padding: 2px 0; min-width: 0;">விலை</div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 0; min-width: 0;">விபரம்</div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 0; min-width: 0;">No.</div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 0; min-width: 0;">ரூ.</div>
+          <div style="padding: 2px 0; min-width: 0;">பை.</div>
         </div>
 
         <!-- Purchase Line Items -->
@@ -607,7 +618,7 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
         ${grossSubtotalHtml}
 
         <!-- Middle Space with vertical dividers only -->
-        <div class="table-grid" style="flex: 1; min-height: 12mm;">
+        <div class="table-grid" style="flex: 1; min-height: 8mm;">
           <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
           <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
           <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
@@ -616,8 +627,8 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
         </div>
 
         <!-- Lower Deductions / Charges Area -->
-        <div class="table-grid" style="border-top: 1px solid #034d28; min-height: 27mm; box-sizing: border-box; font-size: 7pt; font-weight: 800; color: #034d28;">
-          <div style="border-right: 1px solid #034d28; padding: 2px 2px 3.5mm 2px; display: flex; flex-direction: column; justify-content: space-between; line-height: 1.25; min-width: 0; box-sizing: border-box; color: #034d28;">
+        <div class="table-grid" style="border-top: 1px solid #034d28; min-height: 27mm; box-sizing: border-box; font-size: 9.5pt; font-weight: 800; color: #034d28;">
+          <div style="border-right: 1px solid #034d28; padding: 2px 2px 2.5mm 2px; display: flex; flex-direction: column; justify-content: space-between; line-height: 1.25; min-width: 0; box-sizing: border-box; color: #034d28;">
             <div>கமிஷன்</div>
             <div>கேட்</div>
             <div>கூலி</div>
@@ -625,13 +636,13 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
             <div>பற்று</div>
             <div>மொத்தம்</div>
           </div>
-          <div style="border-right: 1px solid #034d28; padding: 2px 4px 3.5mm 4px; display: flex; flex-direction: column; justify-content: space-between; line-height: 1.25; min-width: 0; box-sizing: border-box; color: #034d28;">
-            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.5pt;">${commission > 0 ? commission.toLocaleString('en-IN') : '-'}</span></div>
-            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.5pt;">${gate > 0 ? gate.toLocaleString('en-IN') : '-'}</span></div>
-            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.5pt;">${coolie > 0 ? coolie.toLocaleString('en-IN') : '-'}</span></div>
-            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.5pt;">${rent > 0 ? rent.toLocaleString('en-IN') : '-'}</span></div>
-            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.5pt;">${debit > 0 ? debit.toLocaleString('en-IN') : '-'}</span></div>
-            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 7.5pt;">${totalDeductions > 0 ? totalDeductions.toLocaleString('en-IN') : '-'}</span></div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 4px 2.5mm 4px; display: flex; flex-direction: column; justify-content: space-between; line-height: 1.25; min-width: 0; box-sizing: border-box; color: #034d28;">
+            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt;">${commission > 0 ? commission.toLocaleString('en-IN') : '-'}</span></div>
+            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt;">${gate > 0 ? gate.toLocaleString('en-IN') : '-'}</span></div>
+            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt;">${coolie > 0 ? coolie.toLocaleString('en-IN') : '-'}</span></div>
+            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt;">${rent > 0 ? rent.toLocaleString('en-IN') : '-'}</span></div>
+            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt;">${debit > 0 ? debit.toLocaleString('en-IN') : '-'}</span></div>
+            <div>: &nbsp;<span style="font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt;">${totalDeductions > 0 ? totalDeductions.toLocaleString('en-IN') : '-'}</span></div>
           </div>
           <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
           <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
@@ -639,21 +650,21 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
         </div>
 
         <!-- Bottom Net Total Row: மொத்தம் -->
-        <div class="table-grid" style="border-top: 1px solid #034d28; font-size: 8.5pt; font-weight: 900; height: 6.8mm; color: #034d28; background: #ffffff;">
+        <div class="table-grid" style="border-top: 1px solid #034d28; font-size: 11.5pt; font-weight: 900; height: 7.5mm; color: #034d28; background: #ffffff;">
           <div style="grid-column: 1 / 4; border-right: 1px solid #034d28; text-align: right; padding-right: 6mm; display: flex; align-items: center; justify-content: flex-end; letter-spacing: 0.5px; min-width: 0; color: #034d28;">
             மொத்தம்
           </div>
-          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; padding-right: 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0; color: #034d28;">
+          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; padding-right: 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0; color: #034d28; font-size: 13.5pt;">
             ${netRupeesPart}
           </div>
-          <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">
+          <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28; font-size: 11pt;">
             ${netPaisePart}
           </div>
         </div>
       </div>
 
       <!-- Centered Footer -->
-      <div style="text-align: center; font-weight: 900; font-size: 11pt; color: #dc2626; letter-spacing: 0.5px; padding-top: 2mm; line-height: 1;">
+      <div style="text-align: center; font-weight: 900; font-size: 12.5pt; color: #dc2626; letter-spacing: 0.5px; padding-top: 1.5mm; line-height: 1;">
         நன்றி மீண்டும் வருக !
       </div>
     </div>
@@ -777,15 +788,8 @@ export const executeDirectPrint = async ({ type, transaction, purchase, settings
       if (silent) sumatraArgs.push('-silent');
 
       // Target exact physical paper size for Canon G3030 series at 100% scale:
-      // - Buyer bill: 89x89 mm Square (Canon driver Form ID: paperkind=138)
-      // - Supplier bill: 105x148 mm A6 Portrait (Canon driver Form ID: paperkind=70, paper=A6)
-      const settingsList = ['noscale'];
-      if (isBuyer) {
-        settingsList.push('paperkind=138');
-      } else {
-        settingsList.push('paper=A6');
-        settingsList.push('paperkind=70');
-      }
+      // Both Buyer bill and Supplier bill use 105x148 mm A6 Portrait (Canon driver Form ID: paperkind=70, paper=A6)
+      const settingsList = ['noscale', 'paper=A6', 'paperkind=70'];
       sumatraArgs.push('-print-settings', settingsList.join(','));
     }
 

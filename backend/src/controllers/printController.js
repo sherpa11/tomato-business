@@ -76,7 +76,7 @@ export const streamBillPdf = async (req, res, next) => {
     });
 
     generatedPath = result.pdfPath;
-    const filename = type === 'buyer' ? 'Buyer_Bill_89x89mm.pdf' : 'Supplier_Bill_A6.pdf';
+    const filename = type === 'buyer' ? 'Buyer_Bill_A6.pdf' : 'Supplier_Bill_A6.pdf';
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);

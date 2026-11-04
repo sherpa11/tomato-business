@@ -253,6 +253,8 @@ export default function Dashboard() {
 
         <TodayTallyTable
           tally={filteredTodayTally}
+          allTally={data?.todayTally}
+          summary={data?.summary}
           isFiltered={Boolean(customerSearch.trim())}
           searchTerm={customerSearch.trim()}
           onPrint={handlePrintBuyerBill}

@@ -157,7 +157,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div style={{ textAlign: 'center', position: 'absolute', left: 0, right: 0, margin: '0 auto', top: '-1px' }}>
               <span
                 style={{
-                  fontSize: '9.5pt',
+                  fontSize: '10.5pt',
                   fontWeight: 900,
                   borderBottom: '1.5px double #034d28',
                   paddingBottom: '0.5px',
@@ -168,7 +168,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                 உ
               </span>
             </div>
-            <div style={{ textAlign: 'right', fontSize: '7.5pt', fontWeight: 800, fontFamily: 'monospace', lineHeight: 1.2, color: '#034d28' }}>
+            <div style={{ textAlign: 'right', fontSize: '8.5pt', fontWeight: 800, fontFamily: 'monospace', lineHeight: 1.2, color: '#034d28' }}>
               <div>📱 {phone1}</div>
               <div style={{ paddingLeft: '18px' }}>{phone2}</div>
             </div>
@@ -189,7 +189,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div style={{ flex: 1, textAlign: 'center', paddingLeft: '1.5mm', paddingRight: '1.5mm' }}>
               <div
                 style={{
-                  fontSize: '18pt',
+                  fontSize: '20pt',
                   fontWeight: 900,
                   color: '#dc2626',
                   letterSpacing: '0.5px',
@@ -198,13 +198,13 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
               >
                 மகாலட்சுமி
               </div>
-              <div style={{ fontSize: '7.5pt', fontWeight: 800, color: '#034d28', marginTop: '2px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '9pt', fontWeight: 800, color: '#034d28', marginTop: '2px', whiteSpace: 'nowrap' }}>
                 தக்காளி &amp; காய், கனி கமிஷன் மண்டி
               </div>
-              <div style={{ fontSize: '6.8pt', fontWeight: 700, color: '#034d28', marginTop: '1.5px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '8pt', fontWeight: 700, color: '#034d28', marginTop: '1.5px', whiteSpace: 'nowrap' }}>
                 {address}
               </div>
-              <div style={{ fontSize: '9pt', fontWeight: 900, color: '#dc2626', marginTop: '1.5px' }}>
+              <div style={{ fontSize: '10.5pt', fontWeight: 900, color: '#dc2626', marginTop: '1.5px' }}>
                 Prop : {owner}
               </div>
             </div>
@@ -212,10 +212,10 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
 
           {/* Meta Row: எண் (Shop No: 25) & தேதி (Date) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '2px' }}>
-            <div style={{ fontSize: '8pt', fontWeight: 900, color: '#dc2626' }}>
+            <div style={{ fontSize: '10.5pt', fontWeight: 900, color: '#dc2626' }}>
               எண் : <span style={{ fontFamily: 'monospace' }}>25</span>
             </div>
-            <div style={{ fontSize: '7.5pt', fontWeight: 800, color: '#034d28' }}>
+            <div style={{ fontSize: '9.5pt', fontWeight: 800, color: '#034d28' }}>
               தேதி :{' '}
               <span
                 style={{
@@ -235,12 +235,12 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
           {/* Supplier Name Line */}
           <div
             style={{
-              fontSize: '8.5pt',
+              fontSize: '11pt',
               fontWeight: 800,
               display: 'flex',
               alignItems: 'baseline',
               marginTop: '1.5px',
-              marginBottom: '2mm',
+              marginBottom: '1.5mm',
               color: '#034d28'
             }}
           >
@@ -250,7 +250,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                 flex: 1,
                 fontStyle: 'italic',
                 fontWeight: 900,
-                fontSize: '9.5pt',
+                fontSize: '13pt',
                 color: '#034d28'
               }}
             >
@@ -273,9 +273,9 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '15% minmax(0, 44%) 13% 19% 9%',
+                gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
                 textAlign: 'center',
-                fontSize: '7.5pt',
+                fontSize: '9.5pt',
                 fontWeight: 900,
                 backgroundColor: '#ffffff',
                 boxSizing: 'border-box',
@@ -283,11 +283,11 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                 borderBottom: '1px solid #034d28'
               }}
             >
-              <div style={{ borderRight: '1px solid #034d28', padding: '1.5px 0', minWidth: 0, boxSizing: 'border-box' }}>விலை</div>
-              <div style={{ borderRight: '1px solid #034d28', padding: '1.5px 0', minWidth: 0, boxSizing: 'border-box' }}>விபரம்</div>
-              <div style={{ borderRight: '1px solid #034d28', padding: '1.5px 0', minWidth: 0, boxSizing: 'border-box' }}>No.</div>
-              <div style={{ borderRight: '1px solid #034d28', padding: '1.5px 0', minWidth: 0, boxSizing: 'border-box' }}>ரூ.</div>
-              <div style={{ padding: '1.5px 0', minWidth: 0, boxSizing: 'border-box' }}>பை.</div>
+              <div style={{ borderRight: '1px solid #034d28', padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>விலை</div>
+              <div style={{ borderRight: '1px solid #034d28', padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>விபரம்</div>
+              <div style={{ borderRight: '1px solid #034d28', padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>No.</div>
+              <div style={{ borderRight: '1px solid #034d28', padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>ரூ.</div>
+              <div style={{ padding: '2px 0', minWidth: 0, boxSizing: 'border-box' }}>பை.</div>
             </div>
 
             {/* Purchase Item Rows */}
@@ -305,8 +305,8 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                   key={item._id || idx}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '15% minmax(0, 44%) 13% 19% 9%',
-                    fontSize: '8pt',
+                    gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
+                    fontSize: '10.5pt',
                     lineHeight: 1.2,
                     boxSizing: 'border-box',
                     borderBottom: '0.5px solid #034d28'
@@ -319,7 +319,8 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 800,
-                      padding: '3px 1px',
+                      fontSize: '12pt',
+                      padding: '2.5px 1px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -331,8 +332,8 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                     {rateVal}
                   </div>
                   <div style={{ borderRight: '1px solid #034d28', padding: '2px 4px', minWidth: 0, boxSizing: 'border-box', color: '#034d28' }}>
-                    <div style={{ fontWeight: 800, fontSize: '7.5pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{desc1}</div>
-                    <div style={{ fontStyle: 'italic', fontSize: '7pt', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{desc2}</div>
+                    <div style={{ fontWeight: 800, fontSize: '10.5pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{desc1}</div>
+                    <div style={{ fontStyle: 'italic', fontSize: '9pt', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{desc2}</div>
                   </div>
                   <div
                     style={{
@@ -341,6 +342,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 800,
+                      fontSize: '12pt',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -358,6 +360,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
+                      fontSize: '12.5pt',
                       padding: '2px 4px',
                       display: 'flex',
                       alignItems: 'center',
@@ -375,6 +378,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 800,
+                      fontSize: '10.5pt',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -394,8 +398,8 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '15% minmax(0, 44%) 13% 19% 9%',
-                  fontSize: '7.8pt',
+                  gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
+                  fontSize: '10pt',
                   fontWeight: 900,
                   backgroundColor: '#f0fdf4',
                   boxSizing: 'border-box',
@@ -424,6 +428,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
+                    fontSize: '12pt',
                     padding: '2px 4px',
                     display: 'flex',
                     alignItems: 'center',
@@ -439,6 +444,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
+                    fontSize: '10.5pt',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -454,9 +460,9 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '15% minmax(0, 44%) 13% 19% 9%',
+                gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
                 flex: 1,
-                minHeight: '12mm',
+                minHeight: '8mm',
                 boxSizing: 'border-box'
               }}
             >
@@ -471,7 +477,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '15% minmax(0, 44%) 13% 19% 9%',
+                gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
                 borderTop: '1px solid #034d28',
                 minHeight: '27mm',
                 boxSizing: 'border-box',
@@ -482,10 +488,10 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
               <div
                 style={{
                   borderRight: '1px solid #034d28',
-                  fontSize: '7pt',
+                  fontSize: '9.5pt',
                   fontWeight: 800,
                   color: '#034d28',
-                  padding: '2px 2px 3.5mm 2px',
+                  padding: '2px 2px 2.5mm 2px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -506,9 +512,9 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
               <div
                 style={{
                   borderRight: '1px solid #034d28',
-                  fontSize: '7pt',
+                  fontSize: '9.5pt',
                   fontWeight: 800,
-                  padding: '2px 4px 3.5mm 4px',
+                  padding: '2px 4px 2.5mm 4px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -518,12 +524,12 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                   color: '#034d28'
                 }}
               >
-                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '7.5pt' }}>{commission > 0 ? commission.toLocaleString('en-IN') : '-'}</span></div>
-                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '7.5pt' }}>{gate > 0 ? gate.toLocaleString('en-IN') : '-'}</span></div>
-                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '7.5pt' }}>{coolie > 0 ? coolie.toLocaleString('en-IN') : '-'}</span></div>
-                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '7.5pt' }}>{rent > 0 ? rent.toLocaleString('en-IN') : '-'}</span></div>
-                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '7.5pt' }}>{debit > 0 ? debit.toLocaleString('en-IN') : '-'}</span></div>
-                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '7.5pt' }}>{totalDeductions > 0 ? totalDeductions.toLocaleString('en-IN') : '-'}</span></div>
+                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '10pt' }}>{commission > 0 ? commission.toLocaleString('en-IN') : '-'}</span></div>
+                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '10pt' }}>{gate > 0 ? gate.toLocaleString('en-IN') : '-'}</span></div>
+                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '10pt' }}>{coolie > 0 ? coolie.toLocaleString('en-IN') : '-'}</span></div>
+                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '10pt' }}>{rent > 0 ? rent.toLocaleString('en-IN') : '-'}</span></div>
+                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '10pt' }}>{debit > 0 ? debit.toLocaleString('en-IN') : '-'}</span></div>
+                <div>: &nbsp;<span style={{ fontFamily: 'monospace', fontStyle: 'italic', fontWeight: 800, fontSize: '10pt' }}>{totalDeductions > 0 ? totalDeductions.toLocaleString('en-IN') : '-'}</span></div>
               </div>
 
               {/* Col 3: Blank ruled vertical line */}
@@ -540,11 +546,11 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '15% minmax(0, 44%) 13% 19% 9%',
+                gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
                 borderTop: '1px solid #034d28',
-                fontSize: '8.5pt',
+                fontSize: '11.5pt',
                 fontWeight: 900,
-                height: '6.8mm',
+                height: '7.5mm',
                 boxSizing: 'border-box',
                 color: '#034d28',
                 backgroundColor: '#ffffff'
@@ -574,6 +580,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                   fontFamily: 'monospace',
                   fontStyle: 'italic',
                   fontWeight: 900,
+                  fontSize: '13.5pt',
                   paddingRight: '4px',
                   display: 'flex',
                   alignItems: 'center',
@@ -591,6 +598,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                   fontFamily: 'monospace',
                   fontStyle: 'italic',
                   fontWeight: 800,
+                  fontSize: '11pt',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -609,10 +617,10 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             style={{
               textAlign: 'center',
               fontWeight: 900,
-              fontSize: '11pt',
+              fontSize: '12.5pt',
               color: '#dc2626',
               letterSpacing: '0.5px',
-              paddingTop: '2mm',
+              paddingTop: '1.5mm',
               lineHeight: 1
             }}
           >
