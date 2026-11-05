@@ -273,7 +273,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
+                gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                 textAlign: 'center',
                 fontSize: '9.5pt',
                 fontWeight: 900,
@@ -305,7 +305,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                   key={item._id || idx}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
+                    gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                     fontSize: '10.5pt',
                     lineHeight: 1.2,
                     boxSizing: 'border-box',
@@ -360,8 +360,8 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '12.5pt',
-                      padding: '2px 4px',
+                      fontSize: lineAmt >= 1000000 ? '10.5pt' : lineAmt >= 100000 ? '11.5pt' : '12.5pt',
+                      padding: '2px 3px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'flex-end',
@@ -398,7 +398,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
+                  gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                   fontSize: '10pt',
                   fontWeight: 900,
                   backgroundColor: '#f0fdf4',
@@ -428,8 +428,8 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '12pt',
-                    padding: '2px 4px',
+                    fontSize: grossTotal >= 1000000 ? '10.5pt' : grossTotal >= 100000 ? '11.5pt' : '12pt',
+                    padding: '2px 3px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
@@ -460,7 +460,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
+                gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                 flex: 1,
                 minHeight: '8mm',
                 boxSizing: 'border-box'
@@ -477,7 +477,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
+                gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                 borderTop: '1px solid #034d28',
                 minHeight: '27mm',
                 boxSizing: 'border-box',
@@ -488,7 +488,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
               <div
                 style={{
                   borderRight: '1px solid #034d28',
-                  fontSize: '9.5pt',
+                  fontSize: '9pt',
                   fontWeight: 800,
                   color: '#034d28',
                   padding: '2px 2px 2.5mm 2px',
@@ -546,7 +546,7 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '17% minmax(0, 42%) 13% 19% 9%',
+                gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                 borderTop: '1px solid #034d28',
                 fontSize: '11.5pt',
                 fontWeight: 900,
@@ -580,8 +580,8 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                   fontFamily: 'monospace',
                   fontStyle: 'italic',
                   fontWeight: 900,
-                  fontSize: '13.5pt',
-                  paddingRight: '4px',
+                  fontSize: Math.abs(netTotal) >= 1000000 ? '11.5pt' : Math.abs(netTotal) >= 100000 ? '12.5pt' : '13.5pt',
+                  paddingRight: '3px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'flex-end',

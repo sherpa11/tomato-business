@@ -198,7 +198,7 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
             <div style="font-style: italic; font-size: 8.2pt; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;">${desc2}</div>
           </div>
           <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 13pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${qty}</div>
-          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: 13pt; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${lineRupees}</div>
+          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${lineAmt >= 1000000 ? '11pt' : lineAmt >= 100000 ? '12pt' : '13pt'}; padding: 2px 3px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${lineRupees}</div>
           <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 11pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${linePaise}</div>
         </div>`;
     })
@@ -211,7 +211,7 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
         <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
         <div style="border-right: 1px solid #034d28; text-align: right; padding-right: 4px; font-weight: 900; font-size: 9.5pt; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">மொத்தம் :</div>
         <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 12.5pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${totalQtyText}</div>
-        <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: 13pt; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${rupeesPart}</div>
+        <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${billTotal >= 1000000 ? '11pt' : billTotal >= 100000 ? '12pt' : '13pt'}; padding: 2px 3px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${rupeesPart}</div>
         <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 11pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${paisePart}</div>
       </div>`
     : '';
@@ -267,7 +267,7 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
   }
   .table-grid {
     display: grid;
-    grid-template-columns: 16% minmax(0, 44%) 10% 20% 10%;
+    grid-template-columns: 15% minmax(0, 41%) 10% 26% 8%;
     box-sizing: border-box;
     width: 100%;
   }
@@ -345,7 +345,7 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 4px; font-size: 8.2pt; font-weight: 800; min-width: 0; white-space: nowrap; overflow: hidden;">: (முந்தைய பாக்கி)</div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
-            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 4px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 9.2pt; min-width: 0; white-space: nowrap; overflow: hidden;">${oldBalNum.toLocaleString('en-IN')}</div>
+            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: ${oldBalNum >= 1000000 ? '8.5pt' : '9.2pt'}; min-width: 0; white-space: nowrap; overflow: hidden;">${oldBalNum.toLocaleString('en-IN')}</div>
             <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 8.5pt; min-width: 0;">00</div>
           </div>
 
@@ -354,7 +354,7 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 4px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 9.2pt; min-width: 0; white-space: nowrap; overflow: hidden;">${totalDueNum.toLocaleString('en-IN')}</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${totalDueNum >= 1000000 ? '8.5pt' : '9.2pt'}; min-width: 0; white-space: nowrap; overflow: hidden;">${totalDueNum.toLocaleString('en-IN')}</div>
             <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 8.5pt; min-width: 0;">00</div>
           </div>
 
@@ -363,16 +363,16 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 4px; font-size: 8.2pt; font-weight: 800; min-width: 0; white-space: nowrap; overflow: hidden;">: (வரவு)</div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
-            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 4px; font-family: monospace; font-style: italic; font-weight: 800; font-size: 9.2pt; min-width: 0; white-space: nowrap; overflow: hidden;">${paidNum.toLocaleString('en-IN')}</div>
+            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: ${paidNum >= 1000000 ? '8.5pt' : '9.2pt'}; min-width: 0; white-space: nowrap; overflow: hidden;">${paidNum.toLocaleString('en-IN')}</div>
             <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 8.5pt; min-width: 0;">00</div>
           </div>
 
           <!-- Row 4: பாக்கி -->
           <div class="table-grid" style="height: 7.2mm; align-items: center; box-sizing: border-box;">
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 4px; font-size: 12pt; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 4px; font-size: ${isAdvance ? '9.5pt' : '11.5pt'}; font-weight: 900; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
             <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
-            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 4px; font-family: monospace; font-style: italic; font-weight: 900; font-size: 13.5pt; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${Math.abs(newBalNum).toLocaleString('en-IN')}</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${Math.abs(newBalNum) >= 1000000 ? '11pt' : Math.abs(newBalNum) >= 100000 ? '12pt' : '13.5pt'}; color: #991b1b; box-sizing: border-box; min-width: 0; white-space: nowrap; overflow: hidden;">${Math.abs(newBalNum).toLocaleString('en-IN')}</div>
             <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 11pt; box-sizing: border-box; min-width: 0;">00</div>
           </div>
         </div>
@@ -479,7 +479,7 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
             <div style="font-style: italic; font-size: 9pt; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${desc2}</div>
           </div>
           <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 12pt; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">${qty}</div>
-          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: 12.5pt; padding: 2px 4px; display: flex; align-items: center; justify-content: flex-end; min-width: 0; color: #034d28;">${lineRupees}</div>
+          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${lineAmt >= 1000000 ? '10.5pt' : lineAmt >= 100000 ? '11.5pt' : '12.5pt'}; padding: 2px 3px; display: flex; align-items: center; justify-content: flex-end; min-width: 0; color: #034d28;">${lineRupees}</div>
           <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 10.5pt; display: flex; align-items: center; justify-content: center; min-width: 0; color: #034d28;">${linePaise}</div>
         </div>`;
     })
@@ -552,7 +552,7 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   }
   .table-grid {
     display: grid;
-    grid-template-columns: 17% minmax(0, 42%) 13% 19% 9%;
+    grid-template-columns: 15% minmax(0, 41%) 10% 26% 8%;
     box-sizing: border-box;
   }
 </style>

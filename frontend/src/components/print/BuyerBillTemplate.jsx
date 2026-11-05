@@ -279,7 +279,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                 textAlign: 'center',
                 fontSize: '8.5pt',
                 fontWeight: 900,
@@ -311,7 +311,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                   key={item._id || idx}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                    gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                     fontSize: '10.5pt',
                     lineHeight: 1.2,
                     boxSizing: 'border-box'
@@ -363,8 +363,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                       fontFamily: 'monospace',
                       fontStyle: 'italic',
                       fontWeight: 900,
-                      fontSize: '13pt',
-                      padding: '2px 4px',
+                      fontSize: lineAmt >= 1000000 ? '11pt' : lineAmt >= 100000 ? '12pt' : '13pt',
+                      padding: '2px 3px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'flex-end',
@@ -399,7 +399,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                   fontSize: '9.5pt',
                   lineHeight: 1.2,
                   boxSizing: 'border-box'
@@ -446,8 +446,8 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '13pt',
-                    padding: '2px 4px',
+                    fontSize: billTotal >= 1000000 ? '11pt' : billTotal >= 100000 ? '12pt' : '13pt',
+                    padding: '2px 3px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
@@ -480,7 +480,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                 flex: 1,
                 minHeight: '12mm',
                 boxSizing: 'border-box'
@@ -507,7 +507,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                   height: '6.8mm',
                   alignItems: 'center',
                   boxSizing: 'border-box'
@@ -540,11 +540,11 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    padding: '0 4px',
+                    padding: '0 2px',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
-                    fontSize: '9.2pt',
+                    fontSize: oldBalNum >= 1000000 ? '8.5pt' : '9.2pt',
                     boxSizing: 'border-box',
                     minWidth: 0,
                     whiteSpace: 'nowrap',
@@ -576,7 +576,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                   height: '6.8mm',
                   alignItems: 'center',
                   boxSizing: 'border-box'
@@ -592,11 +592,11 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    padding: '0 4px',
+                    padding: '0 2px',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '9.2pt',
+                    fontSize: totalDueNum >= 1000000 ? '8.5pt' : '9.2pt',
                     boxSizing: 'border-box',
                     minWidth: 0,
                     whiteSpace: 'nowrap',
@@ -627,7 +627,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                   height: '6.8mm',
                   alignItems: 'center',
                   boxSizing: 'border-box'
@@ -660,11 +660,11 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    padding: '0 4px',
+                    padding: '0 2px',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 800,
-                    fontSize: '9.2pt',
+                    fontSize: paidNum >= 1000000 ? '8.5pt' : '9.2pt',
                     boxSizing: 'border-box',
                     minWidth: 0,
                     whiteSpace: 'nowrap',
@@ -696,7 +696,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '16% minmax(0, 44%) 10% 20% 10%',
+                  gridTemplateColumns: '15% minmax(0, 41%) 10% 26% 8%',
                   height: '7.2mm',
                   alignItems: 'center',
                   boxSizing: 'border-box'
@@ -709,7 +709,7 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     padding: '0 4px',
-                    fontSize: '12pt',
+                    fontSize: isAdvance ? '9.5pt' : '11.5pt',
                     fontWeight: 900,
                     color: '#991b1b',
                     boxSizing: 'border-box',
@@ -728,11 +728,11 @@ export default function BuyerBillTemplate({ transaction, settings }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    padding: '0 4px',
+                    padding: '0 2px',
                     fontFamily: 'monospace',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: '13.5pt',
+                    fontSize: Math.abs(newBalNum) >= 1000000 ? '11pt' : Math.abs(newBalNum) >= 100000 ? '12pt' : '13.5pt',
                     color: '#991b1b',
                     boxSizing: 'border-box',
                     minWidth: 0,
