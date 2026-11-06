@@ -248,6 +248,7 @@ export const updateUserStatus = async (req, res, next) => {
       }
     }
 
+    user.role = (user.role || 'ADMIN').toUpperCase();
     user.active = active;
     await user.save();
 

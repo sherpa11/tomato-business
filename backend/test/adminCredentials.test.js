@@ -216,4 +216,28 @@ test('Admin Credential Management Security Suite', async (t) => {
     assert.equal(newLogin.data.user.username, updatedAdminUser);
     assert.equal(newLogin.data.user.role, 'ADMIN');
   });
+
+  await t.test('9. Handles existing users with lowercase admin role without validation error', async () => {
+    // Specifically set role to lowercase 'admin' in Mongo
+    await User.updateOne({ username: updatedAdminUser }, { $set: { role: 'admin' } });
+
+    const loginRes = await apiRequest('/api/auth/login', {
+      method: 'POST',
+      body: { username: updatedAdminUser, password: newPassword }
+    });
+    assert.equal(loginRes.status, 200);
+
+    const changeRes = await apiRequest('/api/auth/change-credentials', {
+      method: 'PUT',
+      token: loginRes.data.token,
+      body: {
+        currentPassword: newPassword,
+        newPassword: 'FinalAdminPassword999!',
+        confirmPassword: 'FinalAdminPassword999!'
+      }
+    });
+    assert.equal(changeRes.status, 200);
+    assert.equal(changeRes.data.success, true);
+    assert.equal(changeRes.data.user.role, 'ADMIN');
+  });
 });

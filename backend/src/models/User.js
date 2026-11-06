@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['ADMIN', 'ACCOUNTANT'],
+      enum: ['ADMIN', 'ACCOUNTANT', 'admin', 'accountant'],
       default: 'ADMIN',
       set: (v) => (typeof v === 'string' ? v.toUpperCase() : v)
     },
@@ -32,8 +32,16 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Normalize role before validation runs
+userSchema.pre('validate', function (next) {
+  if (this.role && typeof this.role === 'string') {
+    this.role = this.role.toUpperCase();
+  }
+  next();
+});
+
 userSchema.pre('save', async function (next) {
-  if (this.role) {
+  if (this.role && typeof this.role === 'string') {
     this.role = this.role.toUpperCase();
   }
   if (!this.isModified('password')) return next();
