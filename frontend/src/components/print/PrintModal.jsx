@@ -16,14 +16,36 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   const [printerInfo, setPrinterInfo] = useState({ hasCanon: true, defaultPrinter: 'Canon G3030 series' });
   const [showOptions, setShowOptions] = useState(false);
 
+  // Paper size state for Buyer Bill (Option 1: 'square' default 89x89 mm, Option 2: 'a6' 105x148 mm)
+  const [buyerPaperSize, setBuyerPaperSize] = useState('square');
+  const [showPaperSizeDropdown, setShowPaperSizeDropdown] = useState(false);
+  const paperDropdownRef = React.useRef(null);
+
   // Determine what type of document is being printed
   const isBuyerBill = title.toLowerCase().includes('buyer') || Boolean(children?.props?.transaction);
   const isSupplierBill = title.toLowerCase().includes('supplier') || Boolean(children?.props?.purchase);
 
   // Exact unscaled dimensions in screen pixels (at standard 96 DPI: 1 inch = 25.4mm)
+  // Square (89mm x 89mm): 89mm = 336.38px; 89mm = 336.38px
   // A6 (105mm x 148mm): 105mm = 396.85px; 148mm = 559.37px
-  const baseWidthPx = isBuyerBill || isSupplierBill ? 396.85 : 302.36;
-  const baseHeightPx = isBuyerBill || isSupplierBill ? 559.37 : null;
+  let baseWidthPx = 396.85;
+  let baseHeightPx = 559.37;
+
+  if (isBuyerBill) {
+    if (buyerPaperSize === 'a6') {
+      baseWidthPx = 396.85;
+      baseHeightPx = 559.37;
+    } else {
+      baseWidthPx = 336.38;
+      baseHeightPx = 336.38;
+    }
+  } else if (isSupplierBill) {
+    baseWidthPx = 396.85;
+    baseHeightPx = 559.37;
+  } else {
+    baseWidthPx = 302.36;
+    baseHeightPx = null;
+  }
 
   const scrollAreaRef = React.useRef(null);
   const [previewScale, setPreviewScale] = useState(1);
@@ -60,9 +82,11 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     };
   }, [isOpen, baseWidthPx]);
 
-  // Manage body class so print CSS knows PrintModal is active
+  // Manage body class and reset paper size on modal open (default: Square 89x89 mm)
   useEffect(() => {
     if (isOpen) {
+      setBuyerPaperSize('square');
+      setShowPaperSizeDropdown(false);
       document.body.classList.add('print-modal-active');
       // Query local printer status from backend
       printAPI.getStatus()
@@ -83,11 +107,27 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
       setPrintSuccess(false);
       setPrintMessage('');
       setShowOptions(false);
+      setShowPaperSizeDropdown(false);
     }
     return () => {
       document.body.classList.remove('print-modal-active');
     };
   }, [isOpen]);
+
+  // Click outside listener for paper size selector dropdown
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (paperDropdownRef.current && !paperDropdownRef.current.contains(e.target)) {
+        setShowPaperSizeDropdown(false);
+      }
+    };
+    if (showPaperSizeDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPaperSizeDropdown]);
 
   const rawTransaction = children?.props?.transaction;
   const rawPurchase = children?.props?.purchase;
@@ -380,7 +420,11 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     }
     setShowOptions(false);
     const origTitle = document.title;
-    document.title = isBuyerBill ? 'Buyer_Bill_A6' : isSupplierBill ? 'Supplier_Bill_A6' : 'Customer_Statement';
+    document.title = isBuyerBill
+      ? (buyerPaperSize === 'a6' ? 'Buyer_Bill_A6' : 'Buyer_Bill_Square')
+      : isSupplierBill
+      ? 'Supplier_Bill_A6'
+      : 'Customer_Statement';
     window.print();
     setTimeout(() => {
       document.title = origTitle;
@@ -407,6 +451,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
         type,
         transaction: effectiveTransaction,
         purchase: effectivePurchase,
+        paperSize: isBuyerBill ? buyerPaperSize : 'a6',
         printerName: printerInfo.defaultPrinter || 'Canon G3030 series',
         openDialog,
         silent: !openDialog
@@ -440,11 +485,21 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
       await handleSaveDeductions();
     }
     try {
-      const blob = await printAPI.streamPdf({ type, transaction: effectiveTransaction, purchase: effectivePurchase });
+      const blob = await printAPI.streamPdf({
+        type,
+        transaction: effectiveTransaction,
+        purchase: effectivePurchase,
+        paperSize: isBuyerBill ? buyerPaperSize : 'a6'
+      });
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', isBuyerBill ? 'Buyer_Bill_A6.pdf' : 'Supplier_Bill_A6.pdf');
+      link.setAttribute(
+        'download',
+        isBuyerBill
+          ? (buyerPaperSize === 'a6' ? 'Buyer_Bill_A6.pdf' : 'Buyer_Bill_Square.pdf')
+          : 'Supplier_Bill_A6.pdf'
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -483,7 +538,9 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500">
                 {isBuyerBill
-                  ? 'Paper size: 105mm × 148mm (A6 Mandi Bill)'
+                  ? buyerPaperSize === 'a6'
+                    ? 'Paper size: 105mm × 148mm (A6 Mandi Bill)'
+                    : 'Paper size: 89mm × 89mm (Square Mandi Bill)'
                   : isSupplierBill
                   ? 'Paper size: 105mm × 148mm (A6 Purchase Voucher)'
                   : 'Customer statement ledger'}
@@ -500,10 +557,74 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
           <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
             {/* Paper Size Indicator / Format Toggle */}
             {isBuyerBill ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>A6 (105 × 148 mm)</span>
-              </span>
+              <div className="relative" ref={paperDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowPaperSizeDropdown(!showPaperSizeDropdown)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100/80 active:scale-95 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                  title="Select Paper Size"
+                  aria-label="Select Paper Size"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>{buyerPaperSize === 'a6' ? 'A6 (105 × 148 mm)' : 'Square (89 × 89 mm)'}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-emerald-700 transition-transform ${showPaperSizeDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showPaperSizeDropdown && (
+                  <div
+                    className="absolute left-0 sm:right-0 sm:left-auto top-full mt-1.5 w-52 bg-white rounded-xl shadow-xl border border-emerald-200 py-1.5 z-50 animate-in fade-in zoom-in-95"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-900/60 border-b border-emerald-100">
+                      Buyer Bill Paper Size
+                    </div>
+
+                    {/* Option 1: Square (Default) */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBuyerPaperSize('square');
+                        setShowPaperSizeDropdown(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-xs font-bold flex items-center justify-between cursor-pointer transition-colors ${
+                        buyerPaperSize === 'square'
+                          ? 'bg-emerald-50 text-emerald-900 font-extrabold'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span>Square (Default)</span>
+                        <span className="text-[10px] font-normal text-slate-500">89 × 89 mm • Square</span>
+                      </div>
+                      {buyerPaperSize === 'square' && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      )}
+                    </button>
+
+                    {/* Option 2: A6 */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBuyerPaperSize('a6');
+                        setShowPaperSizeDropdown(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-xs font-bold flex items-center justify-between cursor-pointer transition-colors ${
+                        buyerPaperSize === 'a6'
+                          ? 'bg-emerald-50 text-emerald-900 font-extrabold'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span>A6 Mandi Bill</span>
+                        <span className="text-[10px] font-normal text-slate-500">105 × 148 mm • Portrait</span>
+                      </div>
+                      {buyerPaperSize === 'a6' && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : isSupplierBill ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-800 border border-red-200 rounded-lg text-xs font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5 text-red-600" />
@@ -801,6 +922,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
               {React.cloneElement(children, {
                 printFormat,
                 settings,
+                paperSize: isBuyerBill ? buyerPaperSize : undefined,
                 transaction: isBuyerBill ? effectiveTransaction : undefined,
                 purchase: isSupplierBill ? effectivePurchase : undefined
               })}
@@ -812,7 +934,9 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
         <div className="no-print pt-2 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
           <span>
             {isBuyerBill
-              ? 'Target: Canon G3030 series | Paper: A6 (105 × 148 mm) | Single Page'
+              ? buyerPaperSize === 'a6'
+                ? 'Target: Canon G3030 series | Paper: A6 (105 × 148 mm) | Single Page'
+                : 'Target: Canon G3030 series | Paper: Square (89 × 89 mm) | Single Page'
               : isSupplierBill
               ? 'Target: Canon G3030 series | Paper: A6 (105 × 148 mm) | Single Page'
               : 'Standard ledger statement.'}

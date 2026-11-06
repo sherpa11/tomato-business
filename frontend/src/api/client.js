@@ -60,6 +60,14 @@ export const authAPI = {
   getMe: () => api.get('/auth/me')
 };
 
+export const usersAPI = {
+  getUsers: () => api.get('/auth/users'),
+  createUser: (data) => api.post('/auth/users', data),
+  updateUserRole: (id, role) => api.put(`/auth/users/${id}/role`, { role }),
+  updateUserStatus: (id, active) => api.put(`/auth/users/${id}/status`, { active }),
+  deleteUser: (id) => api.delete(`/auth/users/${id}`)
+};
+
 export const settingsAPI = {
   getSettings: () => api.get('/settings'),
   updateSettings: (data) => api.put('/settings', data)
@@ -179,6 +187,11 @@ export const purchasesAPI = {
     invalidateDropdownCache();
     return res;
   },
+  updatePurchase: async (id, data) => {
+    const res = await api.put(`/purchases/${id}`, data);
+    invalidateDropdownCache();
+    return res;
+  },
   voidPurchase: async (id, data) => {
     const res = await api.post(`/purchases/${id}/void`, data);
     invalidateDropdownCache();
@@ -225,6 +238,15 @@ export const printAPI = {
   getStatus: () => api.get('/print/status'),
   directPrint: (data) => api.post('/print/direct', data),
   streamPdf: (data) => api.post('/print/pdf', data, { responseType: 'blob' })
+};
+
+export const outlayAPI = {
+  getOutlays: (params) => api.get('/outlay', { params }),
+  getSummary: (params) => api.get('/outlay/summary', { params }),
+  createOutlay: (data) => api.post('/outlay', data),
+  updateOutlay: (id, data) => api.put(`/outlay/${id}`, data),
+  deleteOutlay: (id) => api.delete(`/outlay/${id}`),
+  voidOutlay: (id, data) => api.post(`/outlay/${id}/void`, data)
 };
 
 export default api;

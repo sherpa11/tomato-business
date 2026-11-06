@@ -7,6 +7,7 @@ import {
   History,
   BarChart3,
   Settings,
+  Wallet,
   LogOut,
   Calendar,
   Menu,
@@ -19,19 +20,22 @@ import { formatDate } from '../utils/formatters';
 
 export default function Navbar() {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const { operationalDate, setOperationalDate, resetToToday, isToday } = useDate();
   const { settings } = useSettings();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { name: 'Buyers & Tally', path: '/buyers', icon: Users },
-    { name: 'Suppliers', path: '/suppliers', icon: Truck },
-    { name: 'History', path: '/history', icon: History },
-    { name: 'Reports', path: '/reports', icon: BarChart3 },
-    { name: 'Settings', path: '/settings', icon: Settings }
+  const allNavLinks = [
+    { name: 'Dashboard', path: '/', icon: LayoutDashboard, role: 'ALL' },
+    { name: 'Buyers & Tally', path: '/buyers', icon: Users, role: 'ALL' },
+    { name: 'Suppliers', path: '/suppliers', icon: Truck, role: 'ADMIN' },
+    { name: 'Outlay', path: '/outlay', icon: Wallet, role: 'ADMIN' },
+    { name: 'History', path: '/history', icon: History, role: 'ALL' },
+    { name: 'Reports', path: '/reports', icon: BarChart3, role: 'ADMIN' },
+    { name: 'Settings', path: '/settings', icon: Settings, role: 'ADMIN' }
   ];
+
+  const navLinks = allNavLinks.filter((l) => l.role === 'ALL' || (l.role === 'ADMIN' && isAdmin));
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
@@ -110,14 +114,26 @@ export default function Navbar() {
               );
             })}
 
-            {/* Logout button */}
-            <button
-              onClick={logout}
-              className="ml-1 w-8 h-8 xl:w-9 xl:h-9 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-red-100 shrink-0"
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {/* User role badge & Logout */}
+            <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-slate-200">
+              <span
+                className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
+                  isAdmin
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : 'bg-blue-50 text-blue-800 border-blue-200'
+                }`}
+                title={`Logged in as ${user?.username} (${user?.role})`}
+              >
+                {user?.role || 'ACCOUNTANT'}
+              </span>
+              <button
+                onClick={logout}
+                className="w-8 h-8 xl:w-9 xl:h-9 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-red-100 shrink-0"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Mobile Date indicator & Hamburger */}
@@ -189,7 +205,18 @@ export default function Navbar() {
           </div>
 
           <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-            <span className="text-xs text-slate-500 font-medium">Logged in as {user?.name || 'Admin'}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 font-medium">Logged in as {user?.name || user?.username}</span>
+              <span
+                className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full border ${
+                  isAdmin
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : 'bg-blue-50 text-blue-800 border-blue-200'
+                }`}
+              >
+                {user?.role || 'ACCOUNTANT'}
+              </span>
+            </div>
             <button
               onClick={logout}
               className="text-xs font-semibold text-red-600 flex items-center gap-1"

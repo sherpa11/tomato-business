@@ -24,6 +24,7 @@ import transactionRoutes from './routes/transactionRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import printRoutes from './routes/printRoutes.js';
+import outlayRoutes from './routes/outlayRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -107,6 +108,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/print', printRoutes);
+app.use('/api/outlay', outlayRoutes);
 
 // Optional: Serve frontend static build if configured or deployed as single unit
 const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
@@ -183,7 +185,7 @@ const initializeDatabase = async () => {
             username: adminUsername,
             password: adminPassword,
             name: process.env.ADMIN_NAME || 'Market Admin',
-            role: 'admin'
+            role: 'ADMIN'
           });
           console.log('[Init] Initial admin account provisioned successfully.');
         } catch (createErr) {

@@ -227,12 +227,10 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              Notes / Truck # (Optional)
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">Optional Notes</label>
             <input
               type="text"
-              placeholder="e.g. Truck RJ-14-1234, Morning lot"
+              placeholder="e.g. Truck RJ-14-1234, Morning lot, High quality"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none"

@@ -79,7 +79,7 @@ const getLogoBase64 = (color = 'green') => {
 };
 
 // Generate Buyer Bill HTML (105mm x 148mm - A6)
-export const renderBuyerBillHtml = (transaction, settings = {}) => {
+export const renderBuyerBillA6Html = (transaction, settings = {}) => {
   const rawPhone = settings.phone || '';
   const phones = rawPhone.split(/[,/|]+/).map((p) => p.trim()).filter(Boolean);
   const phone1 = phones[0] || '94434 01838';
@@ -388,6 +388,325 @@ export const renderBuyerBillHtml = (transaction, settings = {}) => {
 </html>`;
 };
 
+// Generate Buyer Bill HTML (89mm x 89mm - Square)
+export const renderBuyerBillSquareHtml = (transaction, settings = {}) => {
+  const rawPhone = settings.phone || '';
+  const phones = rawPhone.split(/[,/|]+/).map((p) => p.trim()).filter(Boolean);
+  const phone1 = phones[0] || '94434 01838';
+  const phone2 = phones[1] || '99438 01838';
+  const owner = settings.ownerName && settings.ownerName !== 'Bootto' && settings.ownerName !== 'Proprietor'
+    ? settings.ownerName
+    : 'R. பூட்டோ';
+  const address = settings.address && !settings.address.toLowerCase().includes('mandi') && !settings.address.toLowerCase().includes('wholesale')
+    ? settings.address
+    : 'shop no : 25, Gandhi Market, Dindigul, 624001';
+
+  // Normalize items array for consolidated bill (or single transaction fallback)
+  let items = [];
+  if (Array.isArray(transaction.items) && transaction.items.length > 0) {
+    items = transaction.items;
+  } else {
+    const bigBoxes = Number(transaction.bigBoxes) || 0;
+    const smallBoxes = Number(transaction.smallBoxes) || 0;
+    let descLine1 = 'தக்காளி பெரிய பெட்டி';
+    let descLine2 = '(Big Box)';
+    let qtyText = bigBoxes > 0 ? `${bigBoxes}` : '—';
+    let qtyNum = bigBoxes;
+
+    if (bigBoxes > 0 && smallBoxes > 0) {
+      descLine1 = 'தக்காளி பெட்டி';
+      descLine2 = `(${bigBoxes} Big + ${smallBoxes} Small)`;
+      qtyNum = Number(transaction.bigEquivalent) || (bigBoxes + smallBoxes / 2);
+      qtyText = `${qtyNum}`;
+    } else if (smallBoxes > 0 && bigBoxes === 0) {
+      descLine1 = 'தக்காளி சிறிய பெட்டி';
+      descLine2 = '(Small Box)';
+      qtyNum = smallBoxes;
+      qtyText = `${qtyNum}`;
+    } else if (transaction.type === 'PAYMENT') {
+      descLine1 = 'பணம் செலுத்தியது';
+      descLine2 = '(Cash Receipt)';
+      qtyText = '—';
+      qtyNum = 0;
+    }
+
+    const rateNum = Number(transaction.ratePerBigBox) || 0;
+    let lineAmt = 0;
+    if (transaction.type === 'SALE' || !transaction.type) {
+      if (rateNum > 0 && qtyNum > 0) {
+        lineAmt = Math.round(rateNum * qtyNum * 100) / 100;
+      } else {
+        lineAmt = Number(transaction.billAmount) || Number(transaction.todayBill) || 0;
+      }
+    } else if (transaction.type === 'PAYMENT') {
+      lineAmt = Number(transaction.amountPaid) || Number(transaction.paid) || 0;
+    }
+
+    items = [
+      {
+        ratePerBigBox: rateNum,
+        bigBoxes,
+        smallBoxes,
+        bigEquivalent: qtyNum,
+        lineAmount: lineAmt,
+        billAmount: lineAmt,
+        totalAmount: lineAmt,
+        descLine1,
+        descLine2,
+        qtyText
+      }
+    ];
+  }
+
+  // Formula: ரூ. amount = விலை × எண்ணம் (No.)
+  let billTotal = 0;
+  if (transaction.todayBill !== undefined) {
+    billTotal = Number(transaction.todayBill);
+  } else if (transaction.billAmount !== undefined && transaction.type !== 'PAYMENT') {
+    billTotal = Number(transaction.billAmount);
+  } else {
+    billTotal = items.reduce((sum, it) => sum + (Number(it.lineAmount !== undefined ? it.lineAmount : it.billAmount) || 0), 0);
+  }
+
+  const rupeesPart = Math.floor(billTotal).toLocaleString('en-IN');
+  const paisePart = String(Math.round((billTotal % 1) * 100)).padStart(2, '0');
+
+  // Total quantity for subtotal row
+  const totalQty = items.reduce((sum, it) => sum + (Number(it.bigEquivalent || it.bigBoxes) || 0), 0);
+  const totalQtyText = totalQty > 0 ? (Number.isInteger(totalQty) ? String(totalQty) : totalQty.toFixed(1)) : '—';
+
+  // Accounting figures
+  const oldBalNum = Number(transaction.oldBalance) || 0;
+  const totalDueNum = Number(transaction.totalDue) !== undefined && !isNaN(Number(transaction.totalDue))
+    ? Number(transaction.totalDue)
+    : (oldBalNum + billTotal);
+  const paidNum = Number(transaction.amountPaid) !== undefined ? Number(transaction.amountPaid) : (Number(transaction.paid) || 0);
+  const newBalNum = Number(transaction.newBalance) !== undefined && !isNaN(Number(transaction.newBalance))
+    ? Number(transaction.newBalance)
+    : (totalDueNum - paidNum);
+
+  const isAdvance = newBalNum < 0;
+  const dateStr = formatBillDate(transaction.transactionDate);
+  const logoBase64 = getLogoBase64('green');
+
+  // Build item rows HTML
+  const itemRowsHtml = items
+    .map((item) => {
+      const rateNum = Number(item.ratePerBigBox) || 0;
+      const rateVal = rateNum > 0 ? rateNum.toLocaleString('en-IN') : (item.ratePerBigBox ? String(item.ratePerBigBox) : '—');
+      const lineAmt = Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0;
+      const lineRupees = Math.floor(lineAmt).toLocaleString('en-IN');
+      const linePaise = String(Math.round((lineAmt % 1) * 100)).padStart(2, '0');
+      const desc1 = item.descLine1 || 'தக்காளி பெரிய பெட்டி';
+      const desc2 = item.descLine2 || '(Big Box)';
+      const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');
+
+      return `
+        <div class="table-grid" style="font-size: 9.5pt; line-height: 1.15;">
+          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 11pt; padding: 2px 1px; display: flex; align-items: center; justify-content: center; min-width: 0;">${rateVal}</div>
+          <div style="border-right: 1px solid #034d28; padding: 2px 2px; min-width: 0;">
+            <div style="font-weight: 900; font-size: 8.6pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;">${desc1}</div>
+            <div style="font-style: italic; font-size: 7pt; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;">${desc2}</div>
+          </div>
+          <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 11.5pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${qty}</div>
+          <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${lineAmt >= 100000 ? '10pt' : '11.5pt'}; padding: 2px 2px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${lineRupees}</div>
+          <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 9.5pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${linePaise}</div>
+        </div>`;
+    })
+    .join('');
+
+  // Subtotal row for multiple sales
+  const subtotalHtml = items.length > 1
+    ? `
+      <div class="table-grid" style="font-size: 9.5pt; line-height: 1.15;">
+        <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+        <div style="border-right: 1px solid #034d28; text-align: right; padding-right: 3px; font-weight: 900; font-size: 8pt; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">மொத்த பில் :</div>
+        <div style="border-right: 1px solid #034d28; text-align: center; font-family: monospace; font-style: italic; font-weight: 900; font-size: 11pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${totalQtyText}</div>
+        <div style="border-right: 1px solid #034d28; text-align: right; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${billTotal >= 100000 ? '10pt' : '11.5pt'}; padding: 2px 2px; display: flex; align-items: center; justify-content: flex-end; min-width: 0;">${rupeesPart}</div>
+        <div style="text-align: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 9.5pt; display: flex; align-items: center; justify-content: center; min-width: 0;">${paisePart}</div>
+      </div>`
+    : '';
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Buyer_Bill_Square</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;700;800;900&display=swap');
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    size: 89mm 89mm;
+    margin: 0mm;
+  }
+  html, body {
+    width: 89mm;
+    height: 89mm;
+    max-height: 89mm;
+    overflow: hidden;
+    background: #ffffff;
+    font-family: 'Mukta Malar', 'Noto Sans Tamil', sans-serif;
+    color: #034d28;
+    line-height: 1.15;
+  }
+  .buyer-bill-page {
+    width: 89mm;
+    height: 89mm;
+    max-width: 89mm;
+    max-height: 89mm;
+    padding: 5.5mm;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .outer-border {
+    border: 1.5px solid #034d28;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.8mm 1.2mm 0.8mm 1.2mm;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .table-grid {
+    display: grid;
+    grid-template-columns: 16% minmax(0, 39%) 11% 22% 12%;
+    box-sizing: border-box;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+  <div class="buyer-bill-page">
+    <div class="outer-border">
+      <!-- Top Row: Auspicious symbol 'உ' & Phone numbers -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative;">
+        <div style="width: 30px;"></div>
+        <div style="text-align: center; position: absolute; left: 0; right: 0; margin: 0 auto; top: -1px;">
+          <span style="font-size: 8.5pt; font-weight: 900; border-bottom: 1.5px double #034d28; padding-bottom: 0.5px; display: inline-block;">உ</span>
+        </div>
+        <div style="text-align: right; font-size: 6.2pt; font-weight: 800; font-family: monospace; line-height: 1.15;">
+          <div>செல் : ${phone1}</div>
+          <div style="padding-left: 18px;">${phone2}</div>
+        </div>
+      </div>
+
+      <!-- Business Header with Lakshmi Logo -->
+      <div style="display: flex; align-items: center; margin-top: -1.5px;">
+        <div style="width: 12mm; height: 15mm; flex-shrink: 0; display: flex; align-items: center; justify-self: center;">
+          ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="max-height: 100%; max-width: 100%; object-fit: contain;" />` : ''}
+        </div>
+        <div style="flex: 1; min-width: 0; text-align: center; padding-left: 0.5mm; padding-right: 0.5mm;">
+          <div style="font-size: 14pt; font-weight: 900; letter-spacing: 0.5px; line-height: 1; color: #034d28;">மகாலட்சுமி</div>
+          <div style="font-size: 6.8pt; font-weight: 800; margin-top: 1.5px; white-space: nowrap;">தக்காளி &amp; காய், கனி கமிஷன் மண்டி</div>
+          <div style="font-size: 6pt; font-weight: 700; margin-top: 1px; white-space: nowrap;">${address}</div>
+          <div style="font-size: 7.8pt; font-weight: 900; margin-top: 1px;">Prop : ${owner}</div>
+        </div>
+        <div style="width: 20mm; flex-shrink: 0; text-align: right; align-self: flex-end; margin-bottom: 1px; white-space: nowrap;">
+          <div style="font-size: 6.5pt; font-weight: 800;">
+            தேதி : <span style="border-bottom: 1px dotted #034d28; padding-bottom: 0.5px; font-family: monospace; font-style: italic; font-weight: 800;">${dateStr}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Name Line -->
+      <div style="font-size: 8.8pt; font-weight: 800; display: flex; align-items: baseline; margin-top: 1px; margin-bottom: 1mm;">
+        <span style="white-space: nowrap; margin-right: 4px;">திரு :</span>
+        <span style="flex: 1; font-style: italic; font-weight: 900; font-size: 10.5pt; color: #02381e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${transaction.buyerName || 'வாடிக்கையாளர்'}</span>
+      </div>
+
+      <!-- 5-Column Table -->
+      <div style="border: 1px solid #034d28; flex: 1; min-height: 0; display: flex; flex-direction: column; box-sizing: border-box;">
+        <!-- Table Header -->
+        <div class="table-grid" style="text-align: center; font-size: 7.5pt; font-weight: 900; background: #ffffff; border-bottom: 1px solid #034d28;">
+          <div style="border-right: 1px solid #034d28; padding: 1px 0; min-width: 0;">விலை</div>
+          <div style="border-right: 1px solid #034d28; padding: 1px 0; min-width: 0;">விபரம்</div>
+          <div style="border-right: 1px solid #034d28; padding: 1px 0; min-width: 0;">எண்ணம்</div>
+          <div style="border-right: 1px solid #034d28; padding: 1px 0; min-width: 0;">ரூ.</div>
+          <div style="padding: 1px 0; min-width: 0;">பை.</div>
+        </div>
+
+        <!-- Item Rows -->
+        ${itemRowsHtml}
+
+        <!-- Optional Subtotal Row for multiple sales entries -->
+        ${subtotalHtml}
+
+        <!-- Middle Space with vertical dividers only -->
+        <div class="table-grid" style="flex: 1; min-height: 4mm;">
+          <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+          <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+          <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+          <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
+          <div style="min-width: 0;"></div>
+        </div>
+
+        <!-- Lower Accounting Summary Area -->
+        <div style="display: flex; flex-direction: column; width: 100%; box-sizing: border-box; border-top: 1px solid #034d28;">
+          <!-- Row 1: முந்தைய பாக்கி -->
+          <div class="table-grid" style="flex: 1; align-items: center; min-height: 0;">
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 800; min-width: 0; white-space: nowrap; overflow: hidden;">: (முந்தைய பாக்கி)</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: ${oldBalNum >= 100000 ? '7.2pt' : '7.8pt'}; min-width: 0; white-space: nowrap; overflow: hidden;">${oldBalNum.toLocaleString('en-IN')}</div>
+            <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; min-width: 0;">00</div>
+          </div>
+
+          <!-- Row 2: Total due -->
+          <div class="table-grid" style="flex: 1; align-items: center; min-height: 0;">
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${totalDueNum >= 100000 ? '7.2pt' : '7.8pt'}; min-width: 0; white-space: nowrap; overflow: hidden;">${totalDueNum.toLocaleString('en-IN')}</div>
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; min-width: 0;">00</div>
+          </div>
+
+          <!-- Row 3: வரவு -->
+          <div class="table-grid" style="flex: 1; align-items: center; min-height: 0;">
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 6.8pt; font-weight: 800; min-width: 0; white-space: nowrap; overflow: hidden;">: (வரவு)</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 800; font-size: ${paidNum >= 100000 ? '7.2pt' : '7.8pt'}; min-width: 0; white-space: nowrap; overflow: hidden;">${paidNum.toLocaleString('en-IN')}</div>
+            <div style="border-bottom: 0.75pt solid #034d28; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 700; font-size: 7.5pt; min-width: 0;">00</div>
+          </div>
+
+          <!-- Row 4: பாக்கி -->
+          <div class="table-grid" style="flex: 1; align-items: center; min-height: 0;">
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; padding: 0 2px; font-size: 11pt; font-weight: 900; color: #991b1b; min-width: 0; white-space: nowrap;">${isAdvance ? 'முன்பணம்' : 'பாக்கி'}</div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; min-width: 0;"></div>
+            <div style="border-right: 1px solid #034d28; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0 2px; font-family: monospace; font-style: italic; font-weight: 900; font-size: ${Math.abs(newBalNum) >= 100000 ? '10.5pt' : '12pt'}; color: #991b1b; min-width: 0; white-space: nowrap; overflow: hidden;">${Math.abs(newBalNum).toLocaleString('en-IN')}</div>
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-style: italic; font-weight: 800; font-size: 10pt; min-width: 0;">00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Centered Footer -->
+      <div style="text-align: center; font-weight: 900; font-size: 7.5pt; letter-spacing: 0.5px; padding-top: 0.6mm; line-height: 1;">
+        நன்றி மீண்டும் வருக !
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+};
+
+// Dispatcher for Buyer Bill HTML (defaults to 'square')
+export const renderBuyerBillHtml = (transaction, settings = {}, paperSize = 'square') => {
+  const normalized = String(paperSize || 'square').toLowerCase().trim();
+  if (normalized === 'a6') {
+    return renderBuyerBillA6Html(transaction, settings);
+  }
+  return renderBuyerBillSquareHtml(transaction, settings);
+};
+
 // Generate Supplier Purchase Voucher HTML (105mm x 148mm A6)
 export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   const rawPhone = settings.phone || '';
@@ -459,6 +778,15 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   const lotNum = purchaseData.lotNumber || (purchaseData._id ? String(purchaseData._id).slice(-4) : '001');
   const dateStr = formatBillDate(purchaseData.transactionDate);
   const logoBase64 = getLogoBase64('green');
+
+  // Supplier Bill Notes
+  const noteText = purchaseData.notes || (Array.isArray(purchaseData.items) ? purchaseData.items.map((it) => it.notes).filter(Boolean).join('; ') : '') || '';
+  const notesHtml = noteText && noteText.trim()
+    ? `<div style="border-top: 0.5px dashed #034d28; padding: 1.5px 5px; font-size: 8.5pt; font-weight: 700; color: #034d28; display: flex; align-items: baseline; gap: 5px; background: #ffffff; box-sizing: border-box;">
+        <span style="font-weight: 900; white-space: nowrap;">குறிப்பு / Notes:</span>
+        <span style="font-style: italic; word-break: break-word;">${noteText.trim().replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+       </div>`
+    : '';
 
   // Render purchase item rows
   const itemRowsHtml = items
@@ -617,6 +945,9 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
         <!-- Optional Gross Subtotal Row -->
         ${grossSubtotalHtml}
 
+        <!-- Optional Notes Row -->
+        ${notesHtml}
+
         <!-- Middle Space with vertical dividers only -->
         <div class="table-grid" style="flex: 1; min-height: 8mm;">
           <div style="border-right: 1px solid #034d28; min-width: 0;"></div>
@@ -674,7 +1005,7 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
 };
 
 // Generate 1-page PDF using Chrome Headless
-export const generatePdfFile = async ({ type, transaction, purchase, settings, targetPdfPath }) => {
+export const generatePdfFile = async ({ type, transaction, purchase, settings, paperSize = 'square', targetPdfPath }) => {
   const isBuyer = type === 'buyer' || Boolean(transaction);
   let htmlContent;
 
@@ -693,7 +1024,7 @@ export const generatePdfFile = async ({ type, transaction, purchase, settings, t
         billData = transaction;
       }
     }
-    htmlContent = renderBuyerBillHtml(billData, settings);
+    htmlContent = renderBuyerBillHtml(billData, settings, paperSize);
   } else {
     // If purchase doesn't already have consolidated items, resolve from database
     let billData = purchase;
@@ -724,6 +1055,7 @@ export const generatePdfFile = async ({ type, transaction, purchase, settings, t
     const tmpProfileDir = path.join(os.tmpdir(), `chrome-headless-${tmpId}`);
     const chromeArgs = [
       '--headless=new',
+      '--no-sandbox',
       '--disable-gpu',
       '--no-pdf-header-footer',
       `--user-data-dir=${tmpProfileDir}`,
@@ -748,7 +1080,7 @@ export const generatePdfFile = async ({ type, transaction, purchase, settings, t
     const pages = pdfStr.match(/\/Type\s*\/Page\b/g) || [];
     const mediaBoxes = pdfStr.match(/\/MediaBox\s*\[\s*([\d\.\s]+)\s*\]/g) || [];
 
-    console.log(`[PrintService] PDF Generated: ${pages.length} page(s), MediaBox: ${mediaBoxes[0]}`);
+    console.log(`[PrintService] PDF Generated (${paperSize}): ${pages.length} page(s), MediaBox: ${mediaBoxes[0]}`);
 
     return {
       pdfPath: finalPdfPath,
@@ -768,12 +1100,12 @@ export const generatePdfFile = async ({ type, transaction, purchase, settings, t
 };
 
 // Direct Windows Print Job using SumatraPDF
-export const executeDirectPrint = async ({ type, transaction, purchase, settings, printerName, silent = true, openDialog = false }) => {
+export const executeDirectPrint = async ({ type, transaction, purchase, settings, printerName, paperSize = 'square', silent = true, openDialog = false }) => {
   const isBuyer = type === 'buyer' || Boolean(transaction);
   const targetPrinter = printerName || 'Canon G3030 series';
 
   // 1. Generate 1-page PDF
-  const { pdfPath, pageCount } = await generatePdfFile({ type, transaction, purchase, settings });
+  const { pdfPath, pageCount } = await generatePdfFile({ type, transaction, purchase, settings, paperSize });
 
   try {
     // 2. Prepare SumatraPDF Arguments
@@ -788,8 +1120,19 @@ export const executeDirectPrint = async ({ type, transaction, purchase, settings
       if (silent) sumatraArgs.push('-silent');
 
       // Target exact physical paper size for Canon G3030 series at 100% scale:
-      // Both Buyer bill and Supplier bill use 105x148 mm A6 Portrait (Canon driver Form ID: paperkind=70, paper=A6)
-      const settingsList = ['noscale', 'paper=A6', 'paperkind=70'];
+      // - Buyer bill: 89x89 mm Square (Canon driver Form ID: paperkind=138)
+      // - Buyer bill A6: 105x148 mm Portrait (Canon driver Form ID: paperkind=70, paper=A6)
+      // - Supplier bill: 105x148 mm A6 Portrait (Canon driver Form ID: paperkind=70, paper=A6)
+      const settingsList = ['noscale'];
+      if (isBuyer) {
+        if (paperSize === 'a6') {
+          settingsList.push('paper=A6', 'paperkind=70');
+        } else {
+          settingsList.push('paperkind=138');
+        }
+      } else {
+        settingsList.push('paper=A6', 'paperkind=70');
+      }
       sumatraArgs.push('-print-settings', settingsList.join(','));
     }
 
@@ -811,7 +1154,7 @@ export const executeDirectPrint = async ({ type, transaction, purchase, settings
     return {
       success: true,
       printer: targetPrinter,
-      format: '105x148mm (A6)',
+      format: isBuyer ? (paperSize === 'a6' ? '105x148mm (A6)' : '89x89mm (Square)') : '105x148mm (A6)',
       pageCount,
       message: openDialog
         ? 'Opened Windows Print Dialog'

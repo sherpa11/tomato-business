@@ -47,8 +47,27 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const role = (user?.role || 'ACCOUNTANT').toUpperCase();
+  const isAdmin = role === 'ADMIN';
+  const isAccountant = role === 'ACCOUNTANT';
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role,
+        isAdmin,
+        isAccountant,
+        canAccessSuppliers: isAdmin,
+        canAccessReports: isAdmin,
+        canAccessSettings: isAdmin,
+        canManageUsers: isAdmin,
+        loading,
+        login,
+        logout,
+        isAuthenticated: !!user
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

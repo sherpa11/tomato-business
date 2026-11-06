@@ -12,6 +12,7 @@ import {
 import { purchasesAPI, transactionsAPI } from '../api/client';
 import { useDate } from '../context/DateContext';
 import { useSettings } from '../context/SettingsContext';
+import { useAuth } from '../context/AuthContext';
 import PrintModal from '../components/print/PrintModal';
 import BuyerBillTemplate from '../components/print/BuyerBillTemplate';
 import SupplierVoucherTemplate from '../components/print/SupplierVoucherTemplate';
@@ -21,6 +22,7 @@ import { formatCurrency, formatDate, formatBoxDescription, formatBalance } from 
 export default function History() {
   const { operationalDate } = useDate();
   const { settings } = useSettings();
+  const { isAdmin } = useAuth();
 
   const [selectedDate, setSelectedDate] = useState(operationalDate);
   const [purchases, setPurchases] = useState([]);
@@ -44,18 +46,20 @@ export default function History() {
     setLoading(true);
     setError('');
     try {
-      const [purRes, txRes] = await Promise.all([
-        purchasesAPI.getPurchases({ date: selectedDate }),
-        transactionsAPI.getTransactions({ date: selectedDate })
-      ]);
-
-      if (purRes.success) {
-        setPurchases(purRes.purchases);
+      const promises = [transactionsAPI.getTransactions({ date: selectedDate })];
+      if (isAdmin) {
+        promises.push(purchasesAPI.getPurchases({ date: selectedDate }));
       }
-      if (txRes.success) {
+
+      const [txRes, purRes] = await Promise.all(promises);
+
+      if (txRes?.success) {
         const allTx = txRes.transactions;
         setSales(allTx.filter((t) => t.type === 'SALE'));
         setPayments(allTx.filter((t) => t.type === 'PAYMENT'));
+      }
+      if (isAdmin && purRes?.success) {
+        setPurchases(purRes.purchases);
       }
     } catch (err) {
       setError(err.message || 'Failed to fetch historical records');
@@ -143,7 +147,8 @@ export default function History() {
         </div>
       )}
 
-      {/* 1. PURCHASES FOR SELECTED DATE */}
+      {/* 1. PURCHASES FOR SELECTED DATE (Admin Only) */}
+      {isAdmin && (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -221,6 +226,7 @@ export default function History() {
           </div>
         </div>
       </div>
+      )}
 
       {/* 2. SALES FOR SELECTED DATE */}
       <div className="space-y-3 pt-2">

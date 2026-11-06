@@ -182,3 +182,53 @@ export const saveBillDeductions = async (req, res, next) => {
   }
 };
 
+export const updatePurchase = async (req, res, next) => {
+  try {
+    const purchase = await Purchase.findById(req.params.id);
+    if (!purchase) {
+      return res.status(404).json({ success: false, message: 'Purchase not found' });
+    }
+    if (purchase.isVoid) {
+      return res.status(400).json({ success: false, message: 'Cannot edit a voided purchase' });
+    }
+
+    const { bigBoxes, smallBoxes, ratePerBigBox, notes, transactionDate, supplierId } = req.body;
+
+    if (supplierId) {
+      const supplier = await Supplier.findById(supplierId);
+      if (supplier) {
+        purchase.supplierId = supplier._id;
+        purchase.supplierName = supplier.name;
+      }
+    }
+
+    if (transactionDate) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(transactionDate)) {
+        return res.status(400).json({ success: false, message: 'Valid transaction date (YYYY-MM-DD) is required' });
+      }
+      purchase.transactionDate = transactionDate;
+    }
+
+    if (bigBoxes !== undefined) purchase.bigBoxes = Number(bigBoxes) || 0;
+    if (smallBoxes !== undefined) purchase.smallBoxes = Number(smallBoxes) || 0;
+    if (ratePerBigBox !== undefined) purchase.ratePerBigBox = Number(ratePerBigBox) || 0;
+
+    purchase.bigEquivalent = calculateBigEquivalent(purchase.bigBoxes, purchase.smallBoxes);
+    purchase.totalAmount = roundMoney(purchase.bigEquivalent * purchase.ratePerBigBox);
+
+    if (notes !== undefined) {
+      purchase.notes = notes.trim();
+    }
+
+    await purchase.save();
+
+    res.json({
+      success: true,
+      purchase,
+      message: 'Purchase updated successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

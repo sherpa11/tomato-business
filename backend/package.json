@@ -9,6 +9,7 @@
     "dev": "node --watch src/server.js",
     "seed": "node src/seed/seedData.js",
     "admin:create": "node src/scripts/createAdmin.js",
+    "accountant:create": "node src/scripts/createAccountant.js",
     "test": "node --test test/**/*.test.js"
   },
   "dependencies": {

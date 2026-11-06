@@ -14,6 +14,7 @@ import {
 import { dashboardAPI, transactionsAPI, purchasesAPI } from '../api/client';
 import { useDate } from '../context/DateContext';
 import { useSettings } from '../context/SettingsContext';
+import { useAuth } from '../context/AuthContext';
 import TodayTallyTable from '../components/TodayTallyTable';
 import NewSaleModal from '../components/modals/NewSaleModal';
 import NewPurchaseModal from '../components/modals/NewPurchaseModal';
@@ -28,6 +29,7 @@ import { formatCurrency, formatDate, formatBoxDescription } from '../utils/forma
 export default function Dashboard() {
   const { operationalDate } = useDate();
   const { settings } = useSettings();
+  const { isAdmin } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
@@ -184,13 +186,15 @@ export default function Dashboard() {
             <span>+ Payment</span>
           </button>
 
-          <button
-            onClick={() => setPurchaseModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-[0.98] cursor-pointer"
-          >
-            <Truck className="w-4 h-4 shrink-0" />
-            <span>+ Purchase</span>
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setPurchaseModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <Truck className="w-4 h-4 shrink-0" />
+              <span>+ Purchase</span>
+            </button>
+          )}
 
           <button
             onClick={fetchDashboardData}
@@ -266,7 +270,8 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* SECTION 2: TODAY'S SUPPLIER PURCHASES */}
+      {/* SECTION 2: TODAY'S SUPPLIER PURCHASES (Admin Only) */}
+      {isAdmin && (
       <div className="space-y-3 pt-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -349,6 +354,8 @@ export default function Dashboard() {
         )}
       </div>
 
+      )}
+
       {/* Modals */}
       <NewSaleModal
         isOpen={saleModalOpen}
@@ -359,14 +366,16 @@ export default function Dashboard() {
         }}
       />
 
-      <NewPurchaseModal
-        isOpen={purchaseModalOpen}
-        onClose={() => setPurchaseModalOpen(false)}
-        onSuccess={(purchase) => {
-          fetchDashboardData();
-          handlePrintSupplierVoucher(purchase);
-        }}
-      />
+      {isAdmin && (
+        <NewPurchaseModal
+          isOpen={purchaseModalOpen}
+          onClose={() => setPurchaseModalOpen(false)}
+          onSuccess={(purchase) => {
+            fetchDashboardData();
+            handlePrintSupplierVoucher(purchase);
+          }}
+        />
+      )}
 
       <NewPaymentModal
         isOpen={paymentModalOpen}

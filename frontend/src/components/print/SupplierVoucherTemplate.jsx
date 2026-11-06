@@ -91,6 +91,9 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
   // Lot/Voucher Number
   const lotNum = purchase.lotNumber || (purchase._id ? String(purchase._id).slice(-4) : '0123');
 
+  // Supplier Bill Notes
+  const noteText = purchase.notes || (Array.isArray(purchase.items) ? purchase.items.map((it) => it.notes).filter(Boolean).join('; ') : '') || '';
+
   return (
     <>
       {/* Scoped Dynamic Print Page Style for strict 105mm x 148mm (A6) */}
@@ -453,6 +456,27 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
                 >
                   {grossPaisePart}
                 </div>
+              </div>
+            )}
+
+            {/* Optional Notes Row */}
+            {noteText && noteText.trim() && (
+              <div
+                style={{
+                  borderTop: '0.5px dashed #034d28',
+                  padding: '1.5px 5px',
+                  fontSize: '8.5pt',
+                  fontWeight: 700,
+                  color: '#034d28',
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: '5px',
+                  backgroundColor: '#ffffff',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <span style={{ fontWeight: 900, whiteSpace: 'nowrap' }}>குறிப்பு / Notes:</span>
+                <span style={{ fontStyle: 'italic', wordBreak: 'break-word' }}>{noteText.trim()}</span>
               </div>
             )}
 

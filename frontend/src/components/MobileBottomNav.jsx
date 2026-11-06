@@ -5,46 +5,79 @@ import {
   Users,
   Truck,
   BarChart3,
-  Receipt
+  Receipt,
+  History
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function MobileBottomNav({ onQuickBill }) {
   const location = useLocation();
+  const { isAdmin } = useAuth();
 
-  const navItems = [
-    {
-      name: 'Tally',
-      path: '/',
-      icon: LayoutDashboard,
-      exact: true
-    },
-    {
-      name: 'Buyers',
-      path: '/buyers',
-      icon: Users
-    },
-    {
-      name: 'New Bill',
-      isAction: true,
-      onClick: () => {
-        if (typeof onQuickBill === 'function') {
-          onQuickBill();
-        } else {
-          window.dispatchEvent(new CustomEvent('open-quick-sale'));
+  const navItems = isAdmin
+    ? [
+        {
+          name: 'Tally',
+          path: '/',
+          icon: LayoutDashboard,
+          exact: true
+        },
+        {
+          name: 'Buyers',
+          path: '/buyers',
+          icon: Users
+        },
+        {
+          name: 'New Bill',
+          isAction: true,
+          onClick: () => {
+            if (typeof onQuickBill === 'function') {
+              onQuickBill();
+            } else {
+              window.dispatchEvent(new CustomEvent('open-quick-sale'));
+            }
+          }
+        },
+        {
+          name: 'Suppliers',
+          path: '/suppliers',
+          icon: Truck
+        },
+        {
+          name: 'Reports',
+          path: '/reports',
+          icon: BarChart3
         }
-      }
-    },
-    {
-      name: 'Suppliers',
-      path: '/suppliers',
-      icon: Truck
-    },
-    {
-      name: 'Reports',
-      path: '/reports',
-      icon: BarChart3
-    }
-  ];
+      ]
+    : [
+        {
+          name: 'Tally',
+          path: '/',
+          icon: LayoutDashboard,
+          exact: true
+        },
+        {
+          name: 'Buyers',
+          path: '/buyers',
+          icon: Users
+        },
+        {
+          name: 'New Bill',
+          isAction: true,
+          onClick: () => {
+            if (typeof onQuickBill === 'function') {
+              onQuickBill();
+            } else {
+              window.dispatchEvent(new CustomEvent('open-quick-sale'));
+            }
+          }
+        },
+        {
+          name: 'History',
+          path: '/history',
+          icon: History
+        }
+      ];
 
   const isActive = (item) => {
     if (item.exact) return location.pathname === item.path;

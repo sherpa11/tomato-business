@@ -8,12 +8,13 @@ export const getDashboardSummary = async (req, res, next) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const date = req.query.date || today;
+    const isAccountant = req.user?.role === 'ACCOUNTANT';
 
-    // Concurrently fetch today purchases, transactions, active buyer balances and counts in parallel
+    // Role-aware data fetching: Accountants never query or load supplier/purchase collections
     const [purchases, transactions, buyers, buyerCount, supplierCount] = await Promise.all([
-      Purchase.find({ transactionDate: date, isVoid: false })
-        .sort({ createdAt: -1 })
-        .lean(),
+      isAccountant
+        ? Promise.resolve([])
+        : Purchase.find({ transactionDate: date, isVoid: false }).sort({ createdAt: -1 }).lean(),
       Transaction.find({ transactionDate: date, isVoid: false })
         .sort({ createdAt: 1, _id: 1 })
         .lean(),
@@ -21,7 +22,7 @@ export const getDashboardSummary = async (req, res, next) => {
         .select('currentBalance')
         .lean(),
       Buyer.countDocuments({ active: true }),
-      Supplier.countDocuments({ active: true })
+      isAccountant ? Promise.resolve(0) : Supplier.countDocuments({ active: true })
     ]);
 
     let totalPurchaseAmount = 0;
@@ -29,12 +30,14 @@ export const getDashboardSummary = async (req, res, next) => {
     let totalPurchasedSmallBoxes = 0;
     let totalPurchasedBigEquivalent = 0;
 
-    purchases.forEach((p) => {
-      totalPurchaseAmount += p.totalAmount;
-      totalPurchasedBigBoxes += p.bigBoxes;
-      totalPurchasedSmallBoxes += p.smallBoxes;
-      totalPurchasedBigEquivalent += p.bigEquivalent;
-    });
+    if (!isAccountant) {
+      purchases.forEach((p) => {
+        totalPurchaseAmount += p.totalAmount;
+        totalPurchasedBigBoxes += p.bigBoxes;
+        totalPurchasedSmallBoxes += p.smallBoxes;
+        totalPurchasedBigEquivalent += p.bigEquivalent;
+      });
+    }
 
     let totalSalesAmount = 0;
     let totalAmountReceived = 0;
@@ -91,31 +94,42 @@ export const getDashboardSummary = async (req, res, next) => {
       }
     });
 
-    res.json({
+    const summary = {
+      totalSales: roundMoney(totalSalesAmount),
+      totalAmountReceived: roundMoney(totalAmountReceived),
+      totalCustomerOutstanding: roundMoney(totalOutstanding),
+      totalAdvanceCredit: roundMoney(totalAdvanceCredit),
+      boxesSold: {
+        big: totalSoldBigBoxes,
+        small: totalSoldSmallBoxes,
+        equivalent: roundBoxes(totalSoldBigEquivalent)
+      },
+      buyerCount
+    };
+
+    // Include supplier data strictly for Admin accounts
+    if (!isAccountant) {
+      summary.totalPurchase = roundMoney(totalPurchaseAmount);
+      summary.boxesPurchased = {
+        big: totalPurchasedBigBoxes,
+        small: totalPurchasedSmallBoxes,
+        equivalent: roundBoxes(totalPurchasedBigEquivalent)
+      };
+      summary.supplierCount = supplierCount;
+    }
+
+    const response = {
       success: true,
       date,
-      summary: {
-        totalPurchase: roundMoney(totalPurchaseAmount),
-        totalSales: roundMoney(totalSalesAmount),
-        totalAmountReceived: roundMoney(totalAmountReceived),
-        totalCustomerOutstanding: roundMoney(totalOutstanding),
-        totalAdvanceCredit: roundMoney(totalAdvanceCredit),
-        boxesPurchased: {
-          big: totalPurchasedBigBoxes,
-          small: totalPurchasedSmallBoxes,
-          equivalent: roundBoxes(totalPurchasedBigEquivalent)
-        },
-        boxesSold: {
-          big: totalSoldBigBoxes,
-          small: totalSoldSmallBoxes,
-          equivalent: roundBoxes(totalSoldBigEquivalent)
-        },
-        buyerCount,
-        supplierCount
-      },
-      todayPurchases: purchases,
+      summary,
       todayTally: tallyTable
-    });
+    };
+
+    if (!isAccountant) {
+      response.todayPurchases = purchases;
+    }
+
+    res.json(response);
   } catch (error) {
     next(error);
   }

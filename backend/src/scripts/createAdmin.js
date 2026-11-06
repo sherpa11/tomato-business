@@ -58,7 +58,7 @@ export const provisionAdmin = async (cliArgs = {}) => {
       console.log(`[Admin Provisioning] User '${cleanUsername}' already exists. Updating credentials...`);
       existing.password = password; // Pre-save hook hashes with bcrypt
       existing.name = name;
-      existing.role = 'admin';
+      existing.role = 'ADMIN';
       await existing.save();
       console.log(`✅ Administrator account '${cleanUsername}' updated successfully.`);
     } else {
@@ -66,7 +66,7 @@ export const provisionAdmin = async (cliArgs = {}) => {
         username: cleanUsername,
         password, // Pre-save hook hashes with bcrypt
         name,
-        role: 'admin'
+        role: 'ADMIN'
       });
       console.log(`✅ Administrator account '${cleanUsername}' created successfully.`);
     }

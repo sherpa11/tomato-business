@@ -1,7 +1,15 @@
 import express from 'express';
-import { login, getMe } from '../controllers/authController.js';
-import { protect } from '../middleware/auth.js';
-import { createRateLimiter } from '../middleware/security.js';
+import {
+  login,
+  getMe,
+  getUsers,
+  createUser,
+  updateUserRole,
+  updateUserStatus,
+  deleteUser
+} from '../controllers/authController.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
+import { createRateLimiter, validateObjectId } from '../middleware/security.js';
 
 const router = express.Router();
 
@@ -14,5 +22,12 @@ const loginLimiter = createRateLimiter({
 
 router.post('/login', loginLimiter, login);
 router.get('/me', protect, getMe);
+
+// Admin-only user management endpoints
+router.get('/users', protect, requireAdmin, getUsers);
+router.post('/users', protect, requireAdmin, createUser);
+router.put('/users/:id/role', protect, requireAdmin, validateObjectId('id'), updateUserRole);
+router.put('/users/:id/status', protect, requireAdmin, validateObjectId('id'), updateUserStatus);
+router.delete('/users/:id', protect, requireAdmin, validateObjectId('id'), deleteUser);
 
 export default router;

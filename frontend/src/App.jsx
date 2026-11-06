@@ -13,6 +13,7 @@ import Suppliers from './pages/Suppliers';
 import History from './pages/History';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Outlay from './pages/Outlay';
 import Login from './pages/Login';
 
 class ErrorBoundary extends React.Component {
@@ -87,6 +88,40 @@ const ProtectedRoute = ({ children }) => {
   );
 };
 
+// Strict RBAC: AdminRoute protects administrative surfaces (Suppliers, Reports, Settings, User Management)
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, loading, isAdmin } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-2">
+          <img src="/tomato.png" alt="Loading" className="w-12 h-12 object-contain animate-bounce" />
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Loading Mandi System...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      <Navbar />
+      <main className="flex-1 pb-24 md:pb-16">{children}</main>
+      <MobileBottomNav />
+    </div>
+  );
+};
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -123,9 +158,17 @@ export default function App() {
                 <Route
                   path="/suppliers"
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <Suppliers />
-                    </ProtectedRoute>
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/outlay"
+                  element={
+                    <AdminRoute>
+                      <Outlay />
+                    </AdminRoute>
                   }
                 />
                 <Route
@@ -139,17 +182,17 @@ export default function App() {
                 <Route
                   path="/reports"
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <Reports />
-                    </ProtectedRoute>
+                    </AdminRoute>
                   }
                 />
                 <Route
                   path="/settings"
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <Settings />
-                    </ProtectedRoute>
+                    </AdminRoute>
                   }
                 />
                 <Route path="*" element={<Navigate to="/" replace />} />

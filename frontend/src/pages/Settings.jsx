@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Save, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { Settings as SettingsIcon, Save, CheckCircle2, AlertCircle, Info, Users, Store } from 'lucide-react';
+import UserManagement from '../components/UserManagement';
 import { useSettings } from '../context/SettingsContext';
 
 export default function Settings() {
@@ -14,6 +15,7 @@ export default function Settings() {
   const [currencySymbol, setCurrencySymbol] = useState('₹');
   const [thermalPrintWidth, setThermalPrintWidth] = useState('80mm');
 
+  const [activeTab, setActiveTab] = useState('PROFILE'); // 'PROFILE' or 'USERS'
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -60,13 +62,44 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs flex items-center gap-3">
-        <div className="w-10 h-10 sm:w-11 sm:h-11 bg-slate-100 text-slate-800 rounded-xl flex items-center justify-center border border-slate-200 shrink-0">
-          <SettingsIcon className="w-5 h-5" />
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 bg-slate-100 text-slate-800 rounded-xl flex items-center justify-center border border-slate-200 shrink-0">
+            <SettingsIcon className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">System Configuration & Administration</h1>
+            <p className="text-xs text-slate-500 font-medium">Configure business parameters, bill branding, and cashier access roles</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Business Profile & Settings</h1>
-          <p className="text-xs text-slate-500 font-medium">Configure store details, default rates, and receipt formatting</p>
+
+        {/* Tab Toggle */}
+        <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 shrink-0 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setActiveTab('PROFILE')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'PROFILE'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Store className="w-3.5 h-3.5" />
+            <span>Store Profile</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('USERS')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'USERS'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5 text-red-600" />
+            <span>Staff & Roles</span>
+          </button>
         </div>
       </div>
 
@@ -84,7 +117,7 @@ export default function Settings() {
         </div>
       )}
 
-      {/* Settings Form */}
+      {activeTab === 'PROFILE' && (
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs space-y-5 sm:space-y-6">
         <div>
           <h2 className="text-xs font-black text-slate-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
@@ -220,6 +253,13 @@ export default function Settings() {
           </button>
         </div>
       </form>
+      )}
+
+      {activeTab === 'USERS' && (
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs">
+          <UserManagement />
+        </div>
+      )}
     </div>
   );
 }
