@@ -312,3 +312,132 @@ export const deleteUser = async (req, res, next) => {
     next(error);
   }
 };
+
+
+/**
+ * Change own Admin credentials (username and/or password)
+ * Strictly Admin-only. Requires current password verification.
+ */
+export const changeAdminCredentials = async (req, res, next) => {
+  try {
+    const { username, currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is required to update credentials'
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User account not found' });
+    }
+
+    if ((user.role || '').toUpperCase() !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: Only administrators can update admin credentials'
+      });
+    }
+
+    // 1. Verify current password with bcrypt
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Incorrect current password'
+      });
+    }
+
+    let credentialsChanged = false;
+
+    // 2. Validate & Update username if provided and changed
+    if (username && username.trim().toLowerCase() !== user.username.toLowerCase()) {
+      const cleanUsername = username.trim().toLowerCase();
+      if (cleanUsername.length < 3) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username must be at least 3 characters long'
+        });
+      }
+      if (!/^[a-zA-Z0-9._-]{3,50}$/.test(cleanUsername)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username can only contain letters, numbers, dots, hyphens, and underscores'
+        });
+      }
+
+      // Check username uniqueness
+      const existing = await User.findOne({
+        username: cleanUsername,
+        _id: { $ne: user._id }
+      });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username is already in use by another account'
+        });
+      }
+
+      user.username = cleanUsername;
+      credentialsChanged = true;
+    }
+
+    // 3. Validate & Update password if provided
+    if (newPassword) {
+      if (!confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please confirm your new password'
+        });
+      }
+
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'New password and confirmation do not match'
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: 'New password must be at least 6 characters long'
+        });
+      }
+
+      // Assigning password triggers pre-save bcrypt hash
+      user.password = newPassword;
+      credentialsChanged = true;
+    }
+
+    if (!credentialsChanged) {
+      return res.status(400).json({
+        success: false,
+        message: 'No changes provided. Please enter a new username or new password.'
+      });
+    }
+
+    await user.save();
+
+    // Refreshed token with updated claims
+    const token = generateToken(user._id, user.role);
+
+    res.json({
+      success: true,
+      message: 'Admin credentials updated successfully',
+      token,
+      user: {
+        id: user._id,
+        _id: user._id,
+        username: user.username,
+        name: user.name,
+        role: user.role,
+        active: user.active
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};

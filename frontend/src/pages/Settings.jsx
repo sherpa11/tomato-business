@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Save, CheckCircle2, AlertCircle, Info, Users, Store } from 'lucide-react';
+import { Settings as SettingsIcon, Save, CheckCircle2, AlertCircle, Info, Users, Store, KeyRound } from 'lucide-react';
 import UserManagement from '../components/UserManagement';
+import ChangeCredentials from '../components/ChangeCredentials';
 import { useSettings } from '../context/SettingsContext';
 
 export default function Settings() {
@@ -15,7 +16,7 @@ export default function Settings() {
   const [currencySymbol, setCurrencySymbol] = useState('₹');
   const [thermalPrintWidth, setThermalPrintWidth] = useState('80mm');
 
-  const [activeTab, setActiveTab] = useState('PROFILE'); // 'PROFILE' or 'USERS'
+  const [activeTab, setActiveTab] = useState('PROFILE'); // 'PROFILE', 'SECURITY', or 'USERS'
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -74,11 +75,11 @@ export default function Settings() {
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 shrink-0 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 shrink-0 self-start sm:self-auto gap-1">
           <button
             type="button"
             onClick={() => setActiveTab('PROFILE')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'PROFILE'
                 ? 'bg-white text-slate-900 shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -90,14 +91,27 @@ export default function Settings() {
 
           <button
             type="button"
+            onClick={() => setActiveTab('SECURITY')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'SECURITY'
+                ? 'bg-white text-emerald-800 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <KeyRound className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Change Credentials</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('USERS')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'USERS'
                 ? 'bg-white text-slate-900 shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Users className="w-3.5 h-3.5 text-red-600" />
+            <Users className="w-3.5 h-3.5 text-blue-600" />
             <span>Staff & Roles</span>
           </button>
         </div>
@@ -117,126 +131,100 @@ export default function Settings() {
         </div>
       )}
 
+      {activeTab === 'SECURITY' && (
+        <ChangeCredentials />
+      )}
+
       {activeTab === 'PROFILE' && (
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs space-y-5 sm:space-y-6">
-        <div>
-          <h2 className="text-xs font-black text-slate-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
-            Market Business Information
-          </h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs space-y-6">
+          <h2 className="text-base sm:text-lg font-black text-slate-900 border-b border-slate-100 pb-3">Business Profile & Bill Header</h2>
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Business / Firm Name</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Business Name</label>
               <input
                 type="text"
+                required
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                required
-                className="w-full h-11 text-sm font-semibold border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                placeholder="e.g. Mahalakshmi Traders"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Proprietor / Owner Name</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Owner / Contact Person</label>
               <input
                 type="text"
                 value={ownerName}
                 onChange={(e) => setOwnerName(e.target.value)}
                 className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                placeholder="e.g. R Bootto"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone Number</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Contact Phone</label>
               <input
-                type="tel"
-                inputMode="tel"
+                type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                placeholder="e.g. 94434 01838 / 99438 01838"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Mandi Stall / Shop Address</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Market Address</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                placeholder="e.g. No. 25, Gandhi market, Dindigul, 625001"
               />
             </div>
           </div>
         </div>
 
-        <div>
-          <h2 className="text-xs font-black text-slate-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
-            Convenience Daily Default Rates
-          </h2>
-
-          <div className="mb-4 p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl flex items-start gap-2.5 text-xs text-amber-900 leading-relaxed">
-            <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-            <div>
-              <strong>Rate Preservation Rule:</strong> Default rates are only convenience defaults prefilled into new forms. Every individual sale and purchase permanently retains the specific rate recorded on that date. Changing default rates here will NEVER alter past bills.
-            </div>
-          </div>
-
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs space-y-6">
+          <h2 className="text-base sm:text-lg font-black text-slate-900 border-b border-slate-100 pb-3">Operational Defaults</h2>
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Default Selling Rate per Big Box (₹)
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Default Selling Rate per Big Box (₹)</label>
               <input
                 type="number"
                 min="0"
                 step="any"
-                inputMode="decimal"
                 value={defaultSellingRate}
                 onChange={(e) => setDefaultSellingRate(e.target.value)}
-                className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none text-red-700"
+                className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Default Purchase Rate per Big Box (₹)
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Default Purchase Rate per Big Box (₹)</label>
               <input
                 type="number"
                 min="0"
                 step="any"
-                inputMode="decimal"
                 value={defaultPurchaseRate}
                 onChange={(e) => setDefaultPurchaseRate(e.target.value)}
-                className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-emerald-800"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-xs font-black text-slate-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
-            Print & Currency Preferences
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Currency Symbol</label>
-              <input
-                type="text"
-                value={currencySymbol}
-                onChange={(e) => setCurrencySymbol(e.target.value)}
-                className="w-full h-11 text-sm font-bold border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-slate-500 focus:outline-none"
+                className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Default Thermal Printer Width</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Thermal Print Width</label>
               <select
                 value={thermalPrintWidth}
                 onChange={(e) => setThermalPrintWidth(e.target.value)}
-                className="w-full h-11 text-sm font-semibold border border-slate-300 rounded-xl px-3.5 bg-white focus:ring-2 focus:ring-slate-500 focus:outline-none"
+                className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none bg-white font-medium"
               >
-                <option value="80mm">80mm (Standard POS Thermal Printer)</option>
-                <option value="58mm">58mm (Small Thermal Printer)</option>
+                <option value="80mm">80mm (Standard Mandi Thermal)</option>
+                <option value="58mm">58mm (Compact)</option>
               </select>
             </div>
           </div>

@@ -57,7 +57,8 @@ export const invalidateDropdownCache = () => {
 
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
-  getMe: () => api.get('/auth/me')
+  getMe: () => api.get('/auth/me'),
+  changeCredentials: (data) => api.put('/auth/change-credentials', data)
 };
 
 export const usersAPI = {

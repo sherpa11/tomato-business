@@ -41,6 +41,17 @@ export const AuthProvider = ({ children }) => {
     throw new Error(res.message || 'Login failed');
   };
 
+  const updateCurrentUser = (updatedUser, newToken) => {
+    if (newToken) {
+      localStorage.setItem('tomato_token', newToken);
+    }
+    if (updatedUser) {
+      localStorage.setItem('tomato_user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    }
+    window.dispatchEvent(new Event('auth-change'));
+  };
+
   const logout = () => {
     localStorage.removeItem('tomato_token');
     localStorage.removeItem('tomato_user');
@@ -65,6 +76,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         logout,
+        updateCurrentUser,
         isAuthenticated: !!user
       }}
     >
