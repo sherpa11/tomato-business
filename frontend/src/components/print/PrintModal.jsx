@@ -82,12 +82,33 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     };
   }, [isOpen, baseWidthPx]);
 
-  // Manage body class and reset paper size on modal open (default: Square 89x89 mm)
+  // Manage body classes, paper size, and dynamic @page style on modal open/change
   useEffect(() => {
     if (isOpen) {
-      setBuyerPaperSize('square');
-      setShowPaperSizeDropdown(false);
       document.body.classList.add('print-modal-active');
+      const isSquare = isBuyerBill && buyerPaperSize === 'square';
+      if (isSquare) {
+        document.body.classList.add('paper-square');
+        document.body.classList.remove('paper-a6');
+      } else {
+        document.body.classList.add('paper-a6');
+        document.body.classList.remove('paper-square');
+      }
+
+      // Dynamically inject top-level @page rule into document.head so browser print knows exact paper dimensions
+      let styleEl = document.getElementById('dynamic-print-paper-size');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamic-print-paper-size';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = `
+        @page {
+          size: ${isSquare ? '89mm 89mm' : '105mm 148mm'};
+          margin: 0mm;
+        }
+      `;
+
       // Query local printer status from backend
       printAPI.getStatus()
         .then((res) => {
@@ -102,7 +123,11 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
           // Keep default Canon G3030 series
         });
     } else {
-      document.body.classList.remove('print-modal-active');
+      document.body.classList.remove('print-modal-active', 'paper-square', 'paper-a6');
+      const styleEl = document.getElementById('dynamic-print-paper-size');
+      if (styleEl) {
+        try { styleEl.remove(); } catch {}
+      }
       setIsPrinting(false);
       setPrintSuccess(false);
       setPrintMessage('');
@@ -110,9 +135,13 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
       setShowPaperSizeDropdown(false);
     }
     return () => {
-      document.body.classList.remove('print-modal-active');
+      document.body.classList.remove('print-modal-active', 'paper-square', 'paper-a6');
+      const styleEl = document.getElementById('dynamic-print-paper-size');
+      if (styleEl) {
+        try { styleEl.remove(); } catch {}
+      }
     };
-  }, [isOpen]);
+  }, [isOpen, isBuyerBill, buyerPaperSize]);
 
   // Click outside listener for paper size selector dropdown
   useEffect(() => {
@@ -413,22 +442,118 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   const effectivePurchase = isSupplierBill ? (supplierBill || rawPurchase) : rawPurchase;
   const effectiveTransaction = isBuyerBill ? (buyerBill || rawTransaction) : rawTransaction;
 
-  // 1. Browser Print Fallback
+  // 1. Browser Print (Using isolated iframe for exact dimensions in Chrome preview + window fallback)
   const handleBrowserPrint = async () => {
     if (isSupplierBill && deductionsModified) {
       await handleSaveDeductions();
     }
     setShowOptions(false);
     const origTitle = document.title;
-    document.title = isBuyerBill
+    const title = isBuyerBill
       ? (buyerPaperSize === 'a6' ? 'Buyer_Bill_A6' : 'Buyer_Bill_Square')
       : isSupplierBill
       ? 'Supplier_Bill_A6'
       : 'Customer_Statement';
-    window.print();
-    setTimeout(() => {
-      document.title = origTitle;
-    }, 1000);
+    document.title = title;
+
+    const isSquare = isBuyerBill && buyerPaperSize === 'square';
+    const paperW = isSquare ? '89mm' : '105mm';
+    const paperH = isSquare ? '89mm' : '148mm';
+
+    // Try isolated hidden iframe for cleanest print preview matching physical paper
+    try {
+      const printableOuter = document.querySelector('.print-bill-outer');
+      const billNode = printableOuter?.querySelector('.buyer-bill-page, .supplier-bill-page');
+      if (!billNode) throw new Error('Printable element not found');
+
+      let iframe = document.getElementById('print-paper-frame');
+      if (iframe) {
+        try { iframe.remove(); } catch {}
+      }
+      iframe = document.createElement('iframe');
+      iframe.id = 'print-paper-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: ${paperW} ${paperH};
+      margin: 0mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: ${paperW} !important;
+      height: ${paperH} !important;
+      max-height: ${paperH} !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+      font-family: 'Mukta Malar', 'Noto Sans Tamil', sans-serif;
+      color: #034d28;
+    }
+    .buyer-bill-page, .supplier-bill-page {
+      width: ${paperW} !important;
+      height: ${paperH} !important;
+      max-width: ${paperW} !important;
+      max-height: ${paperH} !important;
+      box-sizing: border-box !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+    }
+    .outer-border {
+      box-sizing: border-box !important;
+    }
+  </style>
+</head>
+<body>
+  ${billNode.outerHTML}
+</body>
+</html>`);
+      doc.close();
+
+      const triggerPrint = () => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (printErr) {
+          console.warn('[PrintModal] iframe print failed, falling back to window.print:', printErr);
+          window.print();
+        }
+      };
+
+      if (iframe.contentWindow.document.readyState === 'complete') {
+        setTimeout(triggerPrint, 200);
+      } else {
+        iframe.contentWindow.onload = () => setTimeout(triggerPrint, 200);
+      }
+    } catch (e) {
+      console.warn('[PrintModal] Falling back to standard window.print():', e);
+      window.print();
+    } finally {
+      setTimeout(() => {
+        document.title = origTitle;
+      }, 1500);
+    }
   };
 
   // 2. Direct Print to Canon G3030

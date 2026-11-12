@@ -112,12 +112,11 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
     <>
       {/* Scoped Dynamic Print Page Style for strict 105mm x 148mm (A6) */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;700;800;900&display=swap');
+        @page {
+          size: 105mm 148mm;
+          margin: 0mm;
+        }
         @media print {
-          @page {
-            size: 105mm 148mm;
-            margin: 0mm;
-          }
           html, body {
             margin: 0 !important;
             padding: 0 !important;
@@ -127,7 +126,8 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
             overflow: hidden !important;
             background: #ffffff !important;
           }
-          .buyer-bill-page {
+          .buyer-bill-page,
+          .buyer-bill-a6 {
             width: 105mm !important;
             height: 148mm !important;
             max-width: 105mm !important;
@@ -143,7 +143,8 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
       `}</style>
 
       <div
-        className="buyer-bill-page bg-white font-tamil text-black select-none"
+        className="buyer-bill-page buyer-bill-a6 bg-white font-tamil text-black select-none"
+        data-paper-size="a6"
         style={{
           width: '105mm',
           height: '148mm',
@@ -790,12 +791,11 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
     <>
       {/* Scoped Dynamic Print Page Style for strict 89mm x 89mm */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;700;800;900&display=swap');
+        @page {
+          size: 89mm 89mm;
+          margin: 0mm;
+        }
         @media print {
-          @page {
-            size: 89mm 89mm;
-            margin: 0mm;
-          }
           html, body {
             margin: 0 !important;
             padding: 0 !important;
@@ -805,11 +805,25 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
             overflow: hidden !important;
             background: #ffffff !important;
           }
+          .buyer-bill-page,
+          .buyer-bill-square {
+            width: 89mm !important;
+            height: 89mm !important;
+            max-width: 89mm !important;
+            max-height: 89mm !important;
+            padding: 5.5mm !important;
+            box-sizing: border-box !important;
+          }
+          .outer-border {
+            border: 1.5px solid #034d28 !important;
+            box-sizing: border-box !important;
+          }
         }
       `}</style>
 
       <div
-        className="buyer-bill-page bg-white font-tamil text-black select-none"
+        className="buyer-bill-page buyer-bill-square bg-white font-tamil text-black select-none"
+        data-paper-size="square"
         style={{
           width: '89mm',
           height: '89mm',

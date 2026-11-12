@@ -98,12 +98,11 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
     <>
       {/* Scoped Dynamic Print Page Style for strict 105mm x 148mm (A6) */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;700;800;900&display=swap');
+        @page {
+          size: 105mm 148mm;
+          margin: 0mm;
+        }
         @media print {
-          @page {
-            size: 105mm 148mm;
-            margin: 0mm;
-          }
           html, body {
             margin: 0 !important;
             padding: 0 !important;
@@ -114,6 +113,10 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
             background: #ffffff !important;
           }
           .supplier-bill-page {
+            width: 105mm !important;
+            height: 148mm !important;
+            max-width: 105mm !important;
+            max-height: 148mm !important;
             padding: 5.2mm 4.5mm 4.8mm 4.5mm !important;
           }
           .outer-border {

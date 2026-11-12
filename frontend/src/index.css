@@ -74,6 +74,20 @@
     background: #ffffff !important;
   }
 
+  body.paper-square,
+  body.paper-square html {
+    width: 89mm !important;
+    height: 89mm !important;
+    max-height: 89mm !important;
+  }
+
+  body.paper-a6,
+  body.paper-a6 html {
+    width: 105mm !important;
+    height: 148mm !important;
+    max-height: 148mm !important;
+  }
+
   .print-modal-portal,
   .print-modal-container,
   .print-modal-scroll-area,
@@ -97,12 +111,6 @@
   }
 
   .buyer-bill-page {
-    width: 105mm !important;
-    height: 148mm !important;
-    max-width: 105mm !important;
-    max-height: 148mm !important;
-    padding: 5.2mm 4.5mm 4.8mm 4.5mm !important;
-    margin: 0 auto !important;
     box-sizing: border-box !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
@@ -110,6 +118,29 @@
     overflow: hidden !important;
     display: block !important;
     box-shadow: none !important;
+    margin: 0 auto !important;
+  }
+
+  /* Square Buyer Bill (89mm x 89mm) */
+  .buyer-bill-page.buyer-bill-square,
+  .buyer-bill-square,
+  [data-paper-size="square"] {
+    width: 89mm !important;
+    height: 89mm !important;
+    max-width: 89mm !important;
+    max-height: 89mm !important;
+    padding: 5.5mm !important;
+  }
+
+  /* A6 Buyer Bill (105mm x 148mm) */
+  .buyer-bill-page.buyer-bill-a6,
+  .buyer-bill-a6,
+  [data-paper-size="a6"] {
+    width: 105mm !important;
+    height: 148mm !important;
+    max-width: 105mm !important;
+    max-height: 148mm !important;
+    padding: 5.2mm 4.5mm 4.8mm 4.5mm !important;
   }
 
   .supplier-bill-page {
