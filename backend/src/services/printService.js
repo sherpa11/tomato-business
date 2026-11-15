@@ -172,7 +172,9 @@ export const renderBuyerBillA6Html = (transaction, settings = {}) => {
   const paidNum = Number(transaction.amountPaid) !== undefined ? Number(transaction.amountPaid) : (Number(transaction.paid) || 0);
   const newBalNum = Number(transaction.newBalance) !== undefined && !isNaN(Number(transaction.newBalance))
     ? Number(transaction.newBalance)
-    : (totalDueNum - paidNum);
+    : (Number(transaction.balance) !== undefined && !isNaN(Number(transaction.balance))
+      ? Number(transaction.balance)
+      : (totalDueNum - paidNum));
   const isAdvance = newBalNum < 0;
 
   const dateStr = formatBillDate(transaction.transactionDate);
@@ -483,7 +485,9 @@ export const renderBuyerBillSquareHtml = (transaction, settings = {}) => {
   const paidNum = Number(transaction.amountPaid) !== undefined ? Number(transaction.amountPaid) : (Number(transaction.paid) || 0);
   const newBalNum = Number(transaction.newBalance) !== undefined && !isNaN(Number(transaction.newBalance))
     ? Number(transaction.newBalance)
-    : (totalDueNum - paidNum);
+    : (Number(transaction.balance) !== undefined && !isNaN(Number(transaction.balance))
+      ? Number(transaction.balance)
+      : (totalDueNum - paidNum));
 
   const isAdvance = newBalNum < 0;
   const dateStr = formatBillDate(transaction.transactionDate);

@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { X, Receipt, AlertCircle, Sparkles } from 'lucide-react';
+import { X, Receipt, AlertCircle, Sparkles, Truck, CheckCircle2 } from 'lucide-react';
 import { buyersAPI, transactionsAPI } from '../../api/client';
 import { useDate } from '../../context/DateContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   calculateBigEquivalent,
   formatCurrency,
   formatBalance
 } from '../../utils/formatters';
 import EditBuyerModal from './EditBuyerModal';
+import NewPurchaseModal from './NewPurchaseModal';
+import SearchableBuyerSelect from '../common/SearchableBuyerSelect';
 
 export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerId = null }) {
   const { operationalDate } = useDate();
   const { settings } = useSettings();
+  const { isAdmin } = useAuth();
 
   const [buyers, setBuyers] = useState([]);
   const [buyerId, setBuyerId] = useState(initialBuyerId || '');
   const [selectedBuyer, setSelectedBuyer] = useState(null);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [addLotModalOpen, setAddLotModalOpen] = useState(false);
+  const [addLotSuccessMsg, setAddLotSuccessMsg] = useState('');
   const [transactionDate, setTransactionDate] = useState(operationalDate);
   const [bigBoxes, setBigBoxes] = useState('');
   const [smallBoxes, setSmallBoxes] = useState('');
@@ -29,42 +35,45 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
   const [fetchingBuyer, setFetchingBuyer] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch active buyers
+  // Fetch active buyers on modal open
   useEffect(() => {
-    if (isOpen) {
-      setTransactionDate(operationalDate);
-      setRatePerBigBox(settings.defaultSellingRate?.toString() || '1100');
-      setError('');
-      setBigBoxes('');
-      setSmallBoxes('');
-      setAmountPaid('');
-      setOldBalanceInput('');
-      setNotes('');
+    if (!isOpen) return;
 
-      buyersAPI.getBuyers({ active: true })
-        .then((res) => {
-          if (res.success && res.buyers) {
-            setBuyers(res.buyers);
-            const targetId = initialBuyerId || (res.buyers.length > 0 ? res.buyers[0]._id : '');
-            const target = res.buyers.find((b) => b._id === targetId);
-            if (target) {
-              setSelectedBuyer(target);
-              setOldBalanceInput(target.currentBalance !== undefined ? String(target.currentBalance) : '0');
-            }
-            setBuyerId(targetId);
+    setTransactionDate(operationalDate);
+    setRatePerBigBox(settings.defaultSellingRate?.toString() || '1100');
+    setError('');
+    setBigBoxes('');
+    setSmallBoxes('');
+    setAmountPaid('');
+    setOldBalanceInput('');
+    setNotes('');
+    setAddLotSuccessMsg('');
+
+    buyersAPI.getBuyers({ active: true, dropdown: true })
+      .then((res) => {
+        if (res.success && res.buyers) {
+          setBuyers(res.buyers);
+          const targetId = initialBuyerId || (res.buyers.length > 0 ? res.buyers[0]._id : '');
+          const target = res.buyers.find((b) => String(b._id) === String(targetId));
+          if (target) {
+            setSelectedBuyer(target);
+            setOldBalanceInput(target.currentBalance !== undefined ? String(target.currentBalance) : '0');
           }
-        })
-        .catch((err) => console.error('Error fetching buyers:', err));
-    }
+          setBuyerId(targetId);
+        }
+      })
+      .catch((err) => console.error('Error fetching buyers:', err));
   }, [isOpen, operationalDate, settings, initialBuyerId]);
 
   // Fetch full buyer info & live ledger balance when buyerId changes (reuse loaded buyer if available)
   useEffect(() => {
+    if (!isOpen) return;
+
     if (buyerId) {
-      if (selectedBuyer && selectedBuyer._id === buyerId) {
+      if (selectedBuyer && String(selectedBuyer._id) === String(buyerId)) {
         return;
       }
-      const existing = buyers.find((b) => b._id === buyerId);
+      const existing = buyers.find((b) => String(b._id) === String(buyerId));
       if (existing) {
         setSelectedBuyer(existing);
         setOldBalanceInput(existing.currentBalance !== undefined ? String(existing.currentBalance) : '0');
@@ -84,7 +93,7 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
       setSelectedBuyer(null);
       setOldBalanceInput('0');
     }
-  }, [buyerId, buyers, selectedBuyer]);
+  }, [isOpen, buyerId, buyers, selectedBuyer]);
 
   if (!isOpen) return null;
 
@@ -168,27 +177,47 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-xl w-full p-3.5 sm:p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Mobile Drag Indicator */}
         <div className="sm:hidden w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-3" />
 
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center border border-red-100 shrink-0">
-              <Receipt className="w-5 h-5" />
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center border border-red-100 shrink-0">
+              <Receipt className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 leading-tight">Create Buyer Bill & Tally</h3>
-              <p className="text-xs text-slate-500 font-medium">Automatic box conversion & balance tally</p>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">Create Buyer Bill & Tally</h3>
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium">Automatic box conversion & balance tally</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setAddLotModalOpen(true)}
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
+                title="Add Purchase Lot (Supplier arrival)"
+              >
+                <Truck className="w-3.5 h-3.5 text-emerald-700" />
+                <span>+ Add Lot</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
+
+        {addLotSuccessMsg && (
+          <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm rounded-xl flex items-center gap-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="font-semibold">{addLotSuccessMsg}</span>
+          </div>
+        )}
 
         {error && (
           <div className="mt-4 p-3.5 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl flex items-center gap-2.5">
@@ -197,8 +226,8 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="mt-4 sm:mt-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-slate-700">Buyer / Customer</label>
@@ -213,19 +242,19 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
                   </button>
                 )}
               </div>
-              <select
+              <SearchableBuyerSelect
+                buyers={buyers}
                 value={buyerId}
-                onChange={(e) => setBuyerId(e.target.value)}
+                onChange={(id, b) => {
+                  setBuyerId(id);
+                  setSelectedBuyer(b);
+                  if (b?.currentBalance !== undefined) {
+                    setOldBalanceInput(String(b.currentBalance));
+                  }
+                }}
+                placeholder="Select or search buyer..."
                 required
-                className="w-full h-11 text-sm font-semibold border border-slate-300 rounded-xl px-3 bg-white focus:ring-2 focus:ring-red-500 focus:outline-none"
-              >
-                <option value="">Select Buyer</option>
-                {buyers.map((b) => (
-                  <option key={b._id} value={b._id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div>
@@ -472,6 +501,19 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
           setOldBalanceInput(String(updated.currentBalance || 0));
         }}
       />
+
+      {/* Add Lot (Purchase) Modal for Admin */}
+      {isAdmin && (
+        <NewPurchaseModal
+          isOpen={addLotModalOpen}
+          onClose={() => setAddLotModalOpen(false)}
+          onSuccess={() => {
+            setAddLotModalOpen(false);
+            setAddLotSuccessMsg('Purchase lot saved successfully!');
+            setTimeout(() => setAddLotSuccessMsg(''), 4000);
+          }}
+        />
+      )}
     </div>
   );
 }

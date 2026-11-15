@@ -55,8 +55,8 @@ export default function Navbar() {
                 className="w-8 h-8 sm:w-9 sm:h-9 object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform shrink-0"
               />
               <div className="shrink-0 min-w-0">
-                <div className="text-base sm:text-lg font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
-                  <span>{settings.businessName || 'TOMATO BUSINESS'}</span>
+                <div className="text-sm xs:text-base sm:text-lg font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
+                  <span className="truncate max-w-[115px] xs:max-w-[170px] sm:max-w-none">{settings.businessName || 'TOMATO BUSINESS'}</span>
                   <span className="hidden sm:inline-block text-[10px] font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                     Wholesale
                   </span>

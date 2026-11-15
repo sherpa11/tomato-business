@@ -87,14 +87,14 @@ const TodayTallyTable = React.memo(function TodayTallyTable({
           return (
             <div
               key={row.id}
-              className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3"
+              className="bg-white rounded-2xl border border-slate-200/90 p-3 xs:p-4 shadow-xs space-y-2.5 xs:space-y-3"
             >
               {/* Header: Name & Type Badge */}
               <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
-                <div>
+                <div className="min-w-0 flex-1">
                   <Link
                     to={`/buyers/${row.buyerId}`}
-                    className="font-extrabold text-slate-900 text-base hover:text-red-600 hover:underline block leading-snug"
+                    className="font-extrabold text-slate-900 text-sm xs:text-base hover:text-red-600 hover:underline block leading-snug break-words"
                   >
                     {row.buyerName}
                   </Link>
@@ -104,13 +104,13 @@ const TodayTallyTable = React.memo(function TodayTallyTable({
                     </span>
                   )}
                 </div>
-                <div>
+                <div className="shrink-0">
                   {row.type === 'SALE' ? (
-                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-bold border border-red-100 font-mono">
+                    <div className="inline-flex items-center gap-1 px-2 xs:px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-[11px] xs:text-xs font-bold border border-red-100 font-mono">
                       <span>{row.boxDescription}</span>
                     </div>
                   ) : (
-                    <span className="inline-flex px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
+                    <span className="inline-flex px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[11px] xs:text-xs font-bold border border-blue-100">
                       Payment Only
                     </span>
                   )}
@@ -118,75 +118,75 @@ const TodayTallyTable = React.memo(function TodayTallyTable({
               </div>
 
               {/* 4-Box Financial Grid */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <span className="text-slate-500 font-semibold block text-[11px]">Old Due</span>
-                  <span className="font-mono font-bold text-slate-800 text-sm">
+              <div className="grid grid-cols-2 gap-1.5 xs:gap-2 text-xs">
+                <div className="bg-slate-50 p-2 xs:p-2.5 rounded-xl border border-slate-100 min-w-0">
+                  <span className="text-slate-500 font-semibold block text-[10px] xs:text-[11px]">Old Due</span>
+                  <span className="font-mono font-bold text-slate-800 text-xs xs:text-sm block truncate">
                     {formatCurrency(row.oldBalance)}
                   </span>
                 </div>
 
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <span className="text-slate-500 font-semibold block text-[11px]">Today's Bill</span>
-                  <span className="font-mono font-bold text-slate-900 text-sm">
+                <div className="bg-slate-50 p-2 xs:p-2.5 rounded-xl border border-slate-100 min-w-0">
+                  <span className="text-slate-500 font-semibold block text-[10px] xs:text-[11px]">Today's Bill</span>
+                  <span className="font-mono font-bold text-slate-900 text-xs xs:text-sm block truncate">
                     {row.todayBill > 0 ? formatCurrency(row.todayBill) : '—'}
                   </span>
                   {row.ratePerBigBox > 0 && (
-                    <span className="text-[10px] text-slate-500 block">
+                    <span className="text-[10px] text-slate-500 block truncate">
                       @ ₹{row.ratePerBigBox}/box
                     </span>
                   )}
                 </div>
 
-                <div className="bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-100">
-                  <span className="text-emerald-800 font-semibold block text-[11px]">Paid Cash</span>
-                  <span className="font-mono font-black text-emerald-700 text-sm">
+                <div className="bg-emerald-50/70 p-2 xs:p-2.5 rounded-xl border border-emerald-100 min-w-0">
+                  <span className="text-emerald-800 font-semibold block text-[10px] xs:text-[11px]">Paid Cash</span>
+                  <span className="font-mono font-black text-emerald-700 text-xs xs:text-sm block truncate">
                     {formatCurrency(row.paid)}
                   </span>
                 </div>
 
-                <div className={`p-2.5 rounded-xl border ${newBal.color} bg-opacity-30`}>
-                  <span className="text-slate-600 font-semibold block text-[11px]">New Balance</span>
-                  <span className="font-mono font-black text-sm block">
+                <div className={`p-2 xs:p-2.5 rounded-xl border ${newBal.color} bg-opacity-30 min-w-0`}>
+                  <span className="text-slate-600 font-semibold block text-[10px] xs:text-[11px]">New Balance</span>
+                  <span className="font-mono font-black text-xs xs:text-sm block truncate">
                     {newBal.text}
                   </span>
                 </div>
               </div>
 
-              {/* Action Buttons: 44px Touch Targets */}
-              <div className="flex items-center justify-between pt-1 gap-2">
+              {/* Action Buttons: Touch Targets */}
+              <div className="flex items-center justify-between pt-1 gap-1.5 xs:gap-2">
                 <button
                   onClick={() => onPrint(row)}
-                  className="flex-1 h-10 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 active:scale-95 transition-transform"
+                  className="flex-1 h-9 xs:h-10 rounded-xl flex items-center justify-center gap-1 xs:gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 active:scale-95 transition-transform"
                 >
-                  <Printer className="w-4 h-4 text-red-600" />
+                  <Printer className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-red-600 shrink-0" />
                   <span>Print</span>
                 </button>
 
                 <Link
                   to={`/buyers/${row.buyerId}`}
-                  className="flex-1 h-10 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 active:scale-95 transition-transform"
+                  className="flex-1 h-9 xs:h-10 rounded-xl flex items-center justify-center gap-1 xs:gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 active:scale-95 transition-transform"
                 >
-                  <Eye className="w-4 h-4 text-blue-600" />
+                  <Eye className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-blue-600 shrink-0" />
                   <span>Ledger</span>
                 </Link>
 
                 {onEditCustomer && (
                   <button
                     onClick={() => onEditCustomer(row.buyerId)}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 bg-slate-50 hover:bg-amber-50 border border-slate-200/90 active:scale-95 transition-transform shrink-0"
+                    className="w-9 h-9 xs:w-10 xs:h-10 rounded-xl flex items-center justify-center text-slate-600 bg-slate-50 hover:bg-amber-50 border border-slate-200/90 active:scale-95 transition-transform shrink-0"
                     title="Edit Customer Profile"
                   >
-                    <Edit2 className="w-4 h-4 text-amber-600" />
+                    <Edit2 className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-amber-600" />
                   </button>
                 )}
 
                 <button
                   onClick={() => onVoid(row)}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200/90 active:scale-95 transition-transform shrink-0"
+                  className="w-9 h-9 xs:w-10 xs:h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200/90 active:scale-95 transition-transform shrink-0"
                   title="Void Transaction"
                 >
-                  <Ban className="w-4 h-4" />
+                  <Ban className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                 </button>
               </div>
             </div>

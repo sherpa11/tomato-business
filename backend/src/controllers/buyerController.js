@@ -171,79 +171,91 @@ export const updateBuyer = async (req, res, next) => {
 
 export const getBuyerLedger = async (req, res, next) => {
   try {
-    const buyer = await Buyer.findById(req.params.id);
+    const buyerId = req.params.id;
+
+    // Parallelize Buyer lookup and Transaction retrieval using lean() queries for high throughput
+    const [buyer, transactions] = await Promise.all([
+      Buyer.findById(buyerId)
+        .select('_id name phone address initialBalance currentBalance createdAt active notes')
+        .lean(),
+      Transaction.find({ buyerId })
+        .sort({ transactionDate: 1, createdAt: 1, _id: 1 })
+        .lean()
+    ]);
+
     if (!buyer) {
       return res.status(404).json({ success: false, message: 'Buyer not found' });
     }
 
-    // Include all transactions (with isVoid clearly marked for audit)
-    const transactions = await Transaction.find({ buyerId: buyer._id })
-      .sort({ transactionDate: 1, createdAt: 1, _id: 1 });
-
     const ledgerEntries = [];
 
-    // Opening balance row if initialBalance != 0 or if there are transactions
+    // Opening balance row
+    const openingDate = buyer.createdAt ? new Date(buyer.createdAt).toISOString().split('T')[0] : 'Opening';
     ledgerEntries.push({
+      _id: 'opening',
       id: 'opening',
-      date: buyer.createdAt ? buyer.createdAt.toISOString().split('T')[0] : 'Opening',
+      transactionId: 'opening',
+      buyerId: buyer._id,
+      buyerName: buyer.name,
+      date: openingDate,
+      transactionDate: openingDate,
       description: 'Opening Balance',
       type: 'OPENING',
       debit: buyer.initialBalance > 0 ? buyer.initialBalance : 0,
       credit: buyer.initialBalance < 0 ? Math.abs(buyer.initialBalance) : 0,
+      billAmount: 0,
+      todayBill: 0,
+      oldBalance: 0,
+      totalDue: buyer.initialBalance,
+      amountPaid: 0,
+      paid: 0,
+      newBalance: buyer.initialBalance,
       balance: buyer.initialBalance,
       isVoid: false
     });
 
     for (const tx of transactions) {
-      if (tx.type === 'SALE') {
-        let boxDesc = `${tx.bigBoxes} Big`;
+      const isSale = tx.type === 'SALE';
+      let description = '';
+      if (isSale) {
+        let boxDesc = `${tx.bigBoxes || 0} Big`;
         if (tx.smallBoxes > 0) {
           boxDesc += ` + ${tx.smallBoxes} Small`;
         }
-        const description = `${boxDesc} Boxes @ ₹${tx.ratePerBigBox.toLocaleString('en-IN')}`;
-
-        ledgerEntries.push({
-          id: tx._id,
-          transactionId: tx._id,
-          date: tx.transactionDate,
-          description: tx.isVoid ? `[VOIDED] ${description}` : description,
-          type: 'SALE',
-          bigBoxes: tx.bigBoxes,
-          smallBoxes: tx.smallBoxes,
-          bigEquivalent: tx.bigEquivalent,
-          ratePerBigBox: tx.ratePerBigBox,
-          debit: tx.billAmount,
-          credit: tx.amountPaid,
-          oldBalance: tx.oldBalance,
-          totalDue: tx.totalDue,
-          amountPaid: tx.amountPaid,
-          balance: tx.newBalance,
-          notes: tx.notes,
-          isVoid: tx.isVoid,
-          voidReason: tx.voidReason,
-          createdAt: tx.createdAt
-        });
+        description = `${boxDesc} Boxes @ ₹${(tx.ratePerBigBox || 0).toLocaleString('en-IN')}`;
       } else {
-        // PAYMENT
-        const description = `Payment Received${tx.notes ? ` - ${tx.notes}` : ''}`;
-        ledgerEntries.push({
-          id: tx._id,
-          transactionId: tx._id,
-          date: tx.transactionDate,
-          description: tx.isVoid ? `[VOIDED] ${description}` : description,
-          type: 'PAYMENT',
-          debit: 0,
-          credit: tx.amountPaid,
-          oldBalance: tx.oldBalance,
-          totalDue: tx.totalDue,
-          amountPaid: tx.amountPaid,
-          balance: tx.newBalance,
-          notes: tx.notes,
-          isVoid: tx.isVoid,
-          voidReason: tx.voidReason,
-          createdAt: tx.createdAt
-        });
+        description = `Payment Received${tx.notes ? ` - ${tx.notes}` : ''}`;
       }
+
+      ledgerEntries.push({
+        _id: tx._id,
+        id: tx._id,
+        transactionId: tx._id,
+        buyerId: buyer._id,
+        buyerName: buyer.name,
+        date: tx.transactionDate,
+        transactionDate: tx.transactionDate,
+        description: tx.isVoid ? `[VOIDED] ${description}` : description,
+        type: tx.type,
+        bigBoxes: tx.bigBoxes || 0,
+        smallBoxes: tx.smallBoxes || 0,
+        bigEquivalent: tx.bigEquivalent || 0,
+        ratePerBigBox: tx.ratePerBigBox || 0,
+        debit: isSale ? (tx.billAmount || 0) : 0,
+        credit: tx.amountPaid || 0,
+        billAmount: tx.billAmount || 0,
+        todayBill: tx.billAmount || 0,
+        oldBalance: tx.oldBalance !== undefined ? tx.oldBalance : 0,
+        totalDue: tx.totalDue !== undefined ? tx.totalDue : 0,
+        amountPaid: tx.amountPaid || 0,
+        paid: tx.amountPaid || 0,
+        newBalance: tx.newBalance !== undefined ? tx.newBalance : 0,
+        balance: tx.newBalance !== undefined ? tx.newBalance : 0,
+        notes: tx.notes || '',
+        isVoid: Boolean(tx.isVoid),
+        voidReason: tx.voidReason || '',
+        createdAt: tx.createdAt
+      });
     }
 
     res.json({
@@ -254,7 +266,9 @@ export const getBuyerLedger = async (req, res, next) => {
         phone: buyer.phone,
         address: buyer.address,
         initialBalance: buyer.initialBalance,
-        currentBalance: buyer.currentBalance
+        currentBalance: buyer.currentBalance,
+        notes: buyer.notes,
+        active: buyer.active !== false
       },
       ledgerEntries
     });

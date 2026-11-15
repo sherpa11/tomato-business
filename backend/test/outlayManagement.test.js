@@ -87,6 +87,7 @@ test('Feature 1 & Feature 2: Outlay Management & Supplier Notes Suite', async (t
       $or: [{ supplierId: testSupplier._id }, { createdBy: testAdmin._id }]
     });
     await new Promise((resolve) => server.close(resolve));
+    await mongoose.disconnect();
   });
 
   await t.test('1. Authentication Setup: Login Admin & Accountant', async () => {

@@ -73,6 +73,7 @@ test('Admin Credential Management Security Suite', async (t) => {
       username: { $in: [originalAdminUser, updatedAdminUser, accountantUser] }
     });
     await new Promise((resolve) => server.close(resolve));
+    await mongoose.disconnect();
   });
 
   await t.test('1. Setup: Login Admin and Accountant', async () => {

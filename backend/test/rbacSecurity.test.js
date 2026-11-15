@@ -49,6 +49,7 @@ test('Role-Based Access Control (RBAC) Security Suite', async (t) => {
   t.after(async () => {
     await User.deleteMany({ username: { $in: [adminUsername, accountantUsername] } });
     await new Promise((resolve) => server.close(resolve));
+    await mongoose.disconnect();
   });
 
   // Helper function for making authenticated API calls

@@ -107,15 +107,15 @@ export default function History() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header & Date Picker */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center border border-purple-100 shrink-0">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center border border-purple-100 shrink-0">
             <HistoryIcon className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Date-wise Transaction History</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Date-wise Transaction History</h1>
             <p className="text-xs text-slate-500 font-medium">Inspect all purchases, sales, and payments for any date</p>
           </div>
         </div>

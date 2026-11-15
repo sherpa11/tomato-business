@@ -82,7 +82,7 @@ const ProtectedRoute = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
-      <main className="flex-1 pb-24 md:pb-16">{children}</main>
+      <main className="flex-1 pb-28 sm:pb-24 md:pb-16">{children}</main>
       <MobileBottomNav />
     </div>
   );
@@ -116,7 +116,7 @@ const AdminRoute = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
-      <main className="flex-1 pb-24 md:pb-16">{children}</main>
+      <main className="flex-1 pb-28 sm:pb-24 md:pb-16">{children}</main>
       <MobileBottomNav />
     </div>
   );

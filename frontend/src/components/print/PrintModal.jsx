@@ -192,20 +192,33 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
       ? '(Cash Receipt)'
       : '(Big Box)';
 
+    const effectiveOldBal = Number(t.oldBalance) || 0;
+    const effectiveTotalDue = Number(t.totalDue) !== undefined && !isNaN(Number(t.totalDue))
+      ? Number(t.totalDue)
+      : (effectiveOldBal + (t.type === 'SALE' || !t.type ? lineAmt : 0));
+    const effectivePaid = Number(t.amountPaid) !== undefined ? Number(t.amountPaid) : (Number(t.paid) || Number(t.credit) || 0);
+    const effectiveNewBal = Number(t.newBalance) !== undefined && !isNaN(Number(t.newBalance))
+      ? Number(t.newBalance)
+      : (Number(t.balance) !== undefined && !isNaN(Number(t.balance))
+        ? Number(t.balance)
+        : (effectiveTotalDue - effectivePaid));
+
     return {
-      buyerId: t.buyerId,
+      _id: t._id || t.transactionId || t.id,
+      buyerId: t.buyerId?._id || t.buyerId,
       buyerName: t.buyerName,
-      transactionDate: t.transactionDate,
+      transactionDate: t.transactionDate || t.date,
       todayBill: lineAmt,
       billAmount: lineAmt,
-      oldBalance: Number(t.oldBalance) || 0,
-      totalDue: Number(t.totalDue) || ((Number(t.oldBalance) || 0) + lineAmt),
-      amountPaid: Number(t.amountPaid) || 0,
-      paid: Number(t.amountPaid) || 0,
-      newBalance: Number(t.newBalance) || 0,
+      oldBalance: effectiveOldBal,
+      totalDue: effectiveTotalDue,
+      amountPaid: effectivePaid,
+      paid: effectivePaid,
+      newBalance: effectiveNewBal,
+      balance: effectiveNewBal,
       items: [
         {
-          _id: t._id,
+          _id: t._id || t.transactionId || t.id,
           ratePerBigBox: rate,
           bigBoxes: big,
           smallBoxes: small,
@@ -299,10 +312,14 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     const fetchConsolidated = async () => {
       try {
         const buyerIdVal = rawTransaction.buyerId?._id || rawTransaction.buyerId;
+        const txDate = rawTransaction.transactionDate || rawTransaction.date;
+        const txId = rawTransaction._id || rawTransaction.transactionId || rawTransaction.id;
+        if (!buyerIdVal && !txId) return;
+
         const res = await transactionsAPI.getConsolidated({
           buyerId: buyerIdVal,
-          transactionDate: rawTransaction.transactionDate,
-          transactionId: rawTransaction._id
+          transactionDate: txDate,
+          transactionId: txId
         });
         if (isMounted && res?.success && res.bill) {
           setBuyerBill(res.bill);
@@ -679,19 +696,19 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
             </button>
           </div>
 
-          <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-3">
             {/* Paper Size Indicator / Format Toggle */}
             {isBuyerBill ? (
               <div className="relative" ref={paperDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setShowPaperSizeDropdown(!showPaperSizeDropdown)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100/80 active:scale-95 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                  className="inline-flex items-center gap-1 xs:gap-1.5 px-2 xs:px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100/80 active:scale-95 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs"
                   title="Select Paper Size"
                   aria-label="Select Paper Size"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>{buyerPaperSize === 'a6' ? 'A6 (105 × 148 mm)' : 'Square (89 × 89 mm)'}</span>
+                  <span>{buyerPaperSize === 'a6' ? 'A6 (105×148)' : 'Square (89×89)'}</span>
                   <ChevronDown className={`w-3.5 h-3.5 text-emerald-700 transition-transform ${showPaperSizeDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -751,7 +768,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
                 )}
               </div>
             ) : isSupplierBill ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-800 border border-red-200 rounded-lg text-xs font-bold">
+              <span className="inline-flex items-center gap-1.5 px-2.5 xs:px-3 py-1.5 bg-red-50 text-red-800 border border-red-200 rounded-lg text-xs font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5 text-red-600" />
                 <span>A6 (105 × 148 mm)</span>
               </span>
@@ -760,7 +777,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
                 <button
                   type="button"
                   onClick={() => setPrintFormat('80mm')}
-                  className={`px-2.5 sm:px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
+                  className={`px-2 sm:px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
                     printFormat === '80mm' ? 'bg-white shadow-2xs text-slate-900' : 'text-slate-600'
                   }`}
                 >
@@ -769,7 +786,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
                 <button
                   type="button"
                   onClick={() => setPrintFormat('A4')}
-                  className={`px-2.5 sm:px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
+                  className={`px-2 sm:px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
                     printFormat === 'A4' ? 'bg-white shadow-2xs text-slate-900' : 'text-slate-600'
                   }`}
                 >
@@ -783,7 +800,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
               <button
                 onClick={() => handleDirectPrint(false)}
                 disabled={isPrinting}
-                className={`flex items-center justify-center gap-2 px-4 h-10 sm:h-9 text-white rounded-l-xl text-sm font-bold cursor-pointer active:scale-95 transition-all ${
+                className={`flex items-center justify-center gap-1.5 xs:gap-2 px-3 xs:px-4 h-10 sm:h-9 text-white rounded-l-xl text-xs xs:text-sm font-bold cursor-pointer active:scale-95 transition-all ${
                   printSuccess
                     ? 'bg-emerald-600 hover:bg-emerald-700'
                     : isPrinting

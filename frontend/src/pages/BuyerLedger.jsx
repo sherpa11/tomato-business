@@ -94,9 +94,26 @@ export default function BuyerLedger() {
   };
 
   const handlePrintBill = (tx) => {
+    const billAmt = tx.billAmount !== undefined ? tx.billAmount : (tx.todayBill !== undefined ? tx.todayBill : tx.debit);
+    const paidAmt = tx.amountPaid !== undefined ? tx.amountPaid : (tx.paid !== undefined ? tx.paid : tx.credit);
+    const newBal = tx.newBalance !== undefined ? tx.newBalance : tx.balance;
+
     setSelectedTx({
       ...tx,
-      buyerName: buyer?.name
+      _id: tx._id || tx.transactionId || tx.id,
+      transactionId: tx.transactionId || tx._id || tx.id,
+      buyerId: tx.buyerId || buyer?._id || id,
+      buyerName: tx.buyerName || buyer?.name,
+      transactionDate: tx.transactionDate || tx.date,
+      date: tx.transactionDate || tx.date,
+      billAmount: billAmt,
+      todayBill: billAmt,
+      amountPaid: paidAmt,
+      paid: paidAmt,
+      oldBalance: tx.oldBalance !== undefined ? tx.oldBalance : 0,
+      totalDue: tx.totalDue !== undefined ? tx.totalDue : (Number(tx.oldBalance || 0) + Number(billAmt || 0)),
+      newBalance: newBal,
+      balance: newBal
     });
     setPrintMode('BILL');
     setPrintModalOpen(true);
@@ -221,47 +238,47 @@ export default function BuyerLedger() {
           </div>
 
           {/* Current Balance Display & Actions Toolbar */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 lg:shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-4 lg:shrink-0">
             <div className="text-left sm:text-right bg-slate-50 border border-slate-200/70 p-3 sm:py-2 sm:px-4 rounded-xl">
               <span className="text-[11px] font-bold text-slate-500 block uppercase tracking-wider">
                 Current Balance
               </span>
               <span
-                className={`inline-block font-black text-2xl sm:text-3xl px-2.5 py-0.5 rounded-lg border mt-1 font-mono ${currentBal.color}`}
+                className={`inline-block font-black text-xl sm:text-3xl px-2.5 py-0.5 rounded-lg border mt-1 font-mono ${currentBal.color}`}
               >
                 {currentBal.text}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 xs:gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setSaleModalOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-10 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 xs:gap-1.5 h-10 px-2.5 xs:px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-[0.98] cursor-pointer"
               >
-                <Receipt className="w-4 h-4 shrink-0" />
+                <Receipt className="w-3.5 h-3.5 shrink-0" />
                 <span>+ Bill</span>
               </button>
 
               <button
                 onClick={() => setPaymentModalOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 xs:gap-1.5 h-10 px-2.5 xs:px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-[0.98] cursor-pointer"
               >
-                <CreditCard className="w-4 h-4 shrink-0" />
+                <CreditCard className="w-3.5 h-3.5 shrink-0" />
                 <span>+ Payment</span>
               </button>
 
               <button
                 onClick={handlePrintStatement}
-                className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-10 px-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 xs:gap-1.5 h-10 px-2.5 xs:px-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
                 title="Print Account Statement"
               >
-                <Printer className="w-4 h-4 shrink-0" />
+                <Printer className="w-3.5 h-3.5 shrink-0" />
                 <span>Statement</span>
               </button>
 
               <button
                 onClick={() => setEditModalOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-10 px-3.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 xs:gap-1.5 h-10 px-2.5 xs:px-3.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold shadow-2xs transition-all cursor-pointer"
                 title="Edit Customer Details"
               >
                 <Edit2 className="w-3.5 h-3.5 shrink-0" />
@@ -270,20 +287,19 @@ export default function BuyerLedger() {
 
               <button
                 onClick={() => setDeleteBuyerModalOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-10 px-3.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 xs:gap-1.5 h-10 px-2.5 xs:px-3.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold shadow-2xs transition-all cursor-pointer"
                 title="Delete Customer Account"
               >
                 <Trash2 className="w-3.5 h-3.5 shrink-0" />
                 <span>Delete</span>
               </button>
 
-
               <button
                 onClick={handleAuditRecalculate}
-                className="col-span-2 sm:col-span-1 h-11 sm:h-10 sm:w-10 flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl transition-all shadow-2xs cursor-pointer text-xs font-bold"
+                className="col-span-2 sm:col-span-1 h-10 sm:w-10 flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl transition-all shadow-2xs cursor-pointer text-xs font-bold"
                 title="Audit & Recalculate Ledger from chronological history"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-3.5 h-3.5" />
                 <span className="sm:hidden">Recalculate</span>
               </button>
             </div>

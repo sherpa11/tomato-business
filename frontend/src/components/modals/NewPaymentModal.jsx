@@ -4,6 +4,7 @@ import { buyersAPI, transactionsAPI } from '../../api/client';
 import { useDate } from '../../context/DateContext';
 import { formatCurrency, formatBalance } from '../../utils/formatters';
 import EditBuyerModal from './EditBuyerModal';
+import SearchableBuyerSelect from '../common/SearchableBuyerSelect';
 
 export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuyerId = null }) {
   const { operationalDate } = useDate();
@@ -21,36 +22,38 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (isOpen) {
-      setTransactionDate(operationalDate);
-      setError('');
-      setAmountPaid('');
-      setOldBalanceInput('');
-      setNotes('');
+    if (!isOpen) return;
 
-      buyersAPI.getBuyers({ active: true })
-        .then((res) => {
-          if (res.success && res.buyers) {
-            setBuyers(res.buyers);
-            const targetId = initialBuyerId || (res.buyers.length > 0 ? res.buyers[0]._id : '');
-            const target = res.buyers.find((b) => b._id === targetId);
-            if (target) {
-              setSelectedBuyer(target);
-              setOldBalanceInput(target.currentBalance !== undefined ? String(target.currentBalance) : '0');
-            }
-            setBuyerId(targetId);
+    setTransactionDate(operationalDate);
+    setError('');
+    setAmountPaid('');
+    setOldBalanceInput('');
+    setNotes('');
+
+    buyersAPI.getBuyers({ active: true, dropdown: true })
+      .then((res) => {
+        if (res.success && res.buyers) {
+          setBuyers(res.buyers);
+          const targetId = initialBuyerId || (res.buyers.length > 0 ? res.buyers[0]._id : '');
+          const target = res.buyers.find((b) => String(b._id) === String(targetId));
+          if (target) {
+            setSelectedBuyer(target);
+            setOldBalanceInput(target.currentBalance !== undefined ? String(target.currentBalance) : '0');
           }
-        })
-        .catch((err) => console.error('Error fetching buyers:', err));
-    }
+          setBuyerId(targetId);
+        }
+      })
+      .catch((err) => console.error('Error fetching buyers:', err));
   }, [isOpen, operationalDate, initialBuyerId]);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (buyerId) {
-      if (selectedBuyer && selectedBuyer._id === buyerId) {
+      if (selectedBuyer && String(selectedBuyer._id) === String(buyerId)) {
         return;
       }
-      const existing = buyers.find((b) => b._id === buyerId);
+      const existing = buyers.find((b) => String(b._id) === String(buyerId));
       if (existing) {
         setSelectedBuyer(existing);
         setOldBalanceInput(existing.currentBalance !== undefined ? String(existing.currentBalance) : '0');
@@ -70,7 +73,7 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
       setSelectedBuyer(null);
       setOldBalanceInput('0');
     }
-  }, [buyerId, buyers, selectedBuyer]);
+  }, [isOpen, buyerId, buyers, selectedBuyer]);
 
   if (!isOpen) return null;
 
@@ -128,18 +131,18 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-3.5 sm:p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Mobile Drag Indicator */}
         <div className="sm:hidden w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-3" />
 
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center border border-blue-100 shrink-0">
-              <CreditCard className="w-5 h-5" />
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center border border-blue-100 shrink-0">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 leading-tight">Record Payment Only</h3>
-              <p className="text-xs text-slate-500 font-medium">Customer settlement without tomato purchase</p>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">Record Payment Only</h3>
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium">Customer settlement without tomato purchase</p>
             </div>
           </div>
           <button
@@ -157,7 +160,7 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-4 sm:mt-5 space-y-4">
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold text-slate-700">Buyer / Customer</label>
@@ -172,19 +175,19 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
                 </button>
               )}
             </div>
-            <select
+            <SearchableBuyerSelect
+              buyers={buyers}
               value={buyerId}
-              onChange={(e) => setBuyerId(e.target.value)}
+              onChange={(id, b) => {
+                setBuyerId(id);
+                setSelectedBuyer(b);
+                if (b?.currentBalance !== undefined) {
+                  setOldBalanceInput(String(b.currentBalance));
+                }
+              }}
+              placeholder="Select or search buyer..."
               required
-              className="w-full h-11 text-sm font-semibold border border-slate-300 rounded-xl px-3 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="">Select Buyer</option>
-              {buyers.map((b) => (
-                <option key={b._id} value={b._id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
