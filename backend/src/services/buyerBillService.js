@@ -72,35 +72,68 @@ export const getConsolidatedBuyerBill = async ({ buyerId, transactionDate, trans
   let totalBigEquivalent = 0;
   let todayBill = 0;
 
-  const items = sales.map((s, index) => {
-    const big = Number(s.bigBoxes) || 0;
-    const small = Number(s.smallBoxes) || 0;
-    const bigEq = Number(s.bigEquivalent) || roundBoxes(big + small / 2);
-    const rate = Number(s.ratePerBigBox) || 0;
-    const lineAmount = roundMoney(s.billAmount || (bigEq * rate));
+  const items = [];
+  sales.forEach((s, index) => {
+    if (Array.isArray(s.items) && s.items.length > 0) {
+      s.items.forEach((it, iIdx) => {
+        const big = Number(it.bigBoxes) || 0;
+        const small = Number(it.smallBoxes) || 0;
+        const bigEq = Number(it.bigEquivalent) || roundBoxes(big + small / 2);
+        const rate = Number(it.ratePerBigBox) || 0;
+        const lineAmount = roundMoney(it.lineAmount || it.billAmount || (bigEq * rate));
 
-    totalBigBoxes += big;
-    totalSmallBoxes += small;
-    totalBigEquivalent += bigEq;
-    todayBill += lineAmount;
+        totalBigBoxes += big;
+        totalSmallBoxes += small;
+        totalBigEquivalent += bigEq;
+        todayBill += lineAmount;
 
-    const desc = formatItemBoxDescription(big, small);
+        const desc = formatItemBoxDescription(big, small);
+        items.push({
+          _id: `${s._id}_${iIdx}`,
+          lotNumber: s._id ? String(s._id).slice(-4) : `00${index + 1}`,
+          ratePerBigBox: rate,
+          bigBoxes: big,
+          smallBoxes: small,
+          bigEquivalent: bigEq,
+          lineAmount,
+          billAmount: lineAmount,
+          totalAmount: lineAmount,
+          descLine1: desc.line1,
+          descLine2: desc.line2,
+          qtyText: big > 0 && small === 0 ? `${big}` : `${bigEq}`,
+          notes: it.notes || s.notes || ''
+        });
+      });
+    } else {
+      const big = Number(s.bigBoxes) || 0;
+      const small = Number(s.smallBoxes) || 0;
+      const bigEq = Number(s.bigEquivalent) || roundBoxes(big + small / 2);
+      const rate = Number(s.ratePerBigBox) || 0;
+      const lineAmount = roundMoney(s.billAmount || (bigEq * rate));
 
-    return {
-      _id: s._id,
-      lotNumber: s._id ? String(s._id).slice(-4) : `00${index + 1}`,
-      ratePerBigBox: rate,
-      bigBoxes: big,
-      smallBoxes: small,
-      bigEquivalent: bigEq,
-      lineAmount,
-      billAmount: lineAmount,
-      totalAmount: lineAmount,
-      descLine1: desc.line1,
-      descLine2: desc.line2,
-      qtyText: big > 0 && small === 0 ? `${big}` : `${bigEq}`,
-      notes: s.notes || ''
-    };
+      totalBigBoxes += big;
+      totalSmallBoxes += small;
+      totalBigEquivalent += bigEq;
+      todayBill += lineAmount;
+
+      const desc = formatItemBoxDescription(big, small);
+
+      items.push({
+        _id: s._id,
+        lotNumber: s._id ? String(s._id).slice(-4) : `00${index + 1}`,
+        ratePerBigBox: rate,
+        bigBoxes: big,
+        smallBoxes: small,
+        bigEquivalent: bigEq,
+        lineAmount,
+        billAmount: lineAmount,
+        totalAmount: lineAmount,
+        descLine1: desc.line1,
+        descLine2: desc.line2,
+        qtyText: big > 0 && small === 0 ? `${big}` : `${bigEq}`,
+        notes: s.notes || ''
+      });
+    }
   });
 
   todayBill = roundMoney(todayBill);

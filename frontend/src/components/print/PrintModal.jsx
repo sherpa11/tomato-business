@@ -165,7 +165,43 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   // Helper to construct an immediate synchronous bill from raw transaction
   const buildImmediateBuyerBill = useCallback((t) => {
     if (!t) return null;
-    if (t.items && t.items.length > 0) return t;
+    if (t.items && t.items.length > 0) {
+      const mappedItems = t.items.map((it) => {
+        const big = Number(it.bigBoxes) || 0;
+        const small = Number(it.smallBoxes) || 0;
+        const bigEq = Number(it.bigEquivalent) || (big + small / 2);
+        const rate = Number(it.ratePerBigBox) || 0;
+        const lineAmt = Number(it.lineAmount) !== undefined && !isNaN(Number(it.lineAmount))
+          ? Number(it.lineAmount)
+          : (Number(it.billAmount) || Math.round(bigEq * rate * 100) / 100);
+        const descLine1 = big > 0 && small === 0
+          ? 'தக்காளி பெரிய பெட்டி'
+          : small > 0 && big === 0
+          ? 'தக்காளி சிறிய பெட்டி'
+          : 'தக்காளி பெட்டி';
+        const descLine2 = big > 0 && small > 0
+          ? `(${big} Big + ${small} Small)`
+          : small > 0
+          ? '(Small Box)'
+          : '(Big Box)';
+        return {
+          ...it,
+          ratePerBigBox: rate,
+          bigBoxes: big,
+          smallBoxes: small,
+          bigEquivalent: bigEq,
+          lineAmount: lineAmt,
+          billAmount: lineAmt,
+          descLine1: it.descLine1 || descLine1,
+          descLine2: it.descLine2 || descLine2,
+          qtyText: it.qtyText || (big > 0 && small === 0 ? `${big}` : `${bigEq}`)
+        };
+      });
+      return {
+        ...t,
+        items: mappedItems
+      };
+    }
     const big = Number(t.bigBoxes) || 0;
     const small = Number(t.smallBoxes) || 0;
     const bigEq = Number(t.bigEquivalent) || (big + small / 2);

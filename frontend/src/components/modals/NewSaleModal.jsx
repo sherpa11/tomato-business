@@ -1,33 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { X, Receipt, AlertCircle, Sparkles, Truck, CheckCircle2 } from 'lucide-react';
+import { X, Receipt, AlertCircle, Sparkles, Plus, Trash2 } from 'lucide-react';
 import { buyersAPI, transactionsAPI } from '../../api/client';
 import { useDate } from '../../context/DateContext';
 import { useSettings } from '../../context/SettingsContext';
-import { useAuth } from '../../context/AuthContext';
 import {
   calculateBigEquivalent,
   formatCurrency,
   formatBalance
 } from '../../utils/formatters';
 import EditBuyerModal from './EditBuyerModal';
-import NewPurchaseModal from './NewPurchaseModal';
 import SearchableBuyerSelect from '../common/SearchableBuyerSelect';
 
 export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerId = null }) {
   const { operationalDate } = useDate();
   const { settings } = useSettings();
-  const { isAdmin } = useAuth();
 
   const [buyers, setBuyers] = useState([]);
   const [buyerId, setBuyerId] = useState(initialBuyerId || '');
   const [selectedBuyer, setSelectedBuyer] = useState(null);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
-  const [addLotModalOpen, setAddLotModalOpen] = useState(false);
-  const [addLotSuccessMsg, setAddLotSuccessMsg] = useState('');
   const [transactionDate, setTransactionDate] = useState(operationalDate);
-  const [bigBoxes, setBigBoxes] = useState('');
-  const [smallBoxes, setSmallBoxes] = useState('');
-  const [ratePerBigBox, setRatePerBigBox] = useState('');
   const [amountPaid, setAmountPaid] = useState('');
   const [oldBalanceInput, setOldBalanceInput] = useState('');
   const [notes, setNotes] = useState('');
@@ -35,19 +27,34 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
   const [fetchingBuyer, setFetchingBuyer] = useState(false);
   const [error, setError] = useState('');
 
+  // Tomato Crates & Rate multi-row state (allowing multiple rows with different rates for the same buyer)
+  const [rows, setRows] = useState([
+    {
+      id: 1,
+      bigBoxes: '',
+      smallBoxes: '',
+      ratePerBigBox: ''
+    }
+  ]);
+
   // Fetch active buyers on modal open
   useEffect(() => {
     if (!isOpen) return;
 
+    const defaultRate = settings.defaultSellingRate?.toString() || '1100';
     setTransactionDate(operationalDate);
-    setRatePerBigBox(settings.defaultSellingRate?.toString() || '1100');
     setError('');
-    setBigBoxes('');
-    setSmallBoxes('');
     setAmountPaid('');
     setOldBalanceInput('');
     setNotes('');
-    setAddLotSuccessMsg('');
+    setRows([
+      {
+        id: 1,
+        bigBoxes: '',
+        smallBoxes: '',
+        ratePerBigBox: defaultRate
+      }
+    ]);
 
     buyersAPI.getBuyers({ active: true, dropdown: true })
       .then((res) => {
@@ -97,16 +104,59 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
 
   if (!isOpen) return null;
 
-  // Live Calculations (preview for the user; backend strictly computes ledger values)
-  const bigNum = Number(bigBoxes) || 0;
-  const smallNum = Number(smallBoxes) || 0;
-  const rateNum = Number(ratePerBigBox) || 0;
-  const paidNum = Number(amountPaid) || 0;
+  // Multi-row management
+  const handleAddRow = () => {
+    setRows((prev) => [
+      ...prev,
+      {
+        id: Date.now() + Math.random(),
+        bigBoxes: '',
+        smallBoxes: '',
+        ratePerBigBox: prev[prev.length - 1]?.ratePerBigBox || settings.defaultSellingRate?.toString() || '1100'
+      }
+    ]);
+  };
+
+  const handleRemoveRow = (index) => {
+    if (rows.length <= 1) return;
+    setRows((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRowChange = (index, field, value) => {
+    setRows((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  // Live Calculations across all crate rows
+  let totalBigBoxes = 0;
+  let totalSmallBoxes = 0;
+  let totalBigEquivalent = 0;
+  let todayBill = 0;
+
+  const rowCalculations = rows.map((r) => {
+    const b = Number(r.bigBoxes) || 0;
+    const s = Number(r.smallBoxes) || 0;
+    const eq = calculateBigEquivalent(b, s);
+    const rt = Number(r.ratePerBigBox) || 0;
+    const amt = Math.round((eq * rt + Number.EPSILON) * 100) / 100;
+
+    totalBigBoxes += b;
+    totalSmallBoxes += s;
+    totalBigEquivalent += eq;
+    todayBill += amt;
+
+    return { b, s, eq, rt, amt };
+  });
+
+  totalBigEquivalent = Math.round((totalBigEquivalent + Number.EPSILON) * 10) / 10;
+  todayBill = Math.round((todayBill + Number.EPSILON) * 100) / 100;
 
   const oldBalance = oldBalanceInput !== '' ? Number(oldBalanceInput) || 0 : Number(selectedBuyer?.currentBalance || 0);
-  const bigEquivalent = calculateBigEquivalent(bigNum, smallNum);
-  const todayBill = Math.round((bigEquivalent * rateNum + Number.EPSILON) * 100) / 100;
   const totalDue = Math.round((oldBalance + todayBill + Number.EPSILON) * 100) / 100;
+  const paidNum = Number(amountPaid) || 0;
   const newBalance = Math.round((totalDue - paidNum + Number.EPSILON) * 100) / 100;
 
   const oldBalDisplay = formatBalance(oldBalance);
@@ -133,12 +183,32 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
       setError('Please select a buyer');
       return;
     }
-    if (bigNum === 0 && smallNum === 0) {
-      setError('A sale requires at least one Big or Small box');
-      return;
+
+    // Validate rows
+    let totalBoxesCount = 0;
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const b = Number(r.bigBoxes) || 0;
+      const s = Number(r.smallBoxes) || 0;
+      const rate = Number(r.ratePerBigBox) || 0;
+
+      if (b < 0 || s < 0) {
+        setError(`Row ${i + 1}: Box quantities cannot be negative`);
+        return;
+      }
+      if (b === 0 && s === 0) {
+        setError(`Row ${i + 1}: Please enter at least one Big or Small box`);
+        return;
+      }
+      if (rate <= 0 || isNaN(rate)) {
+        setError(`Row ${i + 1}: Selling rate must be greater than zero`);
+        return;
+      }
+      totalBoxesCount += (b + s);
     }
-    if (rateNum <= 0) {
-      setError('Selling rate per Big Box must be greater than zero');
+
+    if (totalBoxesCount === 0) {
+      setError('A sale requires at least one Big or Small box');
       return;
     }
     if (paidNum < 0) {
@@ -148,12 +218,28 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
 
     setLoading(true);
     try {
+      const itemsPayload = rows.map((r) => {
+        const b = Number(r.bigBoxes) || 0;
+        const s = Number(r.smallBoxes) || 0;
+        const eq = calculateBigEquivalent(b, s);
+        const rt = Number(r.ratePerBigBox) || 0;
+        return {
+          bigBoxes: b,
+          smallBoxes: s,
+          bigEquivalent: eq,
+          ratePerBigBox: rt,
+          lineAmount: Math.round((eq * rt + Number.EPSILON) * 100) / 100,
+          billAmount: Math.round((eq * rt + Number.EPSILON) * 100) / 100
+        };
+      });
+
       const res = await transactionsAPI.createSale({
         buyerId,
         transactionDate,
-        bigBoxes: bigNum,
-        smallBoxes: smallNum,
-        ratePerBigBox: rateNum,
+        items: itemsPayload,
+        bigBoxes: totalBigBoxes,
+        smallBoxes: totalSmallBoxes,
+        ratePerBigBox: rows.length === 1 ? (Number(rows[0].ratePerBigBox) || 0) : (totalBigEquivalent > 0 ? Math.round((todayBill / totalBigEquivalent) * 100) / 100 : 0),
         amountPaid: paidNum,
         manualOldBalance: oldBalanceInput !== '' ? Number(oldBalanceInput) : null,
         notes
@@ -181,6 +267,7 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
         {/* Mobile Drag Indicator */}
         <div className="sm:hidden w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-3" />
 
+        {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center border border-red-100 shrink-0">
@@ -191,33 +278,13 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
               <p className="text-[11px] sm:text-xs text-slate-500 font-medium">Automatic box conversion & balance tally</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setAddLotModalOpen(true)}
-                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
-                title="Add Purchase Lot (Supplier arrival)"
-              >
-                <Truck className="w-3.5 h-3.5 text-emerald-700" />
-                <span>+ Add Lot</span>
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-
-        {addLotSuccessMsg && (
-          <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm rounded-xl flex items-center gap-2 animate-in fade-in">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="font-semibold">{addLotSuccessMsg}</span>
-          </div>
-        )}
 
         {error && (
           <div className="mt-4 p-3.5 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl flex items-center gap-2.5">
@@ -322,76 +389,144 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
             </p>
           </div>
 
-          {/* Box inputs */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Big Boxes <span className="text-slate-500 font-normal">(1 Big = 1)</span>
-              </label>
-              <input
-                type="number"
-                inputMode="numeric"
-                min="0"
-                step="1"
-                placeholder="0"
-                value={bigBoxes}
-                onChange={(e) => setBigBoxes(e.target.value)}
-                className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none"
-              />
+          {/* TOMATO CRATES & RATE Multi-Row Section */}
+          <div className="pt-1">
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <span>TOMATO CRATES & RATE</span>
+                {rows.length > 1 && (
+                  <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">
+                    {rows.length} rows
+                  </span>
+                )}
+              </span>
+              <button
+                type="button"
+                onClick={handleAddRow}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
+                title="Add another crate & rate row for this customer"
+              >
+                <Plus className="w-3.5 h-3.5 text-emerald-700" />
+                <span>+ Add Row</span>
+              </button>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Small Boxes <span className="text-slate-500 font-normal">(2 Small = 1 Big)</span>
-              </label>
-              <input
-                type="number"
-                inputMode="numeric"
-                min="0"
-                step="1"
-                placeholder="0"
-                value={smallBoxes}
-                onChange={(e) => setSmallBoxes(e.target.value)}
-                className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none"
-              />
+            {/* Crate & Rate Rows */}
+            <div className="space-y-3">
+              {rows.map((row, index) => {
+                const calc = rowCalculations[index];
+
+                return (
+                  <div
+                    key={row.id}
+                    className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 relative group"
+                  >
+                    {rows.length > 1 && (
+                      <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                        <span className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wide">
+                          Item #{index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRow(index)}
+                          className="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-bold"
+                          title="Remove this row"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Big Boxes <span className="text-slate-400 font-normal text-[10px] sm:text-xs">(1 Big = 1)</span>
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          step="1"
+                          placeholder="0"
+                          value={row.bigBoxes}
+                          onChange={(e) => handleRowChange(index, 'bigBoxes', e.target.value)}
+                          className="w-full h-11 text-base font-bold font-mono border border-slate-300 rounded-xl px-3 bg-white focus:ring-2 focus:ring-red-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Small Boxes <span className="text-slate-400 font-normal text-[10px] sm:text-xs">(2 Small = 1 Big)</span>
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          step="1"
+                          placeholder="0"
+                          value={row.smallBoxes}
+                          onChange={(e) => handleRowChange(index, 'smallBoxes', e.target.value)}
+                          className="w-full h-11 text-base font-bold font-mono border border-slate-300 rounded-xl px-3 bg-white focus:ring-2 focus:ring-red-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Selling Rate per Big Box (₹)
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min="1"
+                          step="any"
+                          placeholder="e.g. 650"
+                          value={row.ratePerBigBox}
+                          onChange={(e) => handleRowChange(index, 'ratePerBigBox', e.target.value)}
+                          className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 bg-white text-red-600 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/90 flex items-center justify-around text-xs shadow-2xs h-11">
+                        <div className="text-center min-w-0">
+                          <span className="text-slate-400 text-[10px] block font-medium">Row Eqv</span>
+                          <span className="font-bold text-slate-800 font-mono text-xs sm:text-sm truncate block">
+                            {calc.eq} Big
+                          </span>
+                        </div>
+                        <div className="w-px h-6 bg-slate-200" />
+                        <div className="text-center min-w-0">
+                          <span className="text-slate-400 text-[10px] block font-medium">Amount</span>
+                          <span className="font-black text-slate-900 font-mono text-xs sm:text-sm truncate block">
+                            {formatCurrency(calc.amt)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Rate and Amount Paid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Selling Rate per Big Box (₹)
-              </label>
-              <input
-                type="number"
-                inputMode="decimal"
-                min="1"
-                step="any"
-                placeholder="e.g. 1100"
-                value={ratePerBigBox}
-                onChange={(e) => setRatePerBigBox(e.target.value)}
-                required
-                className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none text-red-700"
-              />
+          {/* Amount Paid input */}
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-xs font-bold text-slate-700">Amount Paid (₹)</label>
+              <span className="text-[11px] text-slate-500 font-medium">(0 allowed)</span>
             </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-xs font-bold text-slate-700">Amount Paid (₹)</label>
-                <span className="text-[11px] text-slate-500 font-medium">(0 allowed)</span>
-              </div>
-              <input
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="any"
-                placeholder="0"
-                value={amountPaid}
-                onChange={(e) => setAmountPaid(e.target.value)}
-                className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none text-emerald-700"
-              />
-            </div>
+            <input
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
+              placeholder="0"
+              value={amountPaid}
+              onChange={(e) => setAmountPaid(e.target.value)}
+              className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none text-emerald-700"
+            />
           </div>
 
           {/* Quick Pay Buttons */}
@@ -429,7 +564,7 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
             <div className="flex justify-between items-center text-xs text-slate-600 font-medium py-0.5">
               <span>Today's Box Equivalent:</span>
               <span className="font-bold text-slate-900 font-mono">
-                {bigEquivalent} Big Eqv {bigNum > 0 && smallNum > 0 ? `(${bigNum}B + ${smallNum}S)` : ''}
+                {totalBigEquivalent} Big Eqv {totalBigBoxes > 0 || totalSmallBoxes > 0 ? `(${totalBigBoxes}B + ${totalSmallBoxes}S)` : ''}
               </span>
             </div>
 
@@ -501,19 +636,6 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
           setOldBalanceInput(String(updated.currentBalance || 0));
         }}
       />
-
-      {/* Add Lot (Purchase) Modal for Admin */}
-      {isAdmin && (
-        <NewPurchaseModal
-          isOpen={addLotModalOpen}
-          onClose={() => setAddLotModalOpen(false)}
-          onSuccess={() => {
-            setAddLotModalOpen(false);
-            setAddLotSuccessMsg('Purchase lot saved successfully!');
-            setTimeout(() => setAddLotSuccessMsg(''), 4000);
-          }}
-        />
-      )}
     </div>
   );
 }

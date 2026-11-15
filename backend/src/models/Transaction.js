@@ -49,6 +49,18 @@ const transactionSchema = new mongoose.Schema(
       default: 0,
       min: 0
     },
+    // Multi-row crates & rates support (different rates for the same buyer bill)
+    items: [
+      {
+        bigBoxes: { type: Number, default: 0, min: 0 },
+        smallBoxes: { type: Number, default: 0, min: 0 },
+        bigEquivalent: { type: Number, default: 0, min: 0 },
+        ratePerBigBox: { type: Number, default: 0, min: 0 },
+        lineAmount: { type: Number, default: 0, min: 0 },
+        billAmount: { type: Number, default: 0, min: 0 },
+        notes: { type: String, default: '' }
+      }
+    ],
     // Payment amount (applies to SALE and PAYMENT):
     amountPaid: {
       type: Number,

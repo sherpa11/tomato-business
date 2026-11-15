@@ -21,7 +21,7 @@ import { getConsolidatedBuyerBill } from '../services/buyerBillService.js';
  */
 export const createSale = async (req, res, next) => {
   try {
-    const { buyerId, transactionDate, bigBoxes, smallBoxes, ratePerBigBox, amountPaid, notes, manualOldBalance } = req.body;
+    const { buyerId, transactionDate, bigBoxes, smallBoxes, ratePerBigBox, amountPaid, notes, manualOldBalance, items } = req.body;
 
     if (!buyerId) {
       return res.status(400).json({ success: false, message: 'Buyer is required' });
@@ -35,26 +35,83 @@ export const createSale = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Buyer not found' });
     }
 
-    const big = Number(bigBoxes) || 0;
-    const small = Number(smallBoxes) || 0;
-    const rate = Number(ratePerBigBox);
     const paid = Number(amountPaid) || 0;
-
-    if (big < 0 || small < 0) {
-      return res.status(400).json({ success: false, message: 'Box quantities cannot be negative' });
-    }
-    if (big === 0 && small === 0) {
-      return res.status(400).json({ success: false, message: 'Sale transaction requires at least one Big or Small box' });
-    }
-    if (isNaN(rate) || rate <= 0) {
-      return res.status(400).json({ success: false, message: 'Selling rate per Big Box must be greater than zero' });
-    }
     if (paid < 0) {
       return res.status(400).json({ success: false, message: 'Payment amount cannot be negative' });
     }
 
-    const bigEquivalent = calculateBigEquivalent(big, small);
-    const billAmount = roundMoney(bigEquivalent * rate);
+    let processedItems = [];
+    let big = 0;
+    let small = 0;
+    let bigEquivalent = 0;
+    let rate = 0;
+    let billAmount = 0;
+
+    // Handle multiple crate & rate rows if provided
+    if (Array.isArray(items) && items.length > 0) {
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const rBig = Number(it.bigBoxes) || 0;
+        const rSmall = Number(it.smallBoxes) || 0;
+        const rRate = Number(it.ratePerBigBox);
+
+        if (rBig < 0 || rSmall < 0) {
+          return res.status(400).json({ success: false, message: `Row ${i + 1}: Box quantities cannot be negative` });
+        }
+        if (rBig === 0 && rSmall === 0) {
+          return res.status(400).json({ success: false, message: `Row ${i + 1}: Requires at least one Big or Small box` });
+        }
+        if (isNaN(rRate) || rRate <= 0) {
+          return res.status(400).json({ success: false, message: `Row ${i + 1}: Selling rate per Big Box must be greater than zero` });
+        }
+
+        const rBigEq = calculateBigEquivalent(rBig, rSmall);
+        const rLineAmt = roundMoney(rBigEq * rRate);
+
+        big += rBig;
+        small += rSmall;
+        bigEquivalent += rBigEq;
+        billAmount += rLineAmt;
+
+        processedItems.push({
+          bigBoxes: rBig,
+          smallBoxes: rSmall,
+          bigEquivalent: rBigEq,
+          ratePerBigBox: rRate,
+          lineAmount: rLineAmt,
+          billAmount: rLineAmt
+        });
+      }
+
+      billAmount = roundMoney(billAmount);
+      rate = bigEquivalent > 0 ? roundMoney(billAmount / bigEquivalent) : 0;
+    } else {
+      big = Number(bigBoxes) || 0;
+      small = Number(smallBoxes) || 0;
+      rate = Number(ratePerBigBox);
+
+      if (big < 0 || small < 0) {
+        return res.status(400).json({ success: false, message: 'Box quantities cannot be negative' });
+      }
+      if (big === 0 && small === 0) {
+        return res.status(400).json({ success: false, message: 'Sale transaction requires at least one Big or Small box' });
+      }
+      if (isNaN(rate) || rate <= 0) {
+        return res.status(400).json({ success: false, message: 'Selling rate per Big Box must be greater than zero' });
+      }
+
+      bigEquivalent = calculateBigEquivalent(big, small);
+      billAmount = roundMoney(bigEquivalent * rate);
+
+      processedItems.push({
+        bigBoxes: big,
+        smallBoxes: small,
+        bigEquivalent,
+        ratePerBigBox: rate,
+        lineAmount: billAmount,
+        billAmount
+      });
+    }
 
     // If manual old balance is explicitly provided and differs from ledger, adjust initial balance
     if (manualOldBalance !== undefined && manualOldBalance !== null && manualOldBalance !== '' && !isNaN(Number(manualOldBalance))) {
@@ -79,6 +136,7 @@ export const createSale = async (req, res, next) => {
       bigEquivalent,
       ratePerBigBox: rate,
       billAmount,
+      items: processedItems,
       amountPaid: paid,
       oldBalance: 0,
       totalDue: billAmount,
