@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'http';
+import mongoose from 'mongoose';
 
 import { connectDB } from '../src/config/db.js';
 import User from '../src/models/User.js';
@@ -44,6 +45,14 @@ test('Admin Credential Management Security Suite', async (t) => {
   let adminToken = '';
   let accountantToken = '';
 
+  t.after(async () => {
+    try {
+      await User.deleteMany({ username: { $in: [originalAdminUser, updatedAdminUser, accountantUser] } });
+    } catch {}
+    await new Promise((resolve) => server.close(resolve));
+    await mongoose.disconnect();
+  });
+
   const apiRequest = async (path, options = {}) => {
     const url = `${baseUrl}${path}`;
     const headers = {
@@ -67,14 +76,6 @@ test('Admin Credential Management Security Suite', async (t) => {
 
     return { status: res.status, data };
   };
-
-  t.after(async () => {
-    await User.deleteMany({
-      username: { $in: [originalAdminUser, updatedAdminUser, accountantUser] }
-    });
-    await new Promise((resolve) => server.close(resolve));
-    await mongoose.disconnect();
-  });
 
   await t.test('1. Setup: Login Admin and Accountant', async () => {
     const adminLogin = await apiRequest('/api/auth/login', {

@@ -88,6 +88,18 @@
     max-height: 148mm !important;
   }
 
+  body.paper-a4,
+  body.paper-a4 html {
+    width: 210mm !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body.paper-a4.print-modal-active {
+    overflow: visible !important;
+  }
+
   .print-modal-portal,
   .print-modal-container,
   .print-modal-scroll-area,

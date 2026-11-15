@@ -22,16 +22,21 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   const paperDropdownRef = React.useRef(null);
 
   // Determine what type of document is being printed
-  const isBuyerBill = title.toLowerCase().includes('buyer') || Boolean(children?.props?.transaction);
-  const isSupplierBill = title.toLowerCase().includes('supplier') || Boolean(children?.props?.purchase);
+  const isStatement = Boolean(children?.props?.ledgerEntries) || title.toLowerCase().includes('statement') || title.toLowerCase().includes('ledger');
+  const isBuyerBill = !isStatement && (title.toLowerCase().includes('buyer') || Boolean(children?.props?.transaction));
+  const isSupplierBill = !isStatement && (title.toLowerCase().includes('supplier') || Boolean(children?.props?.purchase));
 
   // Exact unscaled dimensions in screen pixels (at standard 96 DPI: 1 inch = 25.4mm)
+  // A4 (210mm x 297mm): 210mm = 793.7px; 297mm = 1122.5px
   // Square (89mm x 89mm): 89mm = 336.38px; 89mm = 336.38px
   // A6 (105mm x 148mm): 105mm = 396.85px; 148mm = 559.37px
   let baseWidthPx = 396.85;
   let baseHeightPx = 559.37;
 
-  if (isBuyerBill) {
+  if (isStatement) {
+    baseWidthPx = 794;
+    baseHeightPx = null;
+  } else if (isBuyerBill) {
     if (buyerPaperSize === 'a6') {
       baseWidthPx = 396.85;
       baseHeightPx = 559.37;
@@ -43,7 +48,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     baseWidthPx = 396.85;
     baseHeightPx = 559.37;
   } else {
-    baseWidthPx = 302.36;
+    baseWidthPx = 794;
     baseHeightPx = null;
   }
 
@@ -86,13 +91,18 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   useEffect(() => {
     if (isOpen) {
       document.body.classList.add('print-modal-active');
-      const isSquare = isBuyerBill && buyerPaperSize === 'square';
-      if (isSquare) {
-        document.body.classList.add('paper-square');
-        document.body.classList.remove('paper-a6');
+      if (isStatement) {
+        document.body.classList.add('paper-a4');
+        document.body.classList.remove('paper-square', 'paper-a6');
       } else {
-        document.body.classList.add('paper-a6');
-        document.body.classList.remove('paper-square');
+        const isSquare = isBuyerBill && buyerPaperSize === 'square';
+        if (isSquare) {
+          document.body.classList.add('paper-square');
+          document.body.classList.remove('paper-a6', 'paper-a4');
+        } else {
+          document.body.classList.add('paper-a6');
+          document.body.classList.remove('paper-square', 'paper-a4');
+        }
       }
 
       // Dynamically inject top-level @page rule into document.head so browser print knows exact paper dimensions
@@ -104,8 +114,8 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
       }
       styleEl.textContent = `
         @page {
-          size: ${isSquare ? '89mm 89mm' : '105mm 148mm'};
-          margin: 0mm;
+          size: ${isStatement ? 'A4 portrait' : (isBuyerBill && buyerPaperSize === 'square' ? '89mm 89mm' : '105mm 148mm')};
+          margin: ${isStatement ? '10mm 10mm 12mm 10mm' : '0mm'};
         }
       `;
 
@@ -123,7 +133,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
           // Keep default Canon G3030 series
         });
     } else {
-      document.body.classList.remove('print-modal-active', 'paper-square', 'paper-a6');
+      document.body.classList.remove('print-modal-active', 'paper-square', 'paper-a6', 'paper-a4');
       const styleEl = document.getElementById('dynamic-print-paper-size');
       if (styleEl) {
         try { styleEl.remove(); } catch {}
@@ -135,13 +145,13 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
       setShowPaperSizeDropdown(false);
     }
     return () => {
-      document.body.classList.remove('print-modal-active', 'paper-square', 'paper-a6');
+      document.body.classList.remove('print-modal-active', 'paper-square', 'paper-a6', 'paper-a4');
       const styleEl = document.getElementById('dynamic-print-paper-size');
       if (styleEl) {
         try { styleEl.remove(); } catch {}
       }
     };
-  }, [isOpen, isBuyerBill, buyerPaperSize]);
+  }, [isOpen, isStatement, isBuyerBill, buyerPaperSize]);
 
   // Click outside listener for paper size selector dropdown
   useEffect(() => {
@@ -502,12 +512,22 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     }
     setShowOptions(false);
     const origTitle = document.title;
-    const title = isBuyerBill
+    const title = isStatement
+      ? 'Customer_Statement_A4'
+      : isBuyerBill
       ? (buyerPaperSize === 'a6' ? 'Buyer_Bill_A6' : 'Buyer_Bill_Square')
       : isSupplierBill
       ? 'Supplier_Bill_A6'
       : 'Customer_Statement';
     document.title = title;
+
+    if (isStatement) {
+      window.print();
+      setTimeout(() => {
+        document.title = origTitle;
+      }, 1500);
+      return;
+    }
 
     const isSquare = isBuyerBill && buyerPaperSize === 'square';
     const paperW = isSquare ? '89mm' : '105mm';
@@ -612,7 +632,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   // 2. Direct Print to Canon G3030
   const handleDirectPrint = async (openDialog = false) => {
     setShowOptions(false);
-    if (!effectiveTransaction && !effectivePurchase) {
+    if (isStatement || (!effectiveTransaction && !effectivePurchase)) {
       handleBrowserPrint();
       return;
     }
@@ -697,7 +717,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="print-modal-container bg-white rounded-t-3xl sm:rounded-2xl max-w-2xl w-full p-3 sm:p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[96vh] sm:max-h-[94vh] flex flex-col">
+      <div className={`print-modal-container bg-white rounded-t-3xl sm:rounded-2xl ${isStatement ? 'max-w-4xl' : 'max-w-2xl'} w-full p-3 sm:p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[96vh] sm:max-h-[94vh] flex flex-col`}>
         {/* Mobile Drag Indicator */}
         <div className="no-print sm:hidden w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-2.5" />
 
@@ -715,7 +735,9 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
                 )}
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500">
-                {isBuyerBill
+                {isStatement
+                  ? 'Paper size: A4 Sheet (210mm × 297mm) • Customer Statement Ledger'
+                  : isBuyerBill
                   ? buyerPaperSize === 'a6'
                     ? 'Paper size: 105mm × 148mm (A6 Mandi Bill)'
                     : 'Paper size: 89mm × 89mm (Square Mandi Bill)'
@@ -734,7 +756,12 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
 
           <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-3">
             {/* Paper Size Indicator / Format Toggle */}
-            {isBuyerBill ? (
+            {isStatement ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 xs:px-3 py-1.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg text-xs font-bold shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                <span>A4 Sheet (210 × 297 mm)</span>
+              </span>
+            ) : isBuyerBill ? (
               <div className="relative" ref={paperDropdownRef}>
                 <button
                   type="button"
@@ -856,6 +883,8 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
                     ? 'Printing...'
                     : printSuccess
                     ? 'Printed!'
+                    : isStatement
+                    ? 'Print Statement'
                     : 'Print Bill'}
                 </span>
               </button>
@@ -1111,7 +1140,9 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
         {/* Print instructions footer for the user */}
         <div className="no-print pt-2 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
           <span>
-            {isBuyerBill
+            {isStatement
+              ? 'Target: Standard Printer | Paper: A4 Sheet (210 × 297 mm) | Full Statement'
+              : isBuyerBill
               ? buyerPaperSize === 'a6'
                 ? 'Target: Canon G3030 series | Paper: A6 (105 × 148 mm) | Single Page'
                 : 'Target: Canon G3030 series | Paper: Square (89 × 89 mm) | Single Page'
