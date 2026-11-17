@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Printer, CheckCircle2, Loader2, ChevronDown, ChevronUp, Download, Monitor, Settings, Save, AlertTriangle } from 'lucide-react';
+import { X, Printer, CheckCircle2, Loader2, ChevronDown, ChevronUp, Download, Monitor, ImageDown, Save, AlertTriangle } from 'lucide-react';
+import { toBlob, toPng } from 'html-to-image';
 import { useSettings } from '../../context/SettingsContext';
 import { printAPI, purchasesAPI, transactionsAPI } from '../../api/client';
 import { roundMoney } from '../../utils/formatters';
@@ -11,6 +12,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
 
   // Print service states
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
   const [printSuccess, setPrintSuccess] = useState(false);
   const [printMessage, setPrintMessage] = useState('');
   const [printerInfo, setPrinterInfo] = useState({ hasCanon: true, defaultPrinter: 'Canon G3030 series' });
@@ -630,7 +632,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   };
 
   // 2. Direct Print to Canon G3030
-  const handleDirectPrint = async (openDialog = false) => {
+  const handleDirectPrint = async () => {
     setShowOptions(false);
     if (isStatement || (!effectiveTransaction && !effectivePurchase)) {
       handleBrowserPrint();
@@ -642,7 +644,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     }
 
     setIsPrinting(true);
-    setPrintMessage(openDialog ? 'Opening Windows Print Dialog...' : 'Sending to Canon G3030...');
+    setPrintMessage('Sending to Canon G3030...');
 
     try {
       const res = await printAPI.directPrint({
@@ -651,13 +653,13 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
         purchase: effectivePurchase,
         paperSize: isBuyerBill ? buyerPaperSize : 'a6',
         printerName: printerInfo.defaultPrinter || 'Canon G3030 series',
-        openDialog,
-        silent: !openDialog
+        openDialog: false,
+        silent: true
       });
 
       if (res?.success) {
         setPrintSuccess(true);
-        setPrintMessage(openDialog ? 'Print Dialog Opened' : `Printed to ${res.printer || 'Canon G3030'}`);
+        setPrintMessage(`Printed to ${res.printer || 'Canon G3030'}`);
         setTimeout(() => {
           setPrintSuccess(false);
           setPrintMessage('');
@@ -676,7 +678,204 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     }
   };
 
-  // 3. Download verified 1-page PDF
+  // 3. One-Click Download Bill Image (High-Resolution PNG)
+  const handleDownloadImage = async () => {
+    setShowOptions(false);
+    if (isSupplierBill && deductionsModified) {
+      await handleSaveDeductions();
+    }
+
+    setIsDownloadingImage(true);
+    setPrintMessage('Exporting bill image...');
+
+    let exportContainer = null;
+    try {
+      // Find printable bill element
+      const billNode = document.querySelector(
+        '.print-bill-outer .buyer-bill-page, .print-bill-outer .supplier-bill-page, .print-bill-outer .print-container'
+      );
+      if (!billNode) {
+        throw new Error('Bill content element not found');
+      }
+
+      // Exact unscaled dimensions in screen pixels (96 DPI: 1 inch = 25.4mm)
+      // Square (89mm x 89mm): 336.38px; A6 (105mm x 148mm): 396.85px x 559.37px; A4 Statement: 794px
+      let targetWidthPx = 336.38;
+      let targetHeightPx = 336.38;
+
+      if (isStatement) {
+        targetWidthPx = 794;
+        targetHeightPx = billNode.offsetHeight || null;
+      } else if (isBuyerBill) {
+        if (buyerPaperSize === 'a6') {
+          targetWidthPx = 396.85;
+          targetHeightPx = 559.37;
+        } else {
+          targetWidthPx = 336.38;
+          targetHeightPx = 336.38;
+        }
+      } else if (isSupplierBill) {
+        targetWidthPx = 396.85;
+        targetHeightPx = 559.37;
+      }
+
+      // Create an unscaled off-screen export container to isolate from modal zoom/scale
+      exportContainer = document.createElement('div');
+      exportContainer.style.position = 'fixed';
+      exportContainer.style.left = '-99999px';
+      exportContainer.style.top = '0';
+      exportContainer.style.width = `${targetWidthPx}px`;
+      exportContainer.style.height = targetHeightPx ? `${targetHeightPx}px` : 'auto';
+      exportContainer.style.margin = '0';
+      exportContainer.style.padding = '0';
+      exportContainer.style.overflow = 'hidden';
+      exportContainer.style.background = '#ffffff';
+      exportContainer.style.zIndex = '-9999';
+      exportContainer.style.transform = 'none';
+
+      const clone = billNode.cloneNode(true);
+      clone.style.transform = 'none';
+      clone.style.margin = '0';
+      clone.style.width = `${targetWidthPx}px`;
+      if (targetHeightPx) {
+        clone.style.height = `${targetHeightPx}px`;
+        clone.style.maxHeight = `${targetHeightPx}px`;
+      }
+
+      exportContainer.appendChild(clone);
+      document.body.appendChild(exportContainer);
+
+      // Wait for Tamil fonts (Mukta Malar / Noto Sans Tamil) to finish loading
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch {}
+      }
+
+      // Ensure all images (e.g. Lakshmi logo) in the cloned bill are fully loaded
+      const imgElements = Array.from(clone.querySelectorAll('img'));
+      await Promise.all(
+        imgElements.map((img) => {
+          if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+            setTimeout(resolve, 300);
+          });
+        })
+      );
+
+      // Brief tick for font rendering and layout stability
+      await new Promise((r) => setTimeout(r, 60));
+
+      // Generate high-resolution (3x) PNG blob
+      let blob = null;
+      try {
+        blob = await toBlob(clone, {
+          pixelRatio: 3,
+          width: targetWidthPx,
+          height: targetHeightPx || clone.offsetHeight,
+          backgroundColor: '#ffffff',
+          cacheBust: false
+        });
+      } catch (blobErr) {
+        console.warn('[PrintModal] toBlob direct capture fallback to toPng:', blobErr);
+        const dataUrl = await toPng(clone, {
+          pixelRatio: 3,
+          width: targetWidthPx,
+          height: targetHeightPx || clone.offsetHeight,
+          backgroundColor: '#ffffff'
+        });
+        const resp = await fetch(dataUrl);
+        blob = await resp.blob();
+      }
+
+      if (!blob) {
+        throw new Error('Image generation produced empty blob');
+      }
+
+      // Generate meaningful filename (e.g. Buyer_Bill_AM_2026-11-17.png)
+      const buyerName = effectiveTransaction?.buyerName || children?.props?.buyer?.name || 'Customer';
+      const safeBuyerName = buyerName
+        .trim()
+        .replace(/[\/\s]+/g, '_')
+        .replace(/[^a-zA-Z0-9_\-\u0B80-\u0BFF]/g, '');
+
+      const rawDate = effectiveTransaction?.transactionDate || effectiveTransaction?.date;
+      let dateStr = '';
+      if (rawDate) {
+        const d = new Date(rawDate);
+        if (!isNaN(d.getTime())) {
+          dateStr = d.toISOString().slice(0, 10);
+        }
+      }
+      if (!dateStr) {
+        dateStr = new Date().toISOString().slice(0, 10);
+      }
+
+      const filename = isBuyerBill
+        ? `Buyer_Bill_${safeBuyerName || 'Customer'}_${dateStr}.png`
+        : isSupplierBill
+        ? `Supplier_Bill_${(effectivePurchase?.supplierName || 'Supplier').trim().replace(/[\/\s]+/g, '_')}_${dateStr}.png`
+        : `Customer_Statement_${safeBuyerName || 'Customer'}_${dateStr}.png`;
+
+      // Device-Specific Download Behaviour:
+      // Mobile (Android / iOS): Use Web Share API if supported for direct Save to Photos/Gallery
+      const file = new File([blob], filename, { type: 'image/png' });
+      const canShare = typeof navigator !== 'undefined' &&
+        typeof navigator.share === 'function' &&
+        typeof navigator.canShare === 'function' &&
+        navigator.canShare({ files: [file] });
+
+      let shared = false;
+      if (canShare) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: filename.replace('.png', ''),
+            text: `${effectiveTransaction?.buyerName || 'Buyer'} Bill`
+          });
+          shared = true;
+          setPrintMessage('Bill image ready to save or share!');
+          setTimeout(() => setPrintMessage(''), 4000);
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') {
+            // User cancelled the share dialog
+            setPrintMessage('');
+            return;
+          }
+          console.warn('[PrintModal] Share API error, falling back to download:', shareErr);
+        }
+      }
+
+      if (!shared) {
+        // Desktop / Laptop & standard mobile download fallback
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => window.URL.revokeObjectURL(url), 2000);
+
+        setPrintMessage('Bill image downloaded!');
+        setTimeout(() => setPrintMessage(''), 4000);
+      }
+    } catch (err) {
+      console.error('[PrintModal] Download image failed:', err);
+      setPrintMessage('Failed to download bill image');
+      setTimeout(() => setPrintMessage(''), 4000);
+    } finally {
+      if (exportContainer && exportContainer.parentNode) {
+        exportContainer.parentNode.removeChild(exportContainer);
+      }
+      setIsDownloadingImage(false);
+    }
+  };
+
+  // 4. Download verified 1-page PDF
   const handleDownloadPdf = async () => {
     setShowOptions(false);
     if (isSupplierBill && deductionsModified) {
@@ -904,8 +1103,9 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
                   className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in zoom-in-95"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  {/* 1. Direct to Canon G3030 */}
                   <button
-                    onClick={() => handleDirectPrint(false)}
+                    onClick={() => handleDirectPrint()}
                     className="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 flex items-center gap-2.5 cursor-pointer"
                   >
                     <Printer className="w-4 h-4 text-emerald-600" />
@@ -915,17 +1115,7 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
                     </div>
                   </button>
 
-                  <button
-                    onClick={() => handleDirectPrint(true)}
-                    className="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 flex items-center gap-2.5 cursor-pointer"
-                  >
-                    <Settings className="w-4 h-4 text-blue-600" />
-                    <div>
-                      <div>Windows Print Dialog</div>
-                      <div className="text-[10px] text-slate-400 font-normal">Select tray or custom paper</div>
-                    </div>
-                  </button>
-
+                  {/* 2. Browser Print Preview */}
                   <button
                     onClick={handleBrowserPrint}
                     className="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 flex items-center gap-2.5 cursor-pointer"
@@ -937,8 +1127,28 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
                     </div>
                   </button>
 
+                  {/* 3. Download Bill Image */}
+                  <button
+                    onClick={handleDownloadImage}
+                    disabled={isDownloadingImage}
+                    className="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 flex items-center gap-2.5 cursor-pointer"
+                  >
+                    {isDownloadingImage ? (
+                      <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                    ) : (
+                      <ImageDown className="w-4 h-4 text-blue-600" />
+                    )}
+                    <div>
+                      <div>Download Bill Image</div>
+                      <div className="text-[10px] text-slate-400 font-normal">
+                        {isDownloadingImage ? 'Generating PNG...' : 'High-resolution PNG'}
+                      </div>
+                    </div>
+                  </button>
+
                   <div className="my-1 border-t border-slate-100" />
 
+                  {/* 4. Download 1-Page PDF */}
                   <button
                     onClick={handleDownloadPdf}
                     className="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 flex items-center gap-2.5 cursor-pointer"
