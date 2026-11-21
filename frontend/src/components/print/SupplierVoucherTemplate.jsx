@@ -24,7 +24,41 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
   // Normalize items array for consolidated bill (or single purchase fallback)
   let items = [];
   if (Array.isArray(purchase.items) && purchase.items.length > 0) {
-    items = purchase.items;
+    items = purchase.items.map((it) => {
+      const big = Number(it.bigBoxes) || 0;
+      const small = Number(it.smallBoxes) || 0;
+      const bigEq = Number(it.bigEquivalent) !== undefined && !isNaN(Number(it.bigEquivalent))
+        ? Number(it.bigEquivalent)
+        : (big + small / 2);
+      const rate = Number(it.ratePerBigBox) || 0;
+      const lineAmt = Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount) || Math.round(bigEq * rate * 100) / 100;
+
+      let descLine1 = it.descLine1 || 'தக்காளி பெரிய பெட்டி';
+      let descLine2 = it.descLine2 || '(Big Box)';
+      if (!it.descLine1) {
+        if (big > 0 && small > 0) {
+          descLine1 = 'தக்காளி பெட்டி';
+          descLine2 = `(${big} Big + ${small} Small)`;
+        } else if (small > 0 && big === 0) {
+          descLine1 = 'தக்காளி சிறிய பெட்டி';
+          descLine2 = '(Small Box)';
+        }
+      }
+      const qtyText = it.qtyText || (big > 0 && small === 0 ? `${big}` : `${bigEq}`);
+
+      return {
+        ...it,
+        bigBoxes: big,
+        smallBoxes: small,
+        bigEquivalent: bigEq,
+        ratePerBigBox: rate,
+        lineAmount: lineAmt,
+        totalAmount: lineAmt,
+        descLine1,
+        descLine2,
+        qtyText
+      };
+    });
   } else {
     const big = Number(purchase.bigBoxes) || 0;
     const small = Number(purchase.smallBoxes) || 0;

@@ -8,7 +8,7 @@ import {
 
 export const createPurchase = async (req, res, next) => {
   try {
-    const { supplierId, transactionDate, bigBoxes, smallBoxes, ratePerBigBox, notes } = req.body;
+    const { supplierId, transactionDate, bigBoxes, smallBoxes, ratePerBigBox, notes, items } = req.body;
 
     if (!supplierId) {
       return res.status(400).json({ success: false, message: 'Supplier is required' });
@@ -22,39 +22,102 @@ export const createPurchase = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Supplier not found' });
     }
 
-    const big = Number(bigBoxes) || 0;
-    const small = Number(smallBoxes) || 0;
-    const rate = Number(ratePerBigBox);
+    let processedItems = [];
+    let totalBig = 0;
+    let totalSmall = 0;
+    let totalBigEq = 0;
+    let totalAmount = 0;
 
-    if (big < 0 || small < 0) {
-      return res.status(400).json({ success: false, message: 'Box quantities cannot be negative' });
-    }
-    if (big === 0 && small === 0) {
-      return res.status(400).json({ success: false, message: 'At least one box (Big or Small) is required for purchase' });
-    }
-    if (isNaN(rate) || rate <= 0) {
-      return res.status(400).json({ success: false, message: 'Purchase rate per Big Box must be greater than zero' });
+    if (Array.isArray(items) && items.length > 0) {
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const b = Number(it.bigBoxes) || 0;
+        const s = Number(it.smallBoxes) || 0;
+        const rate = Number(it.ratePerBigBox);
+
+        if (b < 0 || s < 0) {
+          return res.status(400).json({ success: false, message: `Row ${i + 1}: Box quantities cannot be negative` });
+        }
+        if (b === 0 && s === 0) {
+          return res.status(400).json({ success: false, message: `Row ${i + 1}: At least one box (Big or Small) is required` });
+        }
+        if (isNaN(rate) || rate <= 0) {
+          return res.status(400).json({ success: false, message: `Row ${i + 1}: Purchase rate must be greater than zero` });
+        }
+
+        const eq = calculateBigEquivalent(b, s);
+        const lineAmt = roundMoney(eq * rate);
+
+        totalBig += b;
+        totalSmall += s;
+        totalBigEq += eq;
+        totalAmount += lineAmt;
+
+        processedItems.push({
+          bigBoxes: b,
+          smallBoxes: s,
+          bigEquivalent: eq,
+          ratePerBigBox: rate,
+          lineAmount: lineAmt,
+          totalAmount: lineAmt,
+          notes: it.notes ? it.notes.trim() : ''
+        });
+      }
+    } else {
+      const big = Number(bigBoxes) || 0;
+      const small = Number(smallBoxes) || 0;
+      const rate = Number(ratePerBigBox);
+
+      if (big < 0 || small < 0) {
+        return res.status(400).json({ success: false, message: 'Box quantities cannot be negative' });
+      }
+      if (big === 0 && small === 0) {
+        return res.status(400).json({ success: false, message: 'At least one box (Big or Small) is required for purchase' });
+      }
+      if (isNaN(rate) || rate <= 0) {
+        return res.status(400).json({ success: false, message: 'Purchase rate per Big Box must be greater than zero' });
+      }
+
+      totalBig = big;
+      totalSmall = small;
+      totalBigEq = calculateBigEquivalent(big, small);
+      totalAmount = roundMoney(totalBigEq * rate);
+
+      processedItems.push({
+        bigBoxes: big,
+        smallBoxes: small,
+        bigEquivalent: totalBigEq,
+        ratePerBigBox: rate,
+        lineAmount: totalAmount,
+        totalAmount,
+        notes: notes ? notes.trim() : ''
+      });
     }
 
-    const bigEquivalent = calculateBigEquivalent(big, small);
-    const totalAmount = roundMoney(bigEquivalent * rate);
+    totalBigEq = Math.round((totalBigEq + Number.EPSILON) * 10) / 10;
+    totalAmount = roundMoney(totalAmount);
+
+    const effectiveRate = processedItems.length === 1
+      ? processedItems[0].ratePerBigBox
+      : (totalBigEq > 0 ? roundMoney(totalAmount / totalBigEq) : 0);
 
     const purchase = await Purchase.create({
       supplierId: supplier._id,
       supplierName: supplier.name,
       transactionDate,
-      bigBoxes: big,
-      smallBoxes: small,
-      bigEquivalent,
-      ratePerBigBox: rate,
+      bigBoxes: totalBig,
+      smallBoxes: totalSmall,
+      bigEquivalent: totalBigEq,
+      ratePerBigBox: effectiveRate,
       totalAmount,
+      items: processedItems,
       notes: notes ? notes.trim() : ''
     });
 
     res.status(201).json({
       success: true,
       purchase,
-      message: `Purchase recorded: ${bigEquivalent} Big Box Eqv @ ₹${rate.toLocaleString('en-IN')} = ₹${totalAmount.toLocaleString('en-IN')}`
+      message: `Purchase recorded: ${totalBigEq} Big Box Eqv (${processedItems.length} lot${processedItems.length > 1 ? 's' : ''}) = ₹${totalAmount.toLocaleString('en-IN')}`
     });
   } catch (error) {
     next(error);

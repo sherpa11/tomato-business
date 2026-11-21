@@ -78,35 +78,70 @@ export const getConsolidatedSupplierBill = async ({ supplierId, transactionDate,
   let totalBigEquivalent = 0;
   let grossTotal = 0;
 
-  const items = purchases.map((p, index) => {
-    const big = Number(p.bigBoxes) || 0;
-    const small = Number(p.smallBoxes) || 0;
-    const bigEq = Number(p.bigEquivalent) || (big + small / 2);
-    const rate = Number(p.ratePerBigBox) || 0;
-    // Line amount = quantity x rate
-    const lineAmount = roundMoney(p.totalAmount || (bigEq * rate));
+  const items = [];
+  purchases.forEach((p, pIndex) => {
+    if (Array.isArray(p.items) && p.items.length > 0) {
+      p.items.forEach((it, iIndex) => {
+        const big = Number(it.bigBoxes) || 0;
+        const small = Number(it.smallBoxes) || 0;
+        const bigEq = Number(it.bigEquivalent) !== undefined && !isNaN(Number(it.bigEquivalent))
+          ? Number(it.bigEquivalent)
+          : calculateBigEquivalent(big, small);
+        const rate = Number(it.ratePerBigBox) || 0;
+        const lineAmount = roundMoney(it.lineAmount !== undefined && !isNaN(Number(it.lineAmount)) ? it.lineAmount : (bigEq * rate));
 
-    totalBigBoxes += big;
-    totalSmallBoxes += small;
-    totalBigEquivalent += bigEq;
-    grossTotal += lineAmount;
+        totalBigBoxes += big;
+        totalSmallBoxes += small;
+        totalBigEquivalent += bigEq;
+        grossTotal += lineAmount;
 
-    const desc = formatItemBoxDescription(big, small);
+        const desc = formatItemBoxDescription(big, small);
 
-    return {
-      _id: p._id,
-      lotNumber: p._id ? String(p._id).slice(-4) : `00${index + 1}`,
-      bigBoxes: big,
-      smallBoxes: small,
-      bigEquivalent: bigEq,
-      ratePerBigBox: rate,
-      lineAmount,
-      totalAmount: lineAmount,
-      descLine1: desc.line1,
-      descLine2: desc.line2,
-      qtyText: big > 0 && small === 0 ? `${big}` : `${bigEq}`,
-      notes: p.notes || ''
-    };
+        items.push({
+          _id: it._id || `${p._id}_${iIndex}`,
+          lotNumber: p._id ? String(p._id).slice(-4) : `00${pIndex + 1}`,
+          bigBoxes: big,
+          smallBoxes: small,
+          bigEquivalent: bigEq,
+          ratePerBigBox: rate,
+          lineAmount,
+          totalAmount: lineAmount,
+          descLine1: it.descLine1 || desc.line1,
+          descLine2: it.descLine2 || desc.line2,
+          qtyText: big > 0 && small === 0 ? `${big}` : `${bigEq}`,
+          notes: it.notes || p.notes || ''
+        });
+      });
+    } else {
+      const big = Number(p.bigBoxes) || 0;
+      const small = Number(p.smallBoxes) || 0;
+      const bigEq = Number(p.bigEquivalent) || calculateBigEquivalent(big, small);
+      const rate = Number(p.ratePerBigBox) || 0;
+      // Line amount = quantity x rate
+      const lineAmount = roundMoney(p.totalAmount || (bigEq * rate));
+
+      totalBigBoxes += big;
+      totalSmallBoxes += small;
+      totalBigEquivalent += bigEq;
+      grossTotal += lineAmount;
+
+      const desc = formatItemBoxDescription(big, small);
+
+      items.push({
+        _id: p._id,
+        lotNumber: p._id ? String(p._id).slice(-4) : `00${pIndex + 1}`,
+        bigBoxes: big,
+        smallBoxes: small,
+        bigEquivalent: bigEq,
+        ratePerBigBox: rate,
+        lineAmount,
+        totalAmount: lineAmount,
+        descLine1: desc.line1,
+        descLine2: desc.line2,
+        qtyText: big > 0 && small === 0 ? `${big}` : `${bigEq}`,
+        notes: p.notes || ''
+      });
+    }
   });
 
   grossTotal = roundMoney(grossTotal);

@@ -44,6 +44,18 @@ const purchaseSchema = new mongoose.Schema(
       required: true,
       min: 0
     },
+    // Multi-row purchase lot support (multiple rows with different rates in one purchase)
+    items: [
+      {
+        bigBoxes: { type: Number, default: 0, min: 0 },
+        smallBoxes: { type: Number, default: 0, min: 0 },
+        bigEquivalent: { type: Number, default: 0, min: 0 },
+        ratePerBigBox: { type: Number, default: 0, min: 0 },
+        lineAmount: { type: Number, default: 0, min: 0 },
+        totalAmount: { type: Number, default: 0, min: 0 },
+        notes: { type: String, default: '' }
+      }
+    ],
     notes: {
       type: String,
       default: ''

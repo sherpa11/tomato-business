@@ -728,7 +728,29 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   // Normalize items array for consolidated bill (or single purchase fallback)
   let items = [];
   if (Array.isArray(purchaseData.items) && purchaseData.items.length > 0) {
-    items = purchaseData.items;
+    items = purchaseData.items.map((it) => {
+      const big = Number(it.bigBoxes) || 0;
+      const small = Number(it.smallBoxes) || 0;
+      const bigEq = Number(it.bigEquivalent) !== undefined && !isNaN(Number(it.bigEquivalent))
+        ? Number(it.bigEquivalent)
+        : (big + small / 2);
+      const rate = Number(it.ratePerBigBox) || 0;
+      const lineAmt = Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount) || Math.round(bigEq * rate * 100) / 100;
+      const desc = formatItemBoxDescription(big, small);
+
+      return {
+        ...it,
+        bigBoxes: big,
+        smallBoxes: small,
+        bigEquivalent: bigEq,
+        ratePerBigBox: rate,
+        lineAmount: lineAmt,
+        totalAmount: lineAmt,
+        descLine1: it.descLine1 || desc.line1,
+        descLine2: it.descLine2 || desc.line2,
+        qtyText: it.qtyText || (big > 0 && small === 0 ? `${big}` : `${bigEq}`)
+      };
+    });
   } else {
     const big = Number(purchaseData.bigBoxes) || 0;
     const small = Number(purchaseData.smallBoxes) || 0;
@@ -930,7 +952,7 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
       <!-- Supplier Line -->
       <div style="font-size: 11pt; font-weight: 800; display: flex; align-items: baseline; margin-top: 1.5px; margin-bottom: 1.5mm; color: #034d28;">
         <span style="white-space: nowrap; margin-right: 5px;">திரு :</span>
-        <span style="flex: 1; font-style: italic; font-weight: 900; font-size: 13pt; color: #034d28;">${purchaseData.supplierName || 'விவசாயி / சப்ளையர்'}</span>
+        <span style="flex: 1; font-style: italic; font-weight: 900; font-size: 13pt; color: #034d28;">${purchaseData.supplierName || purchaseData.supplier?.name || 'விவசாயி / சப்ளையர்'}</span>
       </div>
 
       <!-- 5-Column Ruled Table (No internal horizontal divider lines) -->

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Truck, AlertCircle } from 'lucide-react';
+import { X, Truck, AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { suppliersAPI, purchasesAPI } from '../../api/client';
 import { useDate } from '../../context/DateContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -12,9 +12,14 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
   const [suppliers, setSuppliers] = useState([]);
   const [supplierId, setSupplierId] = useState(initialSupplierId || '');
   const [transactionDate, setTransactionDate] = useState(operationalDate);
-  const [bigBoxes, setBigBoxes] = useState('');
-  const [smallBoxes, setSmallBoxes] = useState('');
-  const [ratePerBigBox, setRatePerBigBox] = useState('');
+  const [rows, setRows] = useState([
+    {
+      id: 1,
+      bigBoxes: '',
+      smallBoxes: '',
+      ratePerBigBox: settings.defaultPurchaseRate?.toString() || '1000'
+    }
+  ]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,10 +28,15 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
   useEffect(() => {
     if (isOpen) {
       setTransactionDate(operationalDate);
-      setRatePerBigBox(settings.defaultPurchaseRate?.toString() || '1000');
       setError('');
-      setBigBoxes('');
-      setSmallBoxes('');
+      setRows([
+        {
+          id: 1,
+          bigBoxes: '',
+          smallBoxes: '',
+          ratePerBigBox: settings.defaultPurchaseRate?.toString() || '1000'
+        }
+      ]);
       setNotes('');
 
       suppliersAPI.getSuppliers({ active: true })
@@ -44,12 +54,55 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
 
   if (!isOpen) return null;
 
-  // Live Calculations
-  const bigNum = Number(bigBoxes) || 0;
-  const smallNum = Number(smallBoxes) || 0;
-  const rateNum = Number(ratePerBigBox) || 0;
-  const bigEquivalent = calculateBigEquivalent(bigNum, smallNum);
-  const totalAmount = Math.round((bigEquivalent * rateNum + Number.EPSILON) * 100) / 100;
+  // Multi-row management
+  const handleAddRow = () => {
+    setRows((prev) => [
+      ...prev,
+      {
+        id: Date.now() + Math.random(),
+        bigBoxes: '',
+        smallBoxes: '',
+        ratePerBigBox: prev[prev.length - 1]?.ratePerBigBox || settings.defaultPurchaseRate?.toString() || '1000'
+      }
+    ]);
+  };
+
+  const handleRemoveRow = (index) => {
+    if (rows.length <= 1) return;
+    setRows((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRowChange = (index, field, value) => {
+    setRows((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  // Live Calculations across all crate rows
+  let totalBigBoxes = 0;
+  let totalSmallBoxes = 0;
+  let totalBigEquivalent = 0;
+  let totalPurchaseAmount = 0;
+
+  const rowCalculations = rows.map((r) => {
+    const b = Number(r.bigBoxes) || 0;
+    const s = Number(r.smallBoxes) || 0;
+    const eq = calculateBigEquivalent(b, s);
+    const rt = Number(r.ratePerBigBox) || 0;
+    const amt = Math.round((eq * rt + Number.EPSILON) * 100) / 100;
+
+    totalBigBoxes += b;
+    totalSmallBoxes += s;
+    totalBigEquivalent += eq;
+    totalPurchaseAmount += amt;
+
+    return { b, s, eq, rt, amt };
+  });
+
+  totalBigEquivalent = Math.round((totalBigEquivalent + Number.EPSILON) * 10) / 10;
+  totalPurchaseAmount = Math.round((totalPurchaseAmount + Number.EPSILON) * 100) / 100;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,24 +112,61 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
       setError('Please select a supplier');
       return;
     }
-    if (bigNum === 0 && smallNum === 0) {
-      setError('Please enter at least one Big or Small box');
-      return;
+
+    // Validate rows
+    let totalBoxesCount = 0;
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const b = Number(r.bigBoxes) || 0;
+      const s = Number(r.smallBoxes) || 0;
+      const rate = Number(r.ratePerBigBox) || 0;
+
+      if (b < 0 || s < 0) {
+        setError(`Row ${i + 1}: Box quantities cannot be negative`);
+        return;
+      }
+      if (b === 0 && s === 0) {
+        setError(`Row ${i + 1}: Please enter at least one Big or Small box`);
+        return;
+      }
+      if (rate <= 0 || isNaN(rate)) {
+        setError(`Row ${i + 1}: Purchase rate must be greater than zero`);
+        return;
+      }
+      totalBoxesCount += (b + s);
     }
-    if (rateNum <= 0) {
-      setError('Purchase rate must be greater than zero');
+
+    if (totalBoxesCount === 0) {
+      setError('A purchase requires at least one Big or Small box');
       return;
     }
 
     setLoading(true);
     try {
+      const itemsPayload = rows.map((r) => {
+        const b = Number(r.bigBoxes) || 0;
+        const s = Number(r.smallBoxes) || 0;
+        const eq = calculateBigEquivalent(b, s);
+        const rt = Number(r.ratePerBigBox) || 0;
+        const amt = Math.round((eq * rt + Number.EPSILON) * 100) / 100;
+        return {
+          bigBoxes: b,
+          smallBoxes: s,
+          bigEquivalent: eq,
+          ratePerBigBox: rt,
+          lineAmount: amt,
+          totalAmount: amt
+        };
+      });
+
       const res = await purchasesAPI.createPurchase({
         supplierId,
         transactionDate,
-        bigBoxes: bigNum,
-        smallBoxes: smallNum,
-        ratePerBigBox: rateNum,
-        notes
+        bigBoxes: totalBigBoxes,
+        smallBoxes: totalSmallBoxes,
+        ratePerBigBox: rows[0]?.ratePerBigBox ? Number(rows[0].ratePerBigBox) : 0,
+        notes,
+        items: itemsPayload
       });
 
       if (res.success) {
@@ -157,71 +247,150 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Big Boxes <span className="text-slate-500 font-normal">(1 Big = 1)</span>
+          {/* Tomato Crates & Rate Section with + Add Row */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 tracking-wide uppercase">
+                Tomato Crates & Rate
+                {rows.length > 1 && (
+                  <span className="ml-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    {rows.length} rows
+                  </span>
+                )}
               </label>
-              <input
-                type="number"
-                inputMode="numeric"
-                min="0"
-                step="1"
-                placeholder="0"
-                value={bigBoxes}
-                onChange={(e) => setBigBoxes(e.target.value)}
-                className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              />
+              <button
+                type="button"
+                onClick={handleAddRow}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
+                title="Add another crate & rate row for this supplier"
+              >
+                <Plus className="w-3.5 h-3.5 text-emerald-700" />
+                <span>+ Add Row</span>
+              </button>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Small Boxes <span className="text-slate-500 font-normal">(2 Small = 1 Big)</span>
-              </label>
-              <input
-                type="number"
-                inputMode="numeric"
-                min="0"
-                step="1"
-                placeholder="0"
-                value={smallBoxes}
-                onChange={(e) => setSmallBoxes(e.target.value)}
-                className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              />
-            </div>
-          </div>
+            {/* Crate & Rate Rows */}
+            <div className="space-y-3">
+              {rows.map((row, index) => {
+                const calc = rowCalculations[index];
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              Purchase Rate per Big Box (₹)
-            </label>
-            <input
-              type="number"
-              inputMode="decimal"
-              min="1"
-              step="any"
-              placeholder="e.g. 1000"
-              value={ratePerBigBox}
-              onChange={(e) => setRatePerBigBox(e.target.value)}
-              required
-              className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-emerald-800"
-            />
+                return (
+                  <div
+                    key={row.id}
+                    className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 relative group"
+                  >
+                    {rows.length > 1 && (
+                      <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                        <span className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wide">
+                          Lot / Row #{index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRow(index)}
+                          className="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-bold"
+                          title="Remove this row"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Big Boxes <span className="text-slate-400 font-normal text-[10px] sm:text-xs">(1 Big = 1)</span>
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          step="1"
+                          placeholder="0"
+                          value={row.bigBoxes}
+                          onChange={(e) => handleRowChange(index, 'bigBoxes', e.target.value)}
+                          className="w-full h-11 text-base font-bold font-mono border border-slate-300 rounded-xl px-3 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Small Boxes <span className="text-slate-400 font-normal text-[10px] sm:text-xs">(2 Small = 1 Big)</span>
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          step="1"
+                          placeholder="0"
+                          value={row.smallBoxes}
+                          onChange={(e) => handleRowChange(index, 'smallBoxes', e.target.value)}
+                          className="w-full h-11 text-base font-bold font-mono border border-slate-300 rounded-xl px-3 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Purchase Rate per Big Box (₹)
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min="1"
+                          step="any"
+                          placeholder="e.g. 1000"
+                          value={row.ratePerBigBox}
+                          onChange={(e) => handleRowChange(index, 'ratePerBigBox', e.target.value)}
+                          className="w-full h-11 text-base font-black font-mono border border-slate-300 rounded-xl px-3.5 bg-white text-emerald-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/90 flex items-center justify-around text-xs shadow-2xs h-11">
+                        <div className="text-center min-w-0">
+                          <span className="text-slate-400 text-[10px] block font-medium">Row Eqv</span>
+                          <span className="font-bold text-slate-800 font-mono text-xs sm:text-sm truncate block">
+                            {calc.eq} Big
+                          </span>
+                        </div>
+                        <div className="w-px h-6 bg-slate-200" />
+                        <div className="text-center min-w-0">
+                          <span className="text-slate-400 text-[10px] block font-medium">Amount</span>
+                          <span className="font-black text-slate-900 font-mono text-xs sm:text-sm truncate block">
+                            {formatCurrency(calc.amt)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Automatic Calculation Preview Card */}
           <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-4 space-y-2 shadow-2xs">
             <div className="flex justify-between items-center text-xs text-emerald-900 font-semibold py-0.5">
-              <span>Big Box Equivalent:</span>
-              <span className="font-extrabold font-mono text-sm">{bigEquivalent} Big Eqv</span>
+              <span>Total Big Box Equivalent:</span>
+              <span className="font-extrabold font-mono text-sm">{totalBigEquivalent} Big Eqv</span>
             </div>
-            <div className="flex justify-between items-center text-xs text-emerald-900 font-semibold py-0.5">
-              <span>Rate per Big Box:</span>
-              <span className="font-mono">{formatCurrency(rateNum)}</span>
-            </div>
+            {rows.length > 1 && (
+              <div className="flex justify-between items-center text-xs text-emerald-900 font-semibold py-0.5">
+                <span>Total Crates Count:</span>
+                <span className="font-mono">{totalBigBoxes} Big + {totalSmallBoxes} Small</span>
+              </div>
+            )}
+            {rows.length === 1 && (
+              <div className="flex justify-between items-center text-xs text-emerald-900 font-semibold py-0.5">
+                <span>Rate per Big Box:</span>
+                <span className="font-mono">{formatCurrency(rowCalculations[0]?.rt || 0)}</span>
+              </div>
+            )}
             <div className="pt-2 border-t border-emerald-200/80 flex justify-between items-baseline">
-              <span className="text-sm font-bold text-emerald-950">Total Purchase:</span>
+              <span className="text-sm font-bold text-emerald-950">Grand Total Purchase:</span>
               <span className="text-2xl font-black font-mono text-emerald-700">
-                {formatCurrency(totalAmount)}
+                {formatCurrency(totalPurchaseAmount)}
               </span>
             </div>
           </div>

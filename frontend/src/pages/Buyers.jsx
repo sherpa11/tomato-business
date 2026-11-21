@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users,
@@ -64,6 +64,22 @@ export default function Buyers() {
       setLoading(false);
     }
   }, [search]);
+
+  const totals = useMemo(() => {
+    let balance = 0;
+    let purchases = 0;
+    let payments = 0;
+    for (const b of buyers) {
+      balance += Number(b.currentBalance) || 0;
+      purchases += Number(b.totalPurchases) || 0;
+      payments += Number(b.totalPayments) || 0;
+    }
+    return {
+      balance: Math.round((balance + Number.EPSILON) * 100) / 100,
+      purchases: Math.round((purchases + Number.EPSILON) * 100) / 100,
+      payments: Math.round((payments + Number.EPSILON) * 100) / 100
+    };
+  }, [buyers]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -414,6 +430,43 @@ export default function Buyers() {
                 })
               )}
             </tbody>
+            {buyers.length > 0 && (
+              <tfoot className="border-t-2 border-slate-300 bg-slate-100/90 font-bold">
+                <tr>
+                  <td className="py-3 px-4 text-slate-900 sticky left-0 bg-slate-100 z-10 shadow-2xs whitespace-nowrap">
+                    <span className="font-black text-xs uppercase tracking-wider text-slate-900">
+                      Grand Total ({buyers.length} {buyers.length === 1 ? 'Buyer' : 'Buyers'})
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-xs text-slate-500 whitespace-nowrap">—</td>
+                  <td className="py-3 px-4 text-right whitespace-nowrap">
+                    <span
+                      className={`inline-block font-mono font-black text-xs px-2.5 py-1 rounded-lg border shadow-2xs ${
+                        totals.balance > 0
+                          ? 'text-amber-800 bg-amber-50 border-amber-300'
+                          : totals.balance < 0
+                          ? 'text-emerald-800 bg-emerald-50 border-emerald-300'
+                          : 'text-slate-700 bg-white border-slate-200'
+                      }`}
+                    >
+                      {totals.balance > 0
+                        ? `${formatCurrency(totals.balance)} Due`
+                        : totals.balance < 0
+                        ? `${formatCurrency(Math.abs(totals.balance))} Credit`
+                        : '₹0'}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                    {formatCurrency(totals.purchases)}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700 whitespace-nowrap">
+                    {formatCurrency(totals.payments)}
+                  </td>
+                  <td className="py-3 px-4 text-center text-xs text-slate-500 font-mono">—</td>
+                  <td className="no-print py-3 px-4 text-center">—</td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       </div>

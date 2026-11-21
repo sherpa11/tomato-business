@@ -75,6 +75,12 @@ export default function Reports() {
     return list;
   }, [rawBuyerBalances, dueOnlyFilter, buyerSearch, sortByDue]);
 
+  // Grand Total of displayed buyer current balances
+  const grandTotalCurrentBalance = useMemo(() => {
+    const sum = processedBuyerBalances.reduce((acc, b) => acc + (Number(b.currentBalance) || 0), 0);
+    return Math.round((sum + Number.EPSILON) * 100) / 100;
+  }, [processedBuyerBalances]);
+
   const setPreset = (preset) => {
     let todayStr;
     try {
@@ -366,6 +372,42 @@ export default function Reports() {
                   })
                 )}
               </tbody>
+              {processedBuyerBalances.length > 0 && (
+                <tfoot className="border-t-2 border-slate-300 bg-slate-100/95 font-bold">
+                  <tr>
+                    <td className="py-3.5 px-4 text-slate-900 sticky left-0 bg-slate-100 z-10 shadow-2xs whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-xs uppercase tracking-wider text-slate-900">
+                          Grand Total / Total Current Balance
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded-full border border-slate-300">
+                          {processedBuyerBalances.length} {processedBuyerBalances.length === 1 ? 'Buyer' : 'Buyers'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap font-medium">
+                      {dueOnlyFilter ? 'Filtered: Only With Due' : buyerSearch.trim() ? 'Matching Search' : 'All Active Buyers'}
+                    </td>
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                      <span
+                        className={`inline-block font-mono font-black text-xs sm:text-sm px-3 py-1 rounded-lg border shadow-2xs ${
+                          grandTotalCurrentBalance > 0
+                            ? 'text-amber-800 bg-amber-50 border-amber-300'
+                            : grandTotalCurrentBalance < 0
+                            ? 'text-emerald-800 bg-emerald-50 border-emerald-300'
+                            : 'text-slate-700 bg-white border-slate-200'
+                        }`}
+                      >
+                        {grandTotalCurrentBalance > 0
+                          ? `${formatCurrency(grandTotalCurrentBalance)} Due`
+                          : grandTotalCurrentBalance < 0
+                          ? `${formatCurrency(Math.abs(grandTotalCurrentBalance))} Credit`
+                          : '₹0 (Settled)'}
+                      </span>
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </div>

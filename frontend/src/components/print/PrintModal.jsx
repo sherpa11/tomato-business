@@ -284,7 +284,61 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
   // Helper to construct an immediate synchronous bill from raw purchase
   const buildImmediateBill = useCallback((p) => {
     if (!p) return null;
-    if (p.items && p.items.length > 0) return p;
+    if (p.items && p.items.length > 0) {
+      let gross = 0;
+      const mappedItems = p.items.map((it, idx) => {
+        const big = Number(it.bigBoxes) || 0;
+        const small = Number(it.smallBoxes) || 0;
+        const bigEq = Number(it.bigEquivalent) !== undefined && !isNaN(Number(it.bigEquivalent))
+          ? Number(it.bigEquivalent)
+          : (big + small / 2);
+        const rate = Number(it.ratePerBigBox) || 0;
+        const lineAmt = Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount) || Math.round(bigEq * rate * 100) / 100;
+        gross += lineAmt;
+
+        const descLine1 = big > 0 && small === 0
+          ? 'தக்காளி பெரிய பெட்டி'
+          : small > 0 && big === 0
+          ? 'தக்காளி சிறிய பெட்டி'
+          : 'தக்காளி பெட்டி';
+        const descLine2 = big > 0 && small > 0
+          ? `(${big} Big + ${small} Small)`
+          : small > 0
+          ? '(Small Box)'
+          : '(Big Box)';
+
+        return {
+          ...it,
+          _id: it._id || `${p._id || 'lot'}_${idx}`,
+          ratePerBigBox: rate,
+          bigBoxes: big,
+          smallBoxes: small,
+          bigEquivalent: bigEq,
+          lineAmount: lineAmt,
+          totalAmount: lineAmt,
+          descLine1: it.descLine1 || descLine1,
+          descLine2: it.descLine2 || descLine2,
+          qtyText: it.qtyText || (big > 0 && small === 0 ? `${big}` : `${bigEq}`)
+        };
+      });
+
+      const effectiveGross = p.grossTotal !== undefined ? Number(p.grossTotal) : gross;
+      const ded = p.deductions || { commission: 0, gate: 0, coolie: 0, rent: 0, debit: 0, totalDeductions: 0 };
+      const totalDed = Number(ded.totalDeductions) || 0;
+
+      return {
+        ...p,
+        supplierId: p.supplierId?._id || p.supplierId,
+        supplierName: p.supplierName,
+        transactionDate: p.transactionDate || p.date,
+        lotNumber: p.lotNumber || (p._id ? String(p._id).slice(-4) : '001'),
+        grossTotal: effectiveGross,
+        items: mappedItems,
+        itemCount: mappedItems.length,
+        deductions: ded,
+        netTotal: p.netTotal !== undefined ? Number(p.netTotal) : (effectiveGross - totalDed)
+      };
+    }
     const big = Number(p.bigBoxes) || 0;
     const small = Number(p.smallBoxes) || 0;
     const bigEq = Number(p.bigEquivalent) || (big + small / 2);
