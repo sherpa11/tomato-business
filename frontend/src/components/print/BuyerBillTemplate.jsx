@@ -87,24 +87,25 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
     billTotal = items.reduce((sum, it) => sum + (Number(it.lineAmount !== undefined ? it.lineAmount : it.billAmount) || 0), 0);
   }
 
-  const rupeesPart = Math.floor(billTotal).toLocaleString('en-IN');
-  const paisePart = String(Math.round((billTotal % 1) * 100)).padStart(2, '0');
+  billTotal = Math.round(billTotal);
+  const rupeesPart = billTotal.toLocaleString('en-IN');
+  const paisePart = '00';
 
   // Total quantity for subtotal row
   const totalQty = items.reduce((sum, it) => sum + (Number(it.bigEquivalent || it.bigBoxes) || 0), 0);
   const totalQtyText = totalQty > 0 ? (Number.isInteger(totalQty) ? String(totalQty) : totalQty.toFixed(1)) : '—';
 
   // Accounting figures
-  const oldBalNum = Number(transaction.oldBalance) || 0;
-  const totalDueNum = Number(transaction.totalDue) !== undefined && !isNaN(Number(transaction.totalDue))
+  const oldBalNum = Math.round(Number(transaction.oldBalance) || 0);
+  const totalDueNum = Math.round(Number(transaction.totalDue) !== undefined && !isNaN(Number(transaction.totalDue))
     ? Number(transaction.totalDue)
-    : (oldBalNum + billTotal);
-  const paidNum = Number(transaction.amountPaid) !== undefined ? Number(transaction.amountPaid) : (Number(transaction.paid) || 0);
-  const newBalNum = Number(transaction.newBalance) !== undefined && !isNaN(Number(transaction.newBalance))
+    : (oldBalNum + billTotal));
+  const paidNum = Math.round(Number(transaction.amountPaid) !== undefined ? Number(transaction.amountPaid) : (Number(transaction.paid) || 0));
+  const newBalNum = Math.round(Number(transaction.newBalance) !== undefined && !isNaN(Number(transaction.newBalance))
     ? Number(transaction.newBalance)
     : (Number(transaction.balance) !== undefined && !isNaN(Number(transaction.balance))
       ? Number(transaction.balance)
-      : (totalDueNum - paidNum));
+      : (totalDueNum - paidNum)));
 
   const isAdvance = newBalNum < 0;
 
@@ -304,11 +305,11 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
 
             {/* Item Rows */}
             {items.map((item, idx) => {
-              const rateNum = Number(item.ratePerBigBox) || 0;
+              const rateNum = Math.round(Number(item.ratePerBigBox) || 0);
               const rateVal = rateNum > 0 ? rateNum.toLocaleString('en-IN') : (item.ratePerBigBox ? String(item.ratePerBigBox) : '—');
-              const lineAmt = Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0;
-              const lineRupees = Math.floor(lineAmt).toLocaleString('en-IN');
-              const linePaise = String(Math.round((lineAmt % 1) * 100)).padStart(2, '0');
+              const lineAmt = Math.round(Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0);
+              const lineRupees = lineAmt.toLocaleString('en-IN');
+              const linePaise = '00';
               const desc1 = item.descLine1 || 'தக்காளி பெரிய பெட்டி';
               const desc2 = item.descLine2 || '(Big Box)';
               const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');
@@ -980,11 +981,11 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
 
             {/* Item Rows (Area 1: Enlarged Item Row Contents, No horizontal divider) */}
             {items.map((item, idx) => {
-              const rateNum = Number(item.ratePerBigBox) || 0;
+              const rateNum = Math.round(Number(item.ratePerBigBox) || 0);
               const rateVal = rateNum > 0 ? rateNum.toLocaleString('en-IN') : (item.ratePerBigBox ? String(item.ratePerBigBox) : '—');
-              const lineAmt = Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0;
-              const lineRupees = Math.floor(lineAmt).toLocaleString('en-IN');
-              const linePaise = String(Math.round((lineAmt % 1) * 100)).padStart(2, '0');
+              const lineAmt = Math.round(Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0);
+              const lineRupees = lineAmt.toLocaleString('en-IN');
+              const linePaise = '00';
               const desc1 = item.descLine1 || 'தக்காளி பெரிய பெட்டி';
               const desc2 = item.descLine2 || '(Big Box)';
               const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');

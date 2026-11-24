@@ -1,20 +1,17 @@
 /**
- * Round monetary value to 2 decimal places safely
+ * Round monetary value to whole rupees (no fractional rupees / decimals)
  */
 export const roundMoney = (amount) => {
   const num = Number(amount) || 0;
-  return Math.round((num + Number.EPSILON) * 100) / 100;
+  return Math.round(num);
 };
 
 /**
- * Currency Formatter for Indian Rupees
+ * Currency Formatter for Indian Rupees (Whole rupees only, no decimal values)
  */
 export const formatCurrency = (val) => {
-  const num = Number(val || 0);
-  return `₹${Math.abs(num).toLocaleString('en-IN', {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: num % 1 !== 0 ? 2 : 0
-  })}`;
+  const num = Math.round(Number(val || 0));
+  return `₹${Math.abs(num).toLocaleString('en-IN')}`;
 };
 
 /**
@@ -22,7 +19,7 @@ export const formatCurrency = (val) => {
  * Overpayments should NEVER just look like an unlabelled negative number
  */
 export const formatBalance = (val) => {
-  const num = Number(val || 0);
+  const num = Math.round(Number(val || 0));
   if (num > 0) {
     return {
       text: `${formatCurrency(num)} Due`,

@@ -90,8 +90,8 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
     const b = Number(r.bigBoxes) || 0;
     const s = Number(r.smallBoxes) || 0;
     const eq = calculateBigEquivalent(b, s);
-    const rt = Number(r.ratePerBigBox) || 0;
-    const amt = Math.round((eq * rt + Number.EPSILON) * 100) / 100;
+    const rt = Math.round(Number(r.ratePerBigBox) || 0);
+    const amt = Math.round(eq * rt);
 
     totalBigBoxes += b;
     totalSmallBoxes += s;
@@ -102,7 +102,7 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
   });
 
   totalBigEquivalent = Math.round((totalBigEquivalent + Number.EPSILON) * 10) / 10;
-  totalPurchaseAmount = Math.round((totalPurchaseAmount + Number.EPSILON) * 100) / 100;
+  totalPurchaseAmount = Math.round(totalPurchaseAmount);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -147,8 +147,8 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
         const b = Number(r.bigBoxes) || 0;
         const s = Number(r.smallBoxes) || 0;
         const eq = calculateBigEquivalent(b, s);
-        const rt = Number(r.ratePerBigBox) || 0;
-        const amt = Math.round((eq * rt + Number.EPSILON) * 100) / 100;
+        const rt = Math.round(Number(r.ratePerBigBox) || 0);
+        const amt = Math.round(eq * rt);
         return {
           bigBoxes: b,
           smallBoxes: s,
@@ -164,7 +164,7 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
         transactionDate,
         bigBoxes: totalBigBoxes,
         smallBoxes: totalSmallBoxes,
-        ratePerBigBox: rows[0]?.ratePerBigBox ? Number(rows[0].ratePerBigBox) : 0,
+        ratePerBigBox: rows[0]?.ratePerBigBox ? Math.round(Number(rows[0].ratePerBigBox)) : 0,
         notes,
         items: itemsPayload
       });
@@ -337,9 +337,9 @@ export default function NewPurchaseModal({ isOpen, onClose, onSuccess, initialSu
                         </label>
                         <input
                           type="number"
-                          inputMode="decimal"
+                          inputMode="numeric"
                           min="1"
-                          step="any"
+                          step="1"
                           placeholder="e.g. 1000"
                           value={row.ratePerBigBox}
                           onChange={(e) => handleRowChange(index, 'ratePerBigBox', e.target.value)}

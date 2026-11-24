@@ -68,7 +68,7 @@ export default function EditBuyerModal({ isOpen, onClose, buyerId, initialBuyer 
         phone: phone.trim(),
         address: address.trim(),
         notes: notes.trim(),
-        initialBalance: Number(initialBalance) || 0,
+        initialBalance: Math.round(Number(initialBalance) || 0),
         active: Boolean(active)
       });
 
@@ -179,8 +179,8 @@ export default function EditBuyerModal({ isOpen, onClose, buyerId, initialBuyer 
               </label>
               <input
                 type="number"
-                inputMode="decimal"
-                step="any"
+                inputMode="numeric"
+                step="1"
                 placeholder="0"
                 value={initialBalance}
                 onChange={(e) => setInitialBalance(e.target.value)}

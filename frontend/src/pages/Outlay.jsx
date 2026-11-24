@@ -83,7 +83,7 @@ export default function Outlay() {
       return;
     }
 
-    const numAmt = Number(amount);
+    const numAmt = Math.round(Number(amount));
     if (isNaN(numAmt) || numAmt <= 0) {
       setFormError('Please enter a valid amount greater than ₹0.');
       return;
@@ -242,8 +242,9 @@ export default function Outlay() {
             </label>
             <input
               type="number"
-              step="any"
-              min="0.01"
+              inputMode="numeric"
+              step="1"
+              min="1"
               required
               placeholder="Enter amount"
               value={amount}

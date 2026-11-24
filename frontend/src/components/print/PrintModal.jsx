@@ -182,10 +182,10 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
         const big = Number(it.bigBoxes) || 0;
         const small = Number(it.smallBoxes) || 0;
         const bigEq = Number(it.bigEquivalent) || (big + small / 2);
-        const rate = Number(it.ratePerBigBox) || 0;
+        const rate = Math.round(Number(it.ratePerBigBox) || 0);
         const lineAmt = Number(it.lineAmount) !== undefined && !isNaN(Number(it.lineAmount))
-          ? Number(it.lineAmount)
-          : (Number(it.billAmount) || Math.round(bigEq * rate * 100) / 100);
+          ? Math.round(Number(it.lineAmount))
+          : (Number(it.billAmount) ? Math.round(Number(it.billAmount)) : Math.round(bigEq * rate));
         const descLine1 = big > 0 && small === 0
           ? 'தக்காளி பெரிய பெட்டி'
           : small > 0 && big === 0
@@ -217,12 +217,14 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     const big = Number(t.bigBoxes) || 0;
     const small = Number(t.smallBoxes) || 0;
     const bigEq = Number(t.bigEquivalent) || (big + small / 2);
-    const rate = Number(t.ratePerBigBox) || 0;
+    const rate = Math.round(Number(t.ratePerBigBox) || 0);
     let lineAmt = 0;
     if (t.type === 'SALE' || !t.type) {
-      lineAmt = Number(t.billAmount) || (rate > 0 && bigEq > 0 ? Math.round(rate * bigEq * 100) / 100 : 0);
+      lineAmt = Number(t.billAmount) !== undefined && !isNaN(Number(t.billAmount)) && Number(t.billAmount) > 0
+        ? Math.round(Number(t.billAmount))
+        : (rate > 0 && bigEq > 0 ? Math.round(rate * bigEq) : 0);
     } else {
-      lineAmt = Number(t.amountPaid) || 0;
+      lineAmt = Math.round(Number(t.amountPaid) || 0);
     }
 
     const descLine1 = big > 0 && small === 0
@@ -292,8 +294,10 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
         const bigEq = Number(it.bigEquivalent) !== undefined && !isNaN(Number(it.bigEquivalent))
           ? Number(it.bigEquivalent)
           : (big + small / 2);
-        const rate = Number(it.ratePerBigBox) || 0;
-        const lineAmt = Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount) || Math.round(bigEq * rate * 100) / 100;
+        const rate = Math.round(Number(it.ratePerBigBox) || 0);
+        const lineAmt = Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount) !== undefined && !isNaN(Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount))
+          ? Math.round(Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount))
+          : Math.round(bigEq * rate);
         gross += lineAmt;
 
         const descLine1 = big > 0 && small === 0
@@ -499,14 +503,14 @@ export default function PrintModal({ isOpen, onClose, title = 'Print Preview', c
     setSaveSuccess(false);
 
     if (supplierBill) {
-      const comm = Number(updatedDeductions.commission) || 0;
-      const g = Number(updatedDeductions.gate) || 0;
-      const c = Number(updatedDeductions.coolie) || 0;
-      const r = Number(updatedDeductions.rent) || 0;
-      const deb = Number(updatedDeductions.debit) || 0;
-      const totalDed = Math.round((comm + g + c + r + deb) * 100) / 100;
-      const gross = Number(supplierBill.grossTotal) || 0;
-      const net = Math.round((gross - totalDed) * 100) / 100;
+      const comm = Math.round(Number(updatedDeductions.commission) || 0);
+      const g = Math.round(Number(updatedDeductions.gate) || 0);
+      const c = Math.round(Number(updatedDeductions.coolie) || 0);
+      const r = Math.round(Number(updatedDeductions.rent) || 0);
+      const deb = Math.round(Number(updatedDeductions.debit) || 0);
+      const totalDed = Math.round(comm + g + c + r + deb);
+      const gross = Math.round(Number(supplierBill.grossTotal) || 0);
+      const net = Math.round(gross - totalDed);
 
       setSupplierBill({
         ...supplierBill,

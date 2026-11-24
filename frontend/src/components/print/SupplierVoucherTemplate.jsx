@@ -30,8 +30,10 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
       const bigEq = Number(it.bigEquivalent) !== undefined && !isNaN(Number(it.bigEquivalent))
         ? Number(it.bigEquivalent)
         : (big + small / 2);
-      const rate = Number(it.ratePerBigBox) || 0;
-      const lineAmt = Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount) || Math.round(bigEq * rate * 100) / 100;
+      const rate = Math.round(Number(it.ratePerBigBox) || 0);
+      const lineAmt = Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount) !== undefined && !isNaN(Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount))
+        ? Math.round(Number(it.lineAmount !== undefined ? it.lineAmount : it.totalAmount))
+        : Math.round(bigEq * rate);
 
       let descLine1 = it.descLine1 || 'தக்காளி பெரிய பெட்டி';
       let descLine2 = it.descLine2 || '(Big Box)';
@@ -97,30 +99,30 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
 
   // Gross total calculation
   const grossTotal = purchase.grossTotal !== undefined
-    ? Number(purchase.grossTotal)
-    : items.reduce((sum, it) => sum + (Number(it.lineAmount || it.totalAmount) || 0), 0);
+    ? Math.round(Number(purchase.grossTotal))
+    : Math.round(items.reduce((sum, it) => sum + (Number(it.lineAmount || it.totalAmount) || 0), 0));
 
-  const grossRupeesPart = Math.floor(grossTotal).toLocaleString('en-IN');
-  const grossPaisePart = String(Math.round((grossTotal % 1) * 100)).padStart(2, '0');
+  const grossRupeesPart = grossTotal.toLocaleString('en-IN');
+  const grossPaisePart = '00';
 
   // Deductions
   const deductions = purchase.deductions || {};
-  const commission = Number(deductions.commission) || 0;
-  const gate = Number(deductions.gate) || 0;
-  const coolie = Number(deductions.coolie) || 0;
-  const rent = Number(deductions.rent) || 0;
-  const debit = Number(deductions.debit) || 0;
+  const commission = Math.round(Number(deductions.commission) || 0);
+  const gate = Math.round(Number(deductions.gate) || 0);
+  const coolie = Math.round(Number(deductions.coolie) || 0);
+  const rent = Math.round(Number(deductions.rent) || 0);
+  const debit = Math.round(Number(deductions.debit) || 0);
   const totalDeductions = deductions.totalDeductions !== undefined
-    ? Number(deductions.totalDeductions)
+    ? Math.round(Number(deductions.totalDeductions))
     : (commission + gate + coolie + rent + debit);
 
   // Net total calculation
   const netTotal = purchase.netTotal !== undefined
-    ? Number(purchase.netTotal)
+    ? Math.round(Number(purchase.netTotal))
     : (grossTotal - totalDeductions);
 
-  const netRupeesPart = Math.floor(netTotal).toLocaleString('en-IN');
-  const netPaisePart = String(Math.round((netTotal % 1) * 100)).padStart(2, '0');
+  const netRupeesPart = netTotal.toLocaleString('en-IN');
+  const netPaisePart = '00';
 
   // Lot/Voucher Number
   const lotNum = purchase.lotNumber || (purchase._id ? String(purchase._id).slice(-4) : '0123');
@@ -332,10 +334,10 @@ export default function SupplierVoucherTemplate({ purchase, settings }) {
 
             {/* Purchase Item Rows */}
             {items.map((item, idx) => {
-              const rateVal = item.ratePerBigBox ? Number(item.ratePerBigBox).toLocaleString('en-IN') : '—';
-              const lineAmt = Number(item.lineAmount !== undefined ? item.lineAmount : item.totalAmount) || 0;
-              const lineRupees = Math.floor(lineAmt).toLocaleString('en-IN');
-              const linePaise = String(Math.round((lineAmt % 1) * 100)).padStart(2, '0');
+              const rateVal = item.ratePerBigBox ? Math.round(Number(item.ratePerBigBox)).toLocaleString('en-IN') : '—';
+              const lineAmt = Math.round(Number(item.lineAmount !== undefined ? item.lineAmount : item.totalAmount) || 0);
+              const lineRupees = lineAmt.toLocaleString('en-IN');
+              const linePaise = '00';
               const desc1 = item.descLine1 || 'தக்காளி பெரிய பெட்டி';
               const desc2 = item.descLine2 || '(Big Box)';
               const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');

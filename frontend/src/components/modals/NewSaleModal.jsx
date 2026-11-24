@@ -140,8 +140,8 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
     const b = Number(r.bigBoxes) || 0;
     const s = Number(r.smallBoxes) || 0;
     const eq = calculateBigEquivalent(b, s);
-    const rt = Number(r.ratePerBigBox) || 0;
-    const amt = Math.round((eq * rt + Number.EPSILON) * 100) / 100;
+    const rt = Math.round(Number(r.ratePerBigBox) || 0);
+    const amt = Math.round(eq * rt);
 
     totalBigBoxes += b;
     totalSmallBoxes += s;
@@ -152,12 +152,12 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
   });
 
   totalBigEquivalent = Math.round((totalBigEquivalent + Number.EPSILON) * 10) / 10;
-  todayBill = Math.round((todayBill + Number.EPSILON) * 100) / 100;
+  todayBill = Math.round(todayBill);
 
-  const oldBalance = oldBalanceInput !== '' ? Number(oldBalanceInput) || 0 : Number(selectedBuyer?.currentBalance || 0);
-  const totalDue = Math.round((oldBalance + todayBill + Number.EPSILON) * 100) / 100;
-  const paidNum = Number(amountPaid) || 0;
-  const newBalance = Math.round((totalDue - paidNum + Number.EPSILON) * 100) / 100;
+  const oldBalance = oldBalanceInput !== '' ? Math.round(Number(oldBalanceInput) || 0) : Math.round(Number(selectedBuyer?.currentBalance || 0));
+  const totalDue = Math.round(oldBalance + todayBill);
+  const paidNum = Math.round(Number(amountPaid) || 0);
+  const newBalance = Math.round(totalDue - paidNum);
 
   const oldBalDisplay = formatBalance(oldBalance);
   const newBalDisplay = formatBalance(newBalance);
@@ -222,14 +222,15 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
         const b = Number(r.bigBoxes) || 0;
         const s = Number(r.smallBoxes) || 0;
         const eq = calculateBigEquivalent(b, s);
-        const rt = Number(r.ratePerBigBox) || 0;
+        const rt = Math.round(Number(r.ratePerBigBox) || 0);
+        const lineAmt = Math.round(eq * rt);
         return {
           bigBoxes: b,
           smallBoxes: s,
           bigEquivalent: eq,
           ratePerBigBox: rt,
-          lineAmount: Math.round((eq * rt + Number.EPSILON) * 100) / 100,
-          billAmount: Math.round((eq * rt + Number.EPSILON) * 100) / 100
+          lineAmount: lineAmt,
+          billAmount: lineAmt
         };
       });
 
@@ -239,9 +240,9 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
         items: itemsPayload,
         bigBoxes: totalBigBoxes,
         smallBoxes: totalSmallBoxes,
-        ratePerBigBox: rows.length === 1 ? (Number(rows[0].ratePerBigBox) || 0) : (totalBigEquivalent > 0 ? Math.round((todayBill / totalBigEquivalent) * 100) / 100 : 0),
+        ratePerBigBox: rows.length === 1 ? Math.round(Number(rows[0].ratePerBigBox) || 0) : (totalBigEquivalent > 0 ? Math.round(todayBill / totalBigEquivalent) : 0),
         amountPaid: paidNum,
-        manualOldBalance: oldBalanceInput !== '' ? Number(oldBalanceInput) : null,
+        manualOldBalance: oldBalanceInput !== '' ? Math.round(Number(oldBalanceInput)) : null,
         notes
       });
 
@@ -375,8 +376,8 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
               </div>
               <input
                 type="number"
-                inputMode="decimal"
-                step="any"
+                inputMode="numeric"
+                step="1"
                 placeholder="0"
                 value={oldBalanceInput}
                 onChange={(e) => setOldBalanceInput(e.target.value)}
@@ -479,9 +480,9 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
                         </label>
                         <input
                           type="number"
-                          inputMode="decimal"
+                          inputMode="numeric"
                           min="1"
-                          step="any"
+                          step="1"
                           placeholder="e.g. 650"
                           value={row.ratePerBigBox}
                           onChange={(e) => handleRowChange(index, 'ratePerBigBox', e.target.value)}
@@ -519,9 +520,9 @@ export default function NewSaleModal({ isOpen, onClose, onSuccess, initialBuyerI
             </div>
             <input
               type="number"
-              inputMode="decimal"
+              inputMode="numeric"
               min="0"
-              step="any"
+              step="1"
               placeholder="0"
               value={amountPaid}
               onChange={(e) => setAmountPaid(e.target.value)}

@@ -196,8 +196,9 @@ export default function Settings() {
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Default Selling Rate per Big Box (₹)</label>
               <input
                 type="number"
+                inputMode="numeric"
                 min="0"
-                step="any"
+                step="1"
                 value={defaultSellingRate}
                 onChange={(e) => setDefaultSellingRate(e.target.value)}
                 className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none font-mono"
@@ -208,8 +209,9 @@ export default function Settings() {
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Default Purchase Rate per Big Box (₹)</label>
               <input
                 type="number"
+                inputMode="numeric"
                 min="0"
-                step="any"
+                step="1"
                 value={defaultPurchaseRate}
                 onChange={(e) => setDefaultPurchaseRate(e.target.value)}
                 className="w-full h-11 text-sm border border-slate-300 rounded-xl px-3.5 focus:ring-2 focus:ring-red-500 focus:outline-none font-mono"

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import mongoose from 'mongoose';
 import { connectDB } from '../src/config/db.js';
 import Supplier from '../src/models/Supplier.js';
 import Purchase from '../src/models/Purchase.js';
@@ -13,7 +14,7 @@ const calculateBigEquivalent = (bigBoxes = 0, smallBoxes = 0) => {
 
 const roundMoney = (amount) => {
   const num = Number(amount) || 0;
-  return Math.round((num + Number.EPSILON) * 100) / 100;
+  return Math.round(num);
 };
 
 test('Supplier Multi-Row & Buyer Ledger Total Suite', async (t) => {
@@ -201,4 +202,5 @@ test('Supplier Multi-Row & Buyer Ledger Total Suite', async (t) => {
   await Purchase.deleteMany({ supplierId: testSupplier._id });
   await SupplierBill.deleteMany({ supplierId: testSupplier._id });
   await Supplier.deleteOne({ _id: testSupplier._id });
+  await mongoose.disconnect();
 });

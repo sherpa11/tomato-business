@@ -78,7 +78,7 @@ export default function Reports() {
   // Grand Total of displayed buyer current balances
   const grandTotalCurrentBalance = useMemo(() => {
     const sum = processedBuyerBalances.reduce((acc, b) => acc + (Number(b.currentBalance) || 0), 0);
-    return Math.round((sum + Number.EPSILON) * 100) / 100;
+    return Math.round(sum);
   }, [processedBuyerBalances]);
 
   const setPreset = (preset) => {

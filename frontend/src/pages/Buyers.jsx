@@ -70,14 +70,14 @@ export default function Buyers() {
     let purchases = 0;
     let payments = 0;
     for (const b of buyers) {
-      balance += Number(b.currentBalance) || 0;
-      purchases += Number(b.totalPurchases) || 0;
-      payments += Number(b.totalPayments) || 0;
+      balance += Math.round(Number(b.currentBalance) || 0);
+      purchases += Math.round(Number(b.totalPurchases) || 0);
+      payments += Math.round(Number(b.totalPayments) || 0);
     }
     return {
-      balance: Math.round((balance + Number.EPSILON) * 100) / 100,
-      purchases: Math.round((purchases + Number.EPSILON) * 100) / 100,
-      payments: Math.round((payments + Number.EPSILON) * 100) / 100
+      balance: Math.round(balance),
+      purchases: Math.round(purchases),
+      payments: Math.round(payments)
     };
   }, [buyers]);
 
@@ -102,7 +102,7 @@ export default function Buyers() {
         name: newBuyerName.trim(),
         phone: newBuyerPhone.trim(),
         address: newBuyerAddress.trim(),
-        initialBalance: Number(newBuyerInitialBal) || 0
+        initialBalance: Math.round(Number(newBuyerInitialBal) || 0)
       });
 
       if (res.success) {
@@ -545,8 +545,8 @@ export default function Buyers() {
                 </label>
                 <input
                   type="number"
-                  inputMode="decimal"
-                  step="any"
+                  inputMode="numeric"
+                  step="1"
                   placeholder="0 (e.g. 2500 if previous debt)"
                   value={newBuyerInitialBal}
                   onChange={(e) => setNewBuyerInitialBal(e.target.value)}

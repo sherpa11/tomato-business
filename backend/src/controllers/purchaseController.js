@@ -33,7 +33,7 @@ export const createPurchase = async (req, res, next) => {
         const it = items[i];
         const b = Number(it.bigBoxes) || 0;
         const s = Number(it.smallBoxes) || 0;
-        const rate = Number(it.ratePerBigBox);
+        const rate = Math.round(Number(it.ratePerBigBox));
 
         if (b < 0 || s < 0) {
           return res.status(400).json({ success: false, message: `Row ${i + 1}: Box quantities cannot be negative` });
@@ -66,7 +66,7 @@ export const createPurchase = async (req, res, next) => {
     } else {
       const big = Number(bigBoxes) || 0;
       const small = Number(smallBoxes) || 0;
-      const rate = Number(ratePerBigBox);
+      const rate = Math.round(Number(ratePerBigBox));
 
       if (big < 0 || small < 0) {
         return res.status(400).json({ success: false, message: 'Box quantities cannot be negative' });

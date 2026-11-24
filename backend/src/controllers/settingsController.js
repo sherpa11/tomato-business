@@ -30,7 +30,11 @@ export const updateSettings = async (req, res, next) => {
       ];
       allowedFields.forEach((field) => {
         if (req.body[field] !== undefined) {
-          settings[field] = req.body[field];
+          if (field === 'defaultSellingRate' || field === 'defaultPurchaseRate') {
+            settings[field] = Math.round(Number(req.body[field]) || 0);
+          } else {
+            settings[field] = req.body[field];
+          }
         }
       });
     }

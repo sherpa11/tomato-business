@@ -35,7 +35,7 @@ export const createSale = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Buyer not found' });
     }
 
-    const paid = Number(amountPaid) || 0;
+    const paid = roundMoney(Number(amountPaid) || 0);
     if (paid < 0) {
       return res.status(400).json({ success: false, message: 'Payment amount cannot be negative' });
     }
@@ -53,7 +53,7 @@ export const createSale = async (req, res, next) => {
         const it = items[i];
         const rBig = Number(it.bigBoxes) || 0;
         const rSmall = Number(it.smallBoxes) || 0;
-        const rRate = Number(it.ratePerBigBox);
+        const rRate = Math.round(Number(it.ratePerBigBox));
 
         if (rBig < 0 || rSmall < 0) {
           return res.status(400).json({ success: false, message: `Row ${i + 1}: Box quantities cannot be negative` });
@@ -84,11 +84,11 @@ export const createSale = async (req, res, next) => {
       }
 
       billAmount = roundMoney(billAmount);
-      rate = bigEquivalent > 0 ? roundMoney(billAmount / bigEquivalent) : 0;
+      rate = processedItems.length === 1 ? processedItems[0].ratePerBigBox : (bigEquivalent > 0 ? roundMoney(billAmount / bigEquivalent) : 0);
     } else {
       big = Number(bigBoxes) || 0;
       small = Number(smallBoxes) || 0;
-      rate = Number(ratePerBigBox);
+      rate = Math.round(Number(ratePerBigBox));
 
       if (big < 0 || small < 0) {
         return res.status(400).json({ success: false, message: 'Box quantities cannot be negative' });
@@ -119,7 +119,7 @@ export const createSale = async (req, res, next) => {
       const currentLedgerOld = await getBuyerOldBalance(buyer._id, transactionDate);
       const delta = roundMoney(manualOld - currentLedgerOld);
 
-      if (Math.abs(delta) > 0.001) {
+      if (Math.abs(delta) > 0) {
         buyer.initialBalance = roundMoney((buyer.initialBalance || 0) + delta);
         await buyer.save();
       }
@@ -184,7 +184,7 @@ export const createPayment = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Buyer not found' });
     }
 
-    const paid = Number(amountPaid);
+    const paid = roundMoney(Number(amountPaid));
     if (isNaN(paid) || paid <= 0) {
       return res.status(400).json({ success: false, message: 'Payment amount must be greater than zero' });
     }
@@ -195,7 +195,7 @@ export const createPayment = async (req, res, next) => {
       const currentLedgerOld = await getBuyerOldBalance(buyer._id, transactionDate);
       const delta = roundMoney(manualOld - currentLedgerOld);
 
-      if (Math.abs(delta) > 0.001) {
+      if (Math.abs(delta) > 0) {
         buyer.initialBalance = roundMoney((buyer.initialBalance || 0) + delta);
         await buyer.save();
       }

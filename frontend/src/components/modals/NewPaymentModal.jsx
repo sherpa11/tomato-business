@@ -77,9 +77,9 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
 
   if (!isOpen) return null;
 
-  const oldBalance = oldBalanceInput !== '' ? Number(oldBalanceInput) || 0 : Number(selectedBuyer?.currentBalance || 0);
-  const paidNum = Number(amountPaid) || 0;
-  const newBalance = Math.round((oldBalance - paidNum + Number.EPSILON) * 100) / 100;
+  const oldBalance = oldBalanceInput !== '' ? Math.round(Number(oldBalanceInput) || 0) : Math.round(Number(selectedBuyer?.currentBalance || 0));
+  const paidNum = Math.round(Number(amountPaid) || 0);
+  const newBalance = Math.round(oldBalance - paidNum);
 
   const oldBalDisplay = formatBalance(oldBalance);
   const newBalDisplay = formatBalance(newBalance);
@@ -109,7 +109,7 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
         buyerId,
         transactionDate,
         amountPaid: paidNum,
-        manualOldBalance: oldBalanceInput !== '' ? Number(oldBalanceInput) : null,
+        manualOldBalance: oldBalanceInput !== '' ? Math.round(Number(oldBalanceInput)) : null,
         notes
       });
 
@@ -240,8 +240,8 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
               </div>
               <input
                 type="number"
-                inputMode="decimal"
-                step="any"
+                inputMode="numeric"
+                step="1"
                 placeholder="0"
                 value={oldBalanceInput}
                 onChange={(e) => setOldBalanceInput(e.target.value)}
@@ -269,9 +269,9 @@ export default function NewPaymentModal({ isOpen, onClose, onSuccess, initialBuy
             </div>
             <input
               type="number"
-              inputMode="decimal"
+              inputMode="numeric"
               min="1"
-              step="any"
+              step="1"
               placeholder="e.g. 5000"
               value={amountPaid}
               onChange={(e) => setAmountPaid(e.target.value)}

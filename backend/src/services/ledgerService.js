@@ -2,7 +2,7 @@ import Buyer from '../models/Buyer.js';
 import Transaction from '../models/Transaction.js';
 
 export const roundMoney = (val) => {
-  return Math.round((Number(val || 0) + Number.EPSILON) * 100) / 100;
+  return Math.round(Number(val || 0));
 };
 
 export const roundBoxes = (val) => {
@@ -47,7 +47,26 @@ export const recalculateBuyerLedger = async (buyerId) => {
 
     if (tx.type === 'SALE') {
       const bigEq = calculateBigEquivalent(tx.bigBoxes, tx.smallBoxes);
-      const bill = roundMoney(bigEq * Number(tx.ratePerBigBox));
+      let bill = 0;
+      if (Array.isArray(tx.items) && tx.items.length > 0) {
+        bill = tx.items.reduce((sum, it) => {
+          const itEq = calculateBigEquivalent(it.bigBoxes, it.smallBoxes);
+          const itRate = Math.round(Number(it.ratePerBigBox) || 0);
+          const itAmt = (it.lineAmount !== undefined && it.lineAmount !== null && !isNaN(Number(it.lineAmount)))
+            ? Math.round(Number(it.lineAmount))
+            : (it.billAmount !== undefined && it.billAmount !== null && !isNaN(Number(it.billAmount)))
+            ? Math.round(Number(it.billAmount))
+            : Math.round(itEq * itRate);
+          return sum + itAmt;
+        }, 0);
+      } else if (tx.billAmount !== undefined && tx.billAmount !== null && !isNaN(Number(tx.billAmount)) && Number(tx.billAmount) > 0) {
+        bill = Math.round(Number(tx.billAmount));
+      } else {
+        const rate = Math.round(Number(tx.ratePerBigBox) || 0);
+        bill = Math.round(bigEq * rate);
+      }
+
+      bill = roundMoney(bill);
       totalDue = roundMoney(oldBalance + bill);
       newBalance = roundMoney(totalDue - Number(tx.amountPaid || 0));
 

@@ -151,15 +151,15 @@ export const renderBuyerBillA6Html = (transaction, settings = {}) => {
   // Formula: ரூ. amount = விலை × எண்ணம் (No.)
   let billTotal = 0;
   if (transaction.todayBill !== undefined) {
-    billTotal = Number(transaction.todayBill);
+    billTotal = Math.round(Number(transaction.todayBill));
   } else if (transaction.billAmount !== undefined && transaction.type !== 'PAYMENT') {
-    billTotal = Number(transaction.billAmount);
+    billTotal = Math.round(Number(transaction.billAmount));
   } else {
-    billTotal = items.reduce((sum, it) => sum + (Number(it.lineAmount !== undefined ? it.lineAmount : it.billAmount) || 0), 0);
+    billTotal = Math.round(items.reduce((sum, it) => sum + (Number(it.lineAmount !== undefined ? it.lineAmount : it.billAmount) || 0), 0));
   }
 
-  const rupeesPart = Math.floor(billTotal).toLocaleString('en-IN');
-  const paisePart = String(Math.round((billTotal % 1) * 100)).padStart(2, '0');
+  const rupeesPart = Math.round(billTotal).toLocaleString('en-IN');
+  const paisePart = '00';
 
   // Total quantity for subtotal row
   const totalQty = items.reduce((sum, it) => sum + (Number(it.bigEquivalent || it.bigBoxes) || 0), 0);
@@ -183,11 +183,11 @@ export const renderBuyerBillA6Html = (transaction, settings = {}) => {
   // Render item rows
   const itemRowsHtml = items
     .map((item) => {
-      const rateNum = Number(item.ratePerBigBox) || 0;
+      const rateNum = Math.round(Number(item.ratePerBigBox) || 0);
       const rateVal = rateNum > 0 ? rateNum.toLocaleString('en-IN') : (item.ratePerBigBox ? String(item.ratePerBigBox) : '—');
-      const lineAmt = Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0;
-      const lineRupees = Math.floor(lineAmt).toLocaleString('en-IN');
-      const linePaise = String(Math.round((lineAmt % 1) * 100)).padStart(2, '0');
+      const lineAmt = Math.round(Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0);
+      const lineRupees = lineAmt.toLocaleString('en-IN');
+      const linePaise = '00';
       const desc1 = item.descLine1 || 'தக்காளி பெரிய பெட்டி';
       const desc2 = item.descLine2 || '(Big Box)';
       const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');
@@ -463,15 +463,15 @@ export const renderBuyerBillSquareHtml = (transaction, settings = {}) => {
   // Formula: ரூ. amount = விலை × எண்ணம் (No.)
   let billTotal = 0;
   if (transaction.todayBill !== undefined) {
-    billTotal = Number(transaction.todayBill);
+    billTotal = Math.round(Number(transaction.todayBill));
   } else if (transaction.billAmount !== undefined && transaction.type !== 'PAYMENT') {
-    billTotal = Number(transaction.billAmount);
+    billTotal = Math.round(Number(transaction.billAmount));
   } else {
-    billTotal = items.reduce((sum, it) => sum + (Number(it.lineAmount !== undefined ? it.lineAmount : it.billAmount) || 0), 0);
+    billTotal = Math.round(items.reduce((sum, it) => sum + (Number(it.lineAmount !== undefined ? it.lineAmount : it.billAmount) || 0), 0));
   }
 
-  const rupeesPart = Math.floor(billTotal).toLocaleString('en-IN');
-  const paisePart = String(Math.round((billTotal % 1) * 100)).padStart(2, '0');
+  const rupeesPart = Math.round(billTotal).toLocaleString('en-IN');
+  const paisePart = '00';
 
   // Total quantity for subtotal row
   const totalQty = items.reduce((sum, it) => sum + (Number(it.bigEquivalent || it.bigBoxes) || 0), 0);
@@ -496,11 +496,11 @@ export const renderBuyerBillSquareHtml = (transaction, settings = {}) => {
   // Build item rows HTML
   const itemRowsHtml = items
     .map((item) => {
-      const rateNum = Number(item.ratePerBigBox) || 0;
+      const rateNum = Math.round(Number(item.ratePerBigBox) || 0);
       const rateVal = rateNum > 0 ? rateNum.toLocaleString('en-IN') : (item.ratePerBigBox ? String(item.ratePerBigBox) : '—');
-      const lineAmt = Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0;
-      const lineRupees = Math.floor(lineAmt).toLocaleString('en-IN');
-      const linePaise = String(Math.round((lineAmt % 1) * 100)).padStart(2, '0');
+      const lineAmt = Math.round(Number(item.lineAmount !== undefined ? item.lineAmount : item.billAmount) || 0);
+      const lineRupees = lineAmt.toLocaleString('en-IN');
+      const linePaise = '00';
       const desc1 = item.descLine1 || 'தக்காளி பெரிய பெட்டி';
       const desc2 = item.descLine2 || '(Big Box)';
       const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');
@@ -779,27 +779,27 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
     ? Number(purchaseData.grossTotal)
     : items.reduce((sum, item) => sum + (Number(item.lineAmount || item.totalAmount) || 0), 0);
 
-  const grossRupeesPart = Math.floor(grossTotal).toLocaleString('en-IN');
-  const grossPaisePart = String(Math.round((grossTotal % 1) * 100)).padStart(2, '0');
+  const grossRupeesPart = Math.round(grossTotal).toLocaleString('en-IN');
+  const grossPaisePart = '00';
 
   // Deductions
   const deductions = purchaseData.deductions || {};
-  const commission = Number(deductions.commission) || 0;
-  const gate = Number(deductions.gate) || 0;
-  const coolie = Number(deductions.coolie) || 0;
-  const rent = Number(deductions.rent) || 0;
-  const debit = Number(deductions.debit) || 0;
+  const commission = Math.round(Number(deductions.commission) || 0);
+  const gate = Math.round(Number(deductions.gate) || 0);
+  const coolie = Math.round(Number(deductions.coolie) || 0);
+  const rent = Math.round(Number(deductions.rent) || 0);
+  const debit = Math.round(Number(deductions.debit) || 0);
   const totalDeductions = deductions.totalDeductions !== undefined
-    ? Number(deductions.totalDeductions)
+    ? Math.round(Number(deductions.totalDeductions))
     : (commission + gate + coolie + rent + debit);
 
   // Net total
   const netTotal = purchaseData.netTotal !== undefined
-    ? Number(purchaseData.netTotal)
+    ? Math.round(Number(purchaseData.netTotal))
     : (grossTotal - totalDeductions);
 
-  const netRupeesPart = Math.floor(netTotal).toLocaleString('en-IN');
-  const netPaisePart = String(Math.round((netTotal % 1) * 100)).padStart(2, '0');
+  const netRupeesPart = Math.round(netTotal).toLocaleString('en-IN');
+  const netPaisePart = '00';
 
   const lotNum = purchaseData.lotNumber || (purchaseData._id ? String(purchaseData._id).slice(-4) : '001');
   const dateStr = formatBillDate(purchaseData.transactionDate);
@@ -817,10 +817,10 @@ export const renderSupplierBillHtml = (purchaseData, settings = {}) => {
   // Render purchase item rows
   const itemRowsHtml = items
     .map((item) => {
-      const rateVal = item.ratePerBigBox ? Number(item.ratePerBigBox).toLocaleString('en-IN') : '—';
-      const lineAmt = Number(item.lineAmount !== undefined ? item.lineAmount : item.totalAmount) || 0;
-      const lineRupees = Math.floor(lineAmt).toLocaleString('en-IN');
-      const linePaise = String(Math.round((lineAmt % 1) * 100)).padStart(2, '0');
+      const rateVal = item.ratePerBigBox ? Math.round(Number(item.ratePerBigBox)).toLocaleString('en-IN') : '—';
+      const lineAmt = Math.round(Number(item.lineAmount !== undefined ? item.lineAmount : item.totalAmount) || 0);
+      const lineRupees = lineAmt.toLocaleString('en-IN');
+      const linePaise = '00';
       const desc1 = item.descLine1 || 'தக்காளி பெரிய பெட்டி';
       const desc2 = item.descLine2 || '(Big Box)';
       const qty = item.qtyText || (item.bigBoxes > 0 ? `${item.bigBoxes}` : '—');
