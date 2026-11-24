@@ -47,21 +47,21 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
-            <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0 min-w-0">
+          <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-3 shrink-0 min-w-0">
+            <Link to="/" className="flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 group shrink-0 min-w-0">
               <img
                 src="/tomato.png"
                 alt="Tomato Wholesale"
-                className="w-8 h-8 sm:w-9 sm:h-9 object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform shrink-0"
+                className="w-7 h-7 xs:w-8 xs:h-8 sm:w-9 sm:h-9 object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform shrink-0"
               />
               <div className="shrink-0 min-w-0">
-                <div className="text-sm xs:text-base sm:text-lg font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
-                  <span className="truncate max-w-[115px] xs:max-w-[170px] sm:max-w-none">{settings.businessName || 'TOMATO BUSINESS'}</span>
+                <div className="text-xs xs:text-sm sm:text-lg font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
+                  <span className="truncate max-w-[85px] xs:max-w-[130px] sm:max-w-none">{settings.businessName || 'TOMATO BUSINESS'}</span>
                   <span className="hidden sm:inline-block text-[10px] font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                     Wholesale
                   </span>
                 </div>
-                <div className="text-[11px] sm:text-xs text-slate-500 font-medium whitespace-nowrap">
+                <div className="hidden xs:block text-[10px] sm:text-xs text-slate-500 font-medium whitespace-nowrap truncate max-w-[110px] sm:max-w-none">
                   Daily Billing & Tally
                 </div>
               </div>
@@ -136,23 +136,48 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Date indicator & Hamburger */}
-          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="flex items-center gap-1 sm:gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-xl px-2 sm:px-2.5 py-1.5 text-slate-800 text-xs font-bold shadow-2xs cursor-pointer active:scale-95 transition-all"
-              title="Click to change operational business date"
+          {/* Mobile Date indicator, Today button & Hamburger (< 1024px) */}
+          <div className="flex lg:hidden items-center gap-1 xs:gap-1.5 sm:gap-2 shrink-0">
+            {/* Interactive Mobile Date Selector */}
+            <div
+              className="relative flex items-center gap-1 sm:gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-lg sm:rounded-xl px-1.5 xs:px-2 sm:px-2.5 py-1 sm:py-1.5 text-slate-800 text-xs font-bold shadow-2xs transition-all shrink-0 cursor-pointer"
+              title="Click to select operating date"
             >
-              <Calendar className="w-3.5 h-3.5 text-red-600 shrink-0" />
-              <span className="font-mono text-[11px] sm:text-xs">{formatDate(operationalDate)}</span>
+              <Calendar className="w-3 h-3 xs:w-3.5 xs:h-3.5 text-red-600 shrink-0 pointer-events-none" />
+              <span className="font-mono text-[10px] xs:text-[11px] sm:text-xs pointer-events-none">{formatDate(operationalDate)}</span>
+              <input
+                type="date"
+                value={operationalDate}
+                onChange={(e) => setOperationalDate(e.target.value)}
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
+                title="Select operational business date"
+                aria-label="Select operational business date"
+              />
+            </div>
+
+            {/* Mobile Today Button: always visible beside date selector, touch-friendly, matching desktop behavior */}
+            <button
+              type="button"
+              onClick={resetToToday}
+              className={`text-[10px] xs:text-[11px] sm:text-xs px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-bold transition-all cursor-pointer shrink-0 active:scale-95 ${
+                isToday
+                  ? 'bg-slate-900 text-white shadow-2xs'
+                  : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400'
+              }`}
+              title="Set to today's real date"
+              aria-label="Set to today's real date"
+            >
+              Today
             </button>
 
+            {/* Mobile Hamburger Menu button */}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 border border-slate-200 cursor-pointer active:scale-95 transition-all shrink-0"
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-lg sm:rounded-xl hover:bg-slate-100 border border-slate-200 cursor-pointer active:scale-95 transition-all shrink-0"
               aria-label="Toggle Navigation Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
             </button>
           </div>
         </div>

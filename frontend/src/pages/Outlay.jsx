@@ -192,6 +192,18 @@ export default function Outlay() {
             }}
             className="text-xs font-bold text-slate-900 bg-transparent focus:outline-none cursor-pointer font-mono"
           />
+          {selectedDate !== operationalDate && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedDate(operationalDate);
+                if (editingId) handleCancelEdit();
+              }}
+              className="text-xs font-bold px-2 py-0.5 rounded-lg bg-white text-emerald-700 hover:bg-emerald-50 border border-emerald-200 cursor-pointer shadow-2xs"
+            >
+              Today
+            </button>
+          )}
         </div>
       </div>
 

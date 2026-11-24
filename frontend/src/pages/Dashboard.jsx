@@ -27,7 +27,7 @@ import SupplierVoucherTemplate from '../components/print/SupplierVoucherTemplate
 import { formatCurrency, formatDate, formatBoxDescription } from '../utils/formatters';
 
 export default function Dashboard() {
-  const { operationalDate } = useDate();
+  const { operationalDate, resetToToday, isToday } = useDate();
   const { settings } = useSettings();
   const { isAdmin } = useAuth();
 
@@ -165,6 +165,16 @@ export default function Dashboard() {
             <span className="font-extrabold text-slate-900 bg-slate-100 border border-slate-200/80 px-2.5 py-0.5 rounded-lg font-mono">
               {formatDate(operationalDate)}
             </span>
+            {!isToday && (
+              <button
+                type="button"
+                onClick={resetToToday}
+                className="text-[11px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-0.5 rounded-md cursor-pointer transition-colors active:scale-95"
+                title="Reset to today's date"
+              >
+                Reset to Today
+              </button>
+            )}
           </div>
         </div>
 
