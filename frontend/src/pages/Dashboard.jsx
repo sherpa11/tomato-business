@@ -3,6 +3,7 @@ import {
   PlusCircle,
   Receipt,
   CreditCard,
+  Package,
   Truck,
   AlertCircle,
   RefreshCw,
@@ -16,6 +17,8 @@ import { useDate } from '../context/DateContext';
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
 import TodayTallyTable from '../components/TodayTallyTable';
+import PaymentsReceivedTable from '../components/dashboard/PaymentsReceivedTable';
+import BoxRatesTable from '../components/dashboard/BoxRatesTable';
 import NewSaleModal from '../components/modals/NewSaleModal';
 import NewPurchaseModal from '../components/modals/NewPurchaseModal';
 import NewPaymentModal from '../components/modals/NewPaymentModal';
@@ -57,6 +60,8 @@ export default function Dashboard() {
 
   // Customer search state for Today's Tally table
   const [customerSearch, setCustomerSearch] = useState('');
+  // Active Dashboard View: 'TALLY' | 'PAYMENTS' | 'BOX_RATES'
+  const [dashboardView, setDashboardView] = useState('TALLY');
 
   const filteredTodayTally = useMemo(() => {
     const list = data?.todayTally || [];
@@ -65,6 +70,106 @@ export default function Dashboard() {
     return list.filter((row) =>
       (row.buyerName || '').toLowerCase().includes(q)
     );
+  }, [data?.todayTally, customerSearch]);
+
+  // Compute payments received by buyer for the operational date (summed per buyer, amountPaid > 0)
+  const paymentsReceivedData = useMemo(() => {
+    const list = data?.todayTally || [];
+    const map = new Map();
+
+    list.forEach((tx) => {
+      if (tx.isVoid) return;
+      const paid = Math.round(Number(tx.paid ?? tx.amountPaid) || 0);
+      if (paid > 0) {
+        const key = tx.buyerId ? String(tx.buyerId) : tx.buyerName;
+        if (!map.has(key)) {
+          map.set(key, {
+            buyerId: tx.buyerId,
+            buyerName: tx.buyerName,
+            totalPaid: paid
+          });
+        } else {
+          const existing = map.get(key);
+          existing.totalPaid = Math.round(existing.totalPaid + paid);
+        }
+      }
+    });
+
+    let results = Array.from(map.values());
+    const q = customerSearch.trim().toLowerCase();
+    if (q) {
+      results = results.filter((p) => (p.buyerName || '').toLowerCase().includes(q));
+    }
+    return results;
+  }, [data?.todayTally, customerSearch]);
+
+  // Compute boxes purchased by individual rate (strictly preserving entered rate without ever averaging)
+  const boxRatesData = useMemo(() => {
+    const list = data?.todayTally || [];
+    const rateMap = new Map();
+
+    list.forEach((tx) => {
+      if (tx.isVoid) return;
+      if (tx.type !== 'SALE') return;
+
+      const buyerId = tx.buyerId;
+      const buyerName = tx.buyerName;
+
+      if (Array.isArray(tx.items) && tx.items.length > 0) {
+        tx.items.forEach((item) => {
+          const big = Number(item.bigBoxes) || 0;
+          const small = Number(item.smallBoxes) || 0;
+          const rate = Math.round(Number(item.ratePerBigBox) || 0);
+          if ((big > 0 || small > 0) && rate > 0) {
+            const boxType = big > 0 && small > 0 ? 'MIXED' : (big > 0 ? 'BIG' : 'SMALL');
+            const key = `${buyerId || buyerName}__${rate}__${boxType}`;
+            if (!rateMap.has(key)) {
+              rateMap.set(key, {
+                buyerId,
+                buyerName,
+                rate,
+                boxType,
+                bigBoxes: big,
+                smallBoxes: small
+              });
+            } else {
+              const existing = rateMap.get(key);
+              existing.bigBoxes += big;
+              existing.smallBoxes += small;
+            }
+          }
+        });
+      } else {
+        const big = Number(tx.bigBoxes) || 0;
+        const small = Number(tx.smallBoxes) || 0;
+        const rate = Math.round(Number(tx.ratePerBigBox) || 0);
+        if ((big > 0 || small > 0) && rate > 0) {
+          const boxType = big > 0 && small > 0 ? 'MIXED' : (big > 0 ? 'BIG' : 'SMALL');
+          const key = `${buyerId || buyerName}__${rate}__${boxType}`;
+          if (!rateMap.has(key)) {
+            rateMap.set(key, {
+              buyerId,
+              buyerName,
+              rate,
+              boxType,
+              bigBoxes: big,
+              smallBoxes: small
+            });
+          } else {
+            const existing = rateMap.get(key);
+            existing.bigBoxes += big;
+            existing.smallBoxes += small;
+          }
+        }
+      }
+    });
+
+    let results = Array.from(rateMap.values());
+    const q = customerSearch.trim().toLowerCase();
+    if (q) {
+      results = results.filter((r) => (r.buyerName || '').toLowerCase().includes(q));
+    }
+    return results;
   }, [data?.todayTally, customerSearch]);
 
   const fetchDashboardData = useCallback(async () => {
@@ -223,26 +328,82 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* SECTION 1: TODAY'S TALLY TABLE (Highest Priority) */}
+      {/* SECTION 1: TODAY'S TALLY & FILTERED VIEWS (Highest Priority) */}
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[200px]">
-            <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-              Customer Daily Tally Table
-            </h2>
-            <span className="text-xs font-extrabold bg-red-50 text-red-700 border border-red-200/70 px-2.5 py-0.5 rounded-full shrink-0">
-              {data?.todayTally?.length || 0} Transactions
-            </span>
+        {/* View Switcher Bar & Search Control */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white p-2.5 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs">
+          {/* Filter Pills / Tabs */}
+          <div className="flex items-center p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => setDashboardView('TALLY')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                dashboardView === 'TALLY'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+            >
+              <span>Daily Tally</span>
+              <span
+                className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full ${
+                  dashboardView === 'TALLY' ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-600'
+                }`}
+              >
+                {data?.todayTally?.length || 0}
+              </span>
+            </button>
 
-            {/* Customer Search Box */}
-            <div className="relative w-full sm:w-56 sm:ml-2">
+            <button
+              type="button"
+              onClick={() => setDashboardView('PAYMENTS')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                dashboardView === 'PAYMENTS'
+                  ? 'bg-white text-emerald-800 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Payments Received</span>
+              <span
+                className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full ${
+                  dashboardView === 'PAYMENTS' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+                }`}
+              >
+                {paymentsReceivedData.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDashboardView('BOX_RATES')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                dashboardView === 'BOX_RATES'
+                  ? 'bg-white text-red-800 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+            >
+              <Package className="w-3.5 h-3.5 text-red-600 shrink-0" />
+              <span>Boxes Purchased by Rate</span>
+              <span
+                className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full ${
+                  dashboardView === 'BOX_RATES' ? 'bg-red-100 text-red-800' : 'bg-slate-200 text-slate-600'
+                }`}
+              >
+                {boxRatesData.length}
+              </span>
+            </button>
+          </div>
+
+          {/* Right Controls: Customer Search & Add Bill Button */}
+          <div className="flex items-center gap-2 w-full lg:w-auto">
+            <div className="relative flex-1 lg:w-56">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search customer name..."
                 value={customerSearch}
                 onChange={(e) => setCustomerSearch(e.target.value)}
-                className="w-full h-8 pl-8 pr-7 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-2xs transition-all"
+                className="w-full h-8 sm:h-9 pl-8 pr-7 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-2xs transition-all"
               />
               {customerSearch && (
                 <button
@@ -255,29 +416,47 @@ export default function Dashboard() {
                 </button>
               )}
             </div>
+
+            <button
+              onClick={() => setSaleModalOpen(true)}
+              className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>+ Add Bill</span>
+            </button>
           </div>
-          <button
-            onClick={() => setSaleModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200/80 transition-colors cursor-pointer shrink-0"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Add Bill</span>
-          </button>
         </div>
 
-        <TodayTallyTable
-          tally={filteredTodayTally}
-          allTally={data?.todayTally}
-          summary={data?.summary}
-          isFiltered={Boolean(customerSearch.trim())}
-          searchTerm={customerSearch.trim()}
-          onPrint={handlePrintBuyerBill}
-          onVoid={promptVoidTransaction}
-          onEditCustomer={(bId) => {
-            setEditBuyerId(bId);
-            setEditBuyerModalOpen(true);
-          }}
-        />
+        {/* View Content based on active tab */}
+        {dashboardView === 'TALLY' && (
+          <TodayTallyTable
+            tally={filteredTodayTally}
+            allTally={data?.todayTally}
+            summary={data?.summary}
+            isFiltered={Boolean(customerSearch.trim())}
+            searchTerm={customerSearch.trim()}
+            onPrint={handlePrintBuyerBill}
+            onVoid={promptVoidTransaction}
+            onEditCustomer={(bId) => {
+              setEditBuyerId(bId);
+              setEditBuyerModalOpen(true);
+            }}
+          />
+        )}
+
+        {dashboardView === 'PAYMENTS' && (
+          <PaymentsReceivedTable
+            payments={paymentsReceivedData}
+            searchTerm={customerSearch.trim()}
+          />
+        )}
+
+        {dashboardView === 'BOX_RATES' && (
+          <BoxRatesTable
+            boxRates={boxRatesData}
+            searchTerm={customerSearch.trim()}
+          />
+        )}
       </div>
 
       {/* SECTION 2: TODAY'S SUPPLIER PURCHASES (Admin Only) */}

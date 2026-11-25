@@ -219,6 +219,11 @@ export const transactionsAPI = {
     invalidateDropdownCache();
     return res;
   },
+  createBorrow: async (data) => {
+    const res = await api.post('/transactions/borrow', data);
+    invalidateDropdownCache();
+    return res;
+  },
   voidTransaction: async (id, data) => {
     const res = await api.post(`/transactions/${id}/void`, data);
     invalidateDropdownCache();

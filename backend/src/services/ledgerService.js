@@ -72,6 +72,18 @@ export const recalculateBuyerLedger = async (buyerId) => {
 
       tx.bigEquivalent = bigEq;
       tx.billAmount = bill;
+    } else if (tx.type === 'BORROW') {
+      // BORROW: Additional amount owed by buyer (strictly increases balance due)
+      const borrowAmt = roundMoney(tx.billAmount || 0);
+      tx.bigBoxes = 0;
+      tx.smallBoxes = 0;
+      tx.bigEquivalent = 0;
+      tx.ratePerBigBox = 0;
+      tx.billAmount = borrowAmt;
+      tx.amountPaid = 0;
+
+      totalDue = roundMoney(oldBalance + borrowAmt);
+      newBalance = totalDue;
     } else {
       // PAYMENT
       tx.bigBoxes = 0;

@@ -234,6 +234,81 @@ export const createPayment = async (req, res, next) => {
   }
 };
 
+/**
+ * Record a BORROW transaction:
+ * - Increases buyer's outstanding due (DEBIT)
+ * - billAmount = borrowAmount
+ * - amountPaid = 0
+ * - Boxes = 0
+ * - totalDue = oldBalance + borrowAmount
+ * - newBalance = totalDue
+ */
+export const createBorrow = async (req, res, next) => {
+  try {
+    const { buyerId, transactionDate, amount, notes, manualOldBalance } = req.body;
+
+    if (!buyerId) {
+      return res.status(400).json({ success: false, message: 'Buyer is required' });
+    }
+    if (!transactionDate || !/^\d{4}-\d{2}-\d{2}$/.test(transactionDate)) {
+      return res.status(400).json({ success: false, message: 'Valid transaction date (YYYY-MM-DD) is required' });
+    }
+
+    const buyer = await Buyer.findById(buyerId);
+    if (!buyer) {
+      return res.status(404).json({ success: false, message: 'Buyer not found' });
+    }
+
+    const borrowAmt = roundMoney(Number(amount));
+    if (isNaN(borrowAmt) || borrowAmt <= 0) {
+      return res.status(400).json({ success: false, message: 'Borrow amount must be greater than zero' });
+    }
+
+    // If manual old balance is explicitly provided and differs from ledger, adjust initial balance
+    if (manualOldBalance !== undefined && manualOldBalance !== null && manualOldBalance !== '' && !isNaN(Number(manualOldBalance))) {
+      const manualOld = roundMoney(Number(manualOldBalance));
+      const currentLedgerOld = await getBuyerOldBalance(buyer._id, transactionDate);
+      const delta = roundMoney(manualOld - currentLedgerOld);
+
+      if (Math.abs(delta) > 0) {
+        buyer.initialBalance = roundMoney((buyer.initialBalance || 0) + delta);
+        await buyer.save();
+      }
+    }
+
+    // Initial creation with placeholder
+    const transaction = await Transaction.create({
+      buyerId: buyer._id,
+      buyerName: buyer.name,
+      transactionDate,
+      type: 'BORROW',
+      bigBoxes: 0,
+      smallBoxes: 0,
+      bigEquivalent: 0,
+      ratePerBigBox: 0,
+      billAmount: borrowAmt,
+      amountPaid: 0,
+      oldBalance: 0,
+      totalDue: borrowAmt,
+      newBalance: borrowAmt,
+      notes: notes ? notes.trim() : ''
+    });
+
+    // Run strict chronological ledger recalculation
+    await recalculateBuyerLedger(buyer._id);
+
+    const finalTransaction = await Transaction.findById(transaction._id);
+
+    res.status(201).json({
+      success: true,
+      transaction: finalTransaction,
+      message: `Borrow entry of ₹${borrowAmt.toLocaleString('en-IN')} recorded for ${buyer.name}`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getTransactions = async (req, res, next) => {
   try {
     const { date, startDate, endDate, buyerId, type, isVoid } = req.query;

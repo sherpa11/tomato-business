@@ -2,6 +2,7 @@ import express from 'express';
 import {
   createSale,
   createPayment,
+  createBorrow,
   getTransactions,
   getTransactionById,
   voidTransaction,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post('/sale', protect, createSale);
 router.post('/payment', protect, createPayment);
+router.post('/borrow', protect, createBorrow);
 router.get('/', protect, getTransactions);
 router.get('/consolidated', protect, getConsolidatedBill);
 router.get('/:id', protect, validateObjectId('id'), getTransactionById);

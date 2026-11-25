@@ -216,6 +216,7 @@ export const getBuyerLedger = async (req, res, next) => {
 
     for (const tx of transactions) {
       const isSale = tx.type === 'SALE';
+      const isBorrow = tx.type === 'BORROW';
       let description = '';
       if (isSale) {
         let boxDesc = `${tx.bigBoxes || 0} Big`;
@@ -223,6 +224,8 @@ export const getBuyerLedger = async (req, res, next) => {
           boxDesc += ` + ${tx.smallBoxes} Small`;
         }
         description = `${boxDesc} Boxes @ ₹${(tx.ratePerBigBox || 0).toLocaleString('en-IN')}`;
+      } else if (isBorrow) {
+        description = `Borrow / கடன்${tx.notes ? ` - ${tx.notes}` : ''}`;
       } else {
         description = `Payment Received${tx.notes ? ` - ${tx.notes}` : ''}`;
       }
@@ -241,10 +244,10 @@ export const getBuyerLedger = async (req, res, next) => {
         smallBoxes: tx.smallBoxes || 0,
         bigEquivalent: tx.bigEquivalent || 0,
         ratePerBigBox: tx.ratePerBigBox || 0,
-        debit: isSale ? (tx.billAmount || 0) : 0,
+        debit: (isSale || isBorrow) ? (tx.billAmount || 0) : 0,
         credit: tx.amountPaid || 0,
         billAmount: tx.billAmount || 0,
-        todayBill: tx.billAmount || 0,
+        todayBill: isSale ? (tx.billAmount || 0) : 0,
         oldBalance: tx.oldBalance !== undefined ? tx.oldBalance : 0,
         totalDue: tx.totalDue !== undefined ? tx.totalDue : 0,
         amountPaid: tx.amountPaid || 0,

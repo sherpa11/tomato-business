@@ -60,6 +60,8 @@ export const getDashboardSummary = async (req, res, next) => {
         if (tx.smallBoxes > 0) {
           boxDescription += ` + ${tx.smallBoxes} Small`;
         }
+      } else if (tx.type === 'BORROW') {
+        boxDescription = 'Borrow / கடன்';
       }
 
       return {
@@ -74,6 +76,7 @@ export const getDashboardSummary = async (req, res, next) => {
         smallBoxes: tx.smallBoxes,
         bigEquivalent: tx.bigEquivalent,
         ratePerBigBox: tx.ratePerBigBox,
+        items: tx.items || [],
         todayBill: roundMoney(tx.billAmount),
         totalDue: roundMoney(tx.totalDue),
         paid: roundMoney(tx.amountPaid),

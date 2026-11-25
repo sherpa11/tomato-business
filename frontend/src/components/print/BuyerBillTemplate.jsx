@@ -47,6 +47,11 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
       descLine2 = '(Cash Receipt)';
       qtyText = '—';
       qtyNum = 0;
+    } else if (transaction.type === 'BORROW') {
+      descLine1 = 'கடன் / Borrow';
+      descLine2 = transaction.notes ? `(${transaction.notes})` : '(Borrow Entry)';
+      qtyText = '—';
+      qtyNum = 0;
     }
 
     const rateNum = Number(transaction.ratePerBigBox) || 0;
@@ -57,6 +62,8 @@ export default function BuyerBillTemplate({ transaction, settings, paperSize = '
       } else {
         lineAmt = Number(transaction.billAmount) || Number(transaction.todayBill) || 0;
       }
+    } else if (transaction.type === 'BORROW') {
+      lineAmt = Number(transaction.billAmount) || 0;
     } else if (transaction.type === 'PAYMENT') {
       lineAmt = Number(transaction.amountPaid) || Number(transaction.paid) || 0;
     }

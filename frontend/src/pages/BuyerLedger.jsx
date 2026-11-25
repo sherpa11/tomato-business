@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Receipt,
   CreditCard,
+  HandCoins,
   Printer,
   Ban,
   Phone,
@@ -19,6 +20,7 @@ import { buyersAPI, transactionsAPI } from '../api/client';
 import { useSettings } from '../context/SettingsContext';
 import NewSaleModal from '../components/modals/NewSaleModal';
 import NewPaymentModal from '../components/modals/NewPaymentModal';
+import NewBorrowModal from '../components/modals/NewBorrowModal';
 import EditBuyerModal from '../components/modals/EditBuyerModal';
 import ConfirmModal from '../components/modals/ConfirmModal';
 import PrintModal from '../components/print/PrintModal';
@@ -48,6 +50,7 @@ export default function BuyerLedger() {
   // Modals
   const [saleModalOpen, setSaleModalOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [borrowModalOpen, setBorrowModalOpen] = useState(false);
 
   // Printing
   const [printModalOpen, setPrintModalOpen] = useState(false);
@@ -268,6 +271,15 @@ export default function BuyerLedger() {
               </button>
 
               <button
+                onClick={() => setBorrowModalOpen(true)}
+                className="inline-flex items-center justify-center gap-1 xs:gap-1.5 h-10 px-2.5 xs:px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+                title="Record Buyer Borrow Amount"
+              >
+                <HandCoins className="w-3.5 h-3.5 shrink-0" />
+                <span>+ Borrow</span>
+              </button>
+
+              <button
                 onClick={handlePrintStatement}
                 className="inline-flex items-center justify-center gap-1 xs:gap-1.5 h-10 px-2.5 xs:px-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
                 title="Print Account Statement"
@@ -343,6 +355,11 @@ export default function BuyerLedger() {
                         {formatDate(row.date)}
                       </span>
                       <span className="font-bold text-slate-900 text-sm block mt-0.5">
+                        {row.type === 'BORROW' && (
+                          <span className="inline-block text-[10px] font-bold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 px-1.5 py-0.5 rounded mr-1.5">
+                            Borrow
+                          </span>
+                        )}
                         {row.description}
                       </span>
                     </div>
@@ -432,7 +449,14 @@ export default function BuyerLedger() {
                       </td>
 
                       <td className="py-3.5 px-4 text-left">
-                        <span className="font-semibold text-slate-900 block">{row.description}</span>
+                        <span className="font-semibold text-slate-900 block">
+                          {row.type === 'BORROW' && (
+                            <span className="inline-block text-[10px] font-bold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 px-1.5 py-0.5 rounded mr-1.5">
+                              Borrow
+                            </span>
+                          )}
+                          {row.description}
+                        </span>
                         {row.isVoid && (
                           <span className="text-[10px] text-red-600 font-extrabold uppercase bg-red-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">
                             Voided: {row.voidReason || 'Cancelled'}
@@ -503,6 +527,13 @@ export default function BuyerLedger() {
       <NewPaymentModal
         isOpen={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
+        initialBuyerId={id}
+        onSuccess={() => fetchLedger()}
+      />
+
+      <NewBorrowModal
+        isOpen={borrowModalOpen}
+        onClose={() => setBorrowModalOpen(false)}
         initialBuyerId={id}
         onSuccess={() => fetchLedger()}
       />
