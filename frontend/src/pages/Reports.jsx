@@ -327,15 +327,14 @@ export default function Reports() {
             <table className="w-full text-left border-collapse text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-black uppercase tracking-wider text-slate-600">
-                  <th className="py-3 px-4 sticky left-0 bg-slate-50 z-10">Buyer Name</th>
-                  <th className="py-3 px-4">Phone</th>
-                  <th className="py-3 px-4 text-right">Current Ledger Balance</th>
+                  <th className="py-3 px-3 sm:px-4 text-left">Buyer Name</th>
+                  <th className="py-3 px-3 sm:px-4 text-right whitespace-nowrap">Current Ledger Balance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {processedBuyerBalances.length === 0 ? (
                   <tr>
-                    <td colSpan="3" className="py-8 text-center text-slate-400 text-xs">
+                    <td colSpan="2" className="py-8 text-center text-slate-400 text-xs">
                       {buyerSearch.trim()
                         ? `No buyers matching "${buyerSearch}".`
                         : dueOnlyFilter
@@ -348,19 +347,10 @@ export default function Reports() {
                     const bal = formatBalance(b.currentBalance);
                     return (
                       <tr key={b._id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-slate-900 sticky left-0 bg-white z-10 shadow-2xs whitespace-nowrap">
+                        <td className="py-3 px-3 sm:px-4 font-bold text-slate-900 text-xs sm:text-sm break-words text-left">
                           {b.name}
                         </td>
-                        <td className="py-3.5 px-4 text-xs font-mono text-slate-500 whitespace-nowrap">
-                          {b.phone ? (
-                            <a href={`tel:${b.phone}`} className="hover:text-blue-700 font-semibold">
-                              {b.phone}
-                            </a>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <td className="py-3 px-3 sm:px-4 text-right whitespace-nowrap">
                           <span
                             className={`inline-block font-mono font-black text-xs px-2.5 py-1 rounded-lg border ${bal.color}`}
                           >
@@ -375,20 +365,17 @@ export default function Reports() {
               {processedBuyerBalances.length > 0 && (
                 <tfoot className="border-t-2 border-slate-300 bg-slate-100/95 font-bold">
                   <tr>
-                    <td className="py-3.5 px-4 text-slate-900 sticky left-0 bg-slate-100 z-10 shadow-2xs whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <td className="py-3 px-3 sm:px-4 text-slate-900 text-left">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                         <span className="font-black text-xs uppercase tracking-wider text-slate-900">
                           Grand Total / Total Current Balance
                         </span>
-                        <span className="text-[11px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded-full border border-slate-300">
+                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded-full border border-slate-300 w-fit">
                           {processedBuyerBalances.length} {processedBuyerBalances.length === 1 ? 'Buyer' : 'Buyers'}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap font-medium">
-                      {dueOnlyFilter ? 'Filtered: Only With Due' : buyerSearch.trim() ? 'Matching Search' : 'All Active Buyers'}
-                    </td>
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                    <td className="py-3 px-3 sm:px-4 text-right whitespace-nowrap">
                       <span
                         className={`inline-block font-mono font-black text-xs sm:text-sm px-3 py-1 rounded-lg border shadow-2xs ${
                           grandTotalCurrentBalance > 0
